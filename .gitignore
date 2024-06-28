@@ -1,3 +1,24 @@
+# Custom
+# ignore *everything*
+*
+!/**/
+# and then this 'unignores' anything without an extension
+!*.*
+*.DS_Store
+*.Rproj
+data/*
+!data/README
+results/*
+!results/README
+presentations/imgs/*
+*.js
+*.o
+*.so
+*.pptx
+*.docx
+*.mp4
+*.pdf
+presentations/*_files/
 # History files
 .Rhistory
 .Rapp.history

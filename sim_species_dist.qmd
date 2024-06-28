@@ -1,0 +1,264 @@
+---
+title: "Simulating Species Distributions"
+format: html
+editor: visual
+---
+
+This writeup is to remind me / develop a method for simulating species distributions in space and time using the methods of Thorson & Barnett 2077
+
+The key equation is 4, which is loosely
+
+$$
+ E_p(t) \sim MVN(0, R_p \otimes V_{ep})
+$$
+
+Breaking this down, this is going to produce $E_p(t)$ the deviation from the intercept abundance, would need to make positive for marlin?
+
+$V_{ep}$ is the correlation among species and has dimensions species x species. This one is pretty straightforward
+
+$R_p$ is the spatial correlation between patches, and dimensions patches x patches, or from the paper "is the correlation matrix approximating similar encounter probability among locations"
+
+This is the trickier thingy, and basically shows the rate at which locations become effectively independent in space.
+
+This gets simulated as a Matérn function defined by the distance between each patch, a parameter $k_p$ which is the distance at which patches are essentially uncorrelated and a transformation matrix $H$ that allows decorrelation to happen faster in some direction
+
+$$
+R_p(s,s+h) = \frac{1}{2^{v-1} \Gamma(n)} \times (k_p|hH|)^n \times K_v(k_n|hH|)
+$$
+
+So, in english then. The value of the matrix R at patch p is a function of
+
+the distance between each patch $h$
+
+a smoothness parameter n which is fixed at 1
+
+I have no idea what $v$ is
+
+$k_p$ is the distance at which locations are decorrelated
+
+$H$ is the transformation matrix with dimensions 2 X 2 and I'm not sure what the values in there should be
+
+$K_v$ is ... something. Maybe the bessel function in R, just with a typo? But then what is $k_n$? Aha, yes per chatgpt Kv is the bessel function
+
+`spatstat` might do it
+
+```{r}
+
+library(tidyverse)
+
+
+
+resolution <- c(10,10)
+
+distances <-
+  expand_grid(x = 1:resolution[1], y = 1:resolution[2]) |>
+  dist() |>
+  as.matrix()
+
+n = 1
+
+h = seq(-100,100, by = 1)
+
+H = 1 #matrix(rep(1,4), ncol = 2)
+
+kp = .02
+
+sp_cov <- rep(NA, length(h))
+
+sigma <- 1
+for (i in 1:length(h)){
+
+sp_cov[i] = sigma^2 / (2^(n-1) * gamma(n)) * (kp * abs(h[i] * H))^n * besselK(kp*abs(h[i] * H),1)
+
+# sp_cov[i] = (1 / (2^(n - 1) * gamma(n))) *
+#     ((kp * abs(h[i]))^n) * besselK(kp * abs(h[i]), n)
+# 
+sp_cov[i] = rSPDE::matern.covariance(h[i],kp,1,sigma)
+# 
+
+}
+
+# https://github.com/davidbolin/rSPDE/blob/519a51295cf1d4cfea3d98ea54ac87fba3024a9b/R/util.R#L95
+
+
+plot(h, sp_cov)
+
+
+rSPDE::matern.covariance(1,10,1,10)
+
+```
+
+https://cran.r-project.org/web/packages/spatstat/index.html
+
+https://spatstat.org/resources.html
+
+Let's try this out!
+
+```{r}
+#' Simulate species habitats with correlations across space and among species
+#'
+#' @param critters a vector of critters names of length n_species representing the number of species to be simulated
+#' @param kp a rate parameter that governs the rate at which spatial cells become decorrelated with distance. Lower values mean a smoother (more correlated) habitat map 
+#' @param critter_correlations leave as NA to randomly simulate correlations across species. Otherwise, a n_species x n_species correlation matrix
+#' @param resolution the resolution of the system 
+#' @param patch_area 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' 
+#' n_species <- 6
+#' 
+#' critters <- paste0(fruit[1:n_species],"_fish")
+#' 
+#' resolution <- c(4,20)
+#' 
+#' patch_area =  4
+#' 
+#' kp = .1
+#' 
+#' 
+#' species_distributions <- sim_habitat(critters = critters, resolution = resolution, patch_area = patch_area, kp = kp)
+sim_habitat <-
+  function(critters,
+           kp,
+           critter_correlations = NA,
+           resolution,
+           patch_area,
+           rescale_habitat = TRUE,
+           max_delta = 3) {
+    
+    
+    if (length(resolution) == 1){
+      
+      resolution <- rep(resolution,2)
+      
+    }
+    
+    n_species <- length(critters)
+    
+    patches <- prod(resolution) # the total number of patches
+    
+    patch_width <- sqrt(patch_area) # the width of a patch
+    
+    grid <-
+      tidyr::expand_grid(x = 1:resolution[1], y = 1:resolution[2]) # set up spatial grid
+    
+    # calculate the distance
+    distances <-
+      grid |>
+      dist() |>
+      as.matrix() * patch_width
+    
+    # following Thorson & Barnett 2017 doi:10.1093/icesjms/fsw193
+    # kp = 1e-1 # the rate parmeter; closer to 0, the more farther correlation among patches persists
+    
+    n = 1 # set N to 1 per paper
+    
+    H = 1 #matrix(rep(1,4), ncol = 2) # placeholder for now since I can't figure out how to implement anisotropy uet
+    
+    sigma <- 1 # placeholder which I believe should be left at 1
+    
+    # set up the spatial correlation matrix
+    spatial_correlations <- matrix(0, nrow = (patches), ncol = (patches))
+    
+    for (x in 1:nrow(distances)) {
+      for (y in 1:ncol(distances)) {
+        if (distances[x, y] != 0) {
+          spatial_correlations[x, y] <-
+            sigma ^ 2 / (2 ^ (n - 1) * gamma(n)) * (kp * abs(distances[x, y] * H)) ^
+            n * besselK(kp * abs(distances[x, y] * H), 1)
+        } else {
+          spatial_correlations[x, y] <- 1
+        }
+        
+      }
+      
+    }
+    
+    # create species correlation matrix
+    
+    if (all(is.na(critter_correlations))){
+      
+    n_species_cores <- n_species * (n_species + 1) / 2 - n_species
+    # n_species * (n_species + 1) / 2 # formula for the number of elements in the upper triangle of an n x n matric
+    
+    core_matrix <- matrix(0, nrow = n_species, ncol = n_species)
+    
+    species_cores <-
+      runif(n_species_cores, min = -.1, max = .1) # randomly generate correlations among species
+    # Fill in the upper triangle of the matrix
+    
+    core_matrix[upper.tri(core_matrix)] <- species_cores
+    
+    lower_triangle <- t(core_matrix)
+    
+    critter_correlations <- core_matrix + lower_triangle
+    
+    diag(critter_correlations) <- 1
+    
+    } 
+    
+    species_x_space <-
+      as.matrix(Matrix::nearPD(Matrix::kronecker(spatial_correlations, critter_correlations))$mat)
+    
+    # generate a random species distribution for each species in space
+    habitats <-
+      MASS::mvrnorm(n = 1, rep(0, ncol(species_x_space)), Sigma = species_x_space)
+    
+    species_distributions <-
+      tidyr::expand_grid(critter = critters, patch = 1:patches) |>
+      cbind(grid) |>
+      dplyr::arrange(patch, critter) |>
+      dplyr::mutate(habitat = habitats)
+    
+    if (rescale_habitat){
+      species_distributions$habitat <- scales::rescale(species_distributions$habitat, to = c(0, log(max_delta)))
+    }
+    
+    check_species_cores <- species_distributions |>
+      dplyr::select(patch, critter, habitat) |>
+      tidyr::pivot_wider(names_from = "critter", values_from = "habitat")
+    
+    final_species_cores <- cor(check_species_cores[, -1])
+    
+    out <- list(critter_distributions = species_distributions, critter_correlations = final_species_cores )
+    
+  }
+
+
+```
+
+```{r}
+
+
+n_species <- 10
+
+critters <- paste0(stringr::fruit[1:n_species], "_fish")
+#'
+resolution <- c(4, 20)
+#'
+patch_area =  4
+#'
+kp = .08
+#'
+#'
+species_distributions <-
+  sim_habitat(
+    critters = critters,
+    resolution = resolution,
+    patch_area = patch_area,
+    kp = kp
+  )
+
+species_distributions$critter_distributions |>
+  ggplot(aes(x, y, fill = (habitat))) +
+  geom_tile() +
+  facet_wrap( ~ critter) +
+  scale_fill_viridis_c() +
+  scale_x_continuous(name = "Longitude", expand = expansion(0)) +
+  scale_y_continuous(name = "Latitude", expand = expansion(0))
+
+
+```

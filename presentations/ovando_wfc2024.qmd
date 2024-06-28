@@ -1,0 +1,302 @@
+---
+title: " Simulating Benefits, Costs, and Tradeoffs of Spatial Management in Marine Social-Ecological Systems"
+author: "Dan Ovando <br> Inter-American Tropical Tuna Commission <br> WFC 2024"
+date: "2024/03/05"
+format: 
+  pptx:
+    reference-doc: iattc_template.pptx
+filters:
+  - linebreaks.lua
+---
+
+```{r}
+#| label: setup
+
+library(tidyverse)
+
+library(here)
+
+library(ggExtra)
+
+theme_set(theme_minimal(base_size = 16))
+
+results_name <- "v1.0"
+
+results_dir <- file.path("results", results_name)
+
+plot_dir <- file.path(results_dir, "plots")
+
+results_files <- list.files(here("results",results_name))
+
+rdses <- results_files[str_detect(results_files,'.rds')]
+
+walk(rdses,~assign(str_remove(.x,".rds"), read_rds(here("results",results_name,.x)), envir = .GlobalEnv)) #load and assign all .rds objects in the appropriate results folder
+
+```
+
+
+## Where and How Much Should We Protect?
+
+::: columns
+
+::: {.column width="70%"} 
+- Growing focus on spatial management ([BBNJ,30x30](https://www.cbd.int/doc/c/e6d3/cd1d/daf663719a03902a9b116c34/cop-15-l-25-en.pdf))
+
+- The key questions now are **"how much?"**, **"where?"**, and **"for what?"**
+
+- We often depend on **simulations** to answer these questions
+
+- Today's research will explore how "good" is "good enough" 
+
+:::
+
+::: {.column width="30%"}
+
+![](imgs/bbnj.png)
+
+:::
+
+:::
+
+## Where do MPAs Produce Win-Win Outcomes?
+![[Ovando *et al.* 2023](https://www.nature.com/articles/s41586-023-06493-8) reply to Sala *et al.* 2020](imgs/fig_2.png)
+
+
+## Today's Tasks
+
+1. What are the range of tradeoffs predicted by MPA models?
+
+2. Are simpler models reasonable emulators of more complex models?
+
+
+3.  What social-ecological traits drive variation in MPA outcomes?
+
+
+## The [`marlin`](https://danovando.github.io/marlin/) Model
+
+![[https://danovando.github.io/marlin/](https://danovando.github.io/marlin/)](imgs/marlin.png)
+
+## Methods
+
+1. Simulate lots of states of nature with the `marlin` model
+
+2. Fit a simpler two-patch biomass dynamics model to each simulated `marlin` model
+
+3. Apply a series of MPA networks to both the "complex" and "simple" models
+
+4. Compare outcomes for conservation and food security
+
+5. Assess drivers of degree and direction of tradeoffs
+
+# What are the range of tradeoffs predicted by MPA models? 
+
+## Outcomes of Simpler Model
+
+```{r}
+#| fig-height: 4
+#| fig-width: 7
+#| fig-align: center
+
+basic_thirty_protected_plot 
+```
+
+## Outcomes of More Complex Model
+
+```{r}
+#| fig-height: 4
+#| fig-width: 7
+#| fig-align: center
+
+thirty_protected_plot 
+```
+
+# Are simpler models reasonable emulators <br> of more complex models?
+
+## The Ideal Strategic vs. Tactical
+
+```{r}
+#| fig-height: 4
+#| fig-width: 7
+#| fig-align: center
+
+example_plot 
+```
+
+## Complex vs Simple Models Tell Different Stories
+
+```{r}
+#| fig-height: 4
+#| fig-width: 7
+#| fig-align: center
+
+marlin_vs_pt_plot 
+```
+
+# What drives variation in outcomes?
+
+## What drives variation in outcomes?
+
+
+```{r}
+#| fig-align: center
+
+outcome_importance_plot + theme(axis.text.y = element_text(size = 10))
+```
+
+## What About Climate?
+
+![](imgs/fig_3.pdf)
+
+## Compare the Red to the Blue Lines
+
+![](imgs/fig_5.pdf)
+
+## The Science to Support Spatial Management
+
+- MPA outcomes can be highly variable
+
+- Variation may be driven by processes that simpler models aren't able to reliably represent. 
+
+- Research (and data!) needed to find parsimonious models of spatio-temporal marine social-ecological processes
+
+- Uncertainty $\neq$ inaction, but we should be transparent about the risks of "management by models"
+
+::: {.notes}
+  - Potential for contradictory management advice 
+  - Ability to represent **biomass** dynamics $\neq$ **spatial** dynamics
+  
+:::
+
+## Questions?
+
+::: columns
+::: {.column width="70%"}
+-   `marlin` paper out now in Fish & Fisheries
+
+-   Check out the model at <br> [https://danovando.github.io/marlin/](https://danovando.github.io/marlin/)
+
+- email: dovando@iattc.org
+
+- github: danovando
+
+- twitter: @danovand0
+
+- website: [danovando.com](https://www.weirdfishes.blog/)
+:::
+
+::: {.column width="30%"}
+![](imgs/IMG_1679.JPG)
+:::
+:::
+
+
+
+# Extras
+
+
+
+## Equity Concerns
+
+![Ovando *et al.* 2023](imgs/fig_4.pdf)
+
+## Things Are Complicated in Space
+
+Population dynamics in aggregate are already complex. 
+
+Now consider...
+
+- Heterogeneous habitat across species
+- Variable movement across different life stages, locations, and time
+- Timing and location life history processes like spawning and density dependence
+- Where, when, and why to fish what
+
+## Sprinkle in Some Objectives...
+
+Even if we know spatial population processes, we have to pair it to management
+
+"How should I design an MPA to..."
+
+::: {.incremental}
+  - Protect a known sensitive habitat from bottom trawling
+  - Protect enough of the range of a species to rebuild its population
+  - Protect enough to rebuild the species while minimizing costs to the fishing sector
+
+:::
+
+## Example Species Distribution
+
+
+![](../results/v1.0/plots/state_208_habitat.pdf)
+
+## How Real is Real Enough?
+
+![Fulton *et al.* 2014](imgs/fulton.png)
+
+## The [`marlin`](https://danovando.github.io/marlin/) Model
+
+Simultaneously simulate... 
+
+::: columns
+
+::: {.column width="50%"}
+
+### Fish
+
+- *N* age-structured populations
+
+- Larval & adult dispersal governed by habitat gradients ([CTMC](https://onlinelibrary.wiley.com/doi/full/10.1111/faf.12592))
+
+- Lots of  life history bells & whistles
+
+- Covariance matrices in species abundance
+
+:::
+
+
+::: {.column width="50%"}
+### Fleets
+
+- *N* fleets targeting one or more species
+
+- Species-specific selectivity, price, etc.
+
+- Allocate in space and time based on range of possible economic and regulatory factors
+
+:::
+
+
+:::
+
+
+## Simulating Outcomes of Spatial Management
+
+Given three species and one fleet, randomly draw...
+
+  - fishing mortality
+  
+  - movement rates and density dependence timing 
+  
+  - lots of other economic and environmental attributes
+
+Then apply no-take MPAs...
+
+  - Of different sizes
+
+  - With different design strategies
+
+  - Compare outcomes with and without MPAs
+  
+## The Simpler Version
+
+- Two-patch Pella-Tomlinson model
+
+- Density-dependent dispersal and local or global density dependence
+
+- Fleet attrition or redistribution
+
+- Parameters fit to data generated from a paired `marlin` simulation
+
+- Apply same range of MPA size scenarios
+
+
+

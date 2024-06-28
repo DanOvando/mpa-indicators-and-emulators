@@ -1,0 +1,215 @@
+---
+title: "Drivers of the Benefits, Costs, and Trade-offs of Spatial Management"
+subtitle: "ICES ASC 2023 -- Bilbao, Spain"
+author: "Dan Ovando -- Inter-American Tropical Tuna Commission"
+format:
+  revealjs:
+    logo: imgs/iattc_logo.jpg
+    embed-resources: true
+    fig-align: center
+    auto-stretch: true
+    slide-number: true
+    theme: [moon, custom.scss]
+---
+
+```{r}
+#| label: setup
+
+
+
+library(tidyverse)
+
+library(here)
+
+library(ggExtra)
+
+theme_set(theme_minimal(base_size = 16))
+
+results_name <- "v1.1"
+
+results_dir <- file.path("results", results_name)
+
+plot_dir <- file.path(results_dir, "plots")
+
+results_files <- list.files(here("results",results_name))
+
+rdses <- results_files[str_detect(results_files,'.rds')]
+
+walk(rdses,~assign(str_remove(.x,".rds"), read_rds(here("results",results_name,.x)), envir = .GlobalEnv)) #load and assign all .rds objects in the appropriate results folder
+
+```
+
+## Trade-offs of Spatial Management? {.smaller}
+
+::: columns
+
+::: {.column width="50%"} 
+- Growing focus on spatial management ([BBNJ,30x30](https://www.cbd.int/doc/c/e6d3/cd1d/daf663719a03902a9b116c34/cop-15-l-25-en.pdf))
+
+- **Trade-offs** are critical area of research
+  
+  - More protection $\approx$ more conservation
+  
+  - At what cost?
+
+- Science of MPA outcomes largely based on **simulations** ^[see me after with beers for discussion]
+
+- Quality of advice depends then on **simulations** being reasonably realistic
+
+:::
+
+::: {.column width="40%"}
+
+![](imgs/bbnj.png)
+
+:::
+
+:::
+
+## Model Structure Matters
+
+![](imgs/fig_2.png)
+
+Ovando *et al.* 2023 reply to Sala *et al* 2020
+
+# 1) How variable are MPA outcomes? <br> 2)  What social-ecological traits drive results?
+
+::: notes
+key here is need to have a better sense of what you need to take into account?
+:::
+
+
+## The [`marlin`](https://danovando.github.io/marlin/) Model
+
+![](imgs/marlin.png)
+
+[https://danovando.github.io/marlin/](https://danovando.github.io/marlin/)
+
+## The [`marlin`](https://danovando.github.io/marlin/) Model
+
+Simultaneously simulate... 
+
+::: columns
+
+::: {.column width="50%"}
+
+### Fish
+
+- *N* age-structured populations
+
+- Larval & adult dispersal governed by habitat gradients ([CTMC](https://onlinelibrary.wiley.com/doi/full/10.1111/faf.12592))
+
+- Lots of  life history bells & whistles
+
+:::
+
+
+::: {.column width="50%"}
+### Fleets
+
+- *N* fleets targeting one or more of simulated species
+
+- Species-specific selectivity, price, etc.
+
+- Allocate in space and time based on range of possible economic and regulatory factors
+
+:::
+
+
+:::
+
+
+## Simulating Outcomes of Spatial Management
+
+Given three species and one fleet, randomly draw...
+
+  - fishing mortality
+  
+  - adult and larval movement rates and density dependence timing 
+  
+  - lots of other economic and environmental attributes
+
+Then apply no-take MPAs...
+
+  - Of different sizes
+
+  - With different design strategies
+
+
+## MPA Outcomes are Highly Variable
+
+```{r}
+#| fig-height: 4
+#| fig-width: 7
+#| fig-align: center
+
+thirty_protected_plot 
+```
+
+
+## Many Social-Ecological Traits Matter
+
+```{r}
+#| fig-align: center
+
+outcome_importance_plot
+```
+
+## What About Climate?
+
+. . . 
+
+![](imgs/03_marlin_paper_files/figure-pdf/fig-blue-results-1.png){.absolute top=100 left=200 width="750" height="600"}
+
+## We Need To Put Models To The Test
+
+- Policies have complex effects in social-ecological systems, particularly the less direct they are
+
+- Overly simple models can produce unreliable projections of conservation and food security outcomes
+
+- Models that reasonably capture complexity and dynamism of open oceans needed to make objectives like BBNJ effective
+
+- Next generation of MPA science needs to confront models with data 
+
+::: notes
+  
+"Quadrant" predictions easier than absolute outcomes?
+
+:::
+
+
+## Questions?
+
+::: columns
+::: {.column width="70%"}
+-   Be on the lookout for `marlin` paper sometime in the next year (fingers
+    crossed)
+
+-   Check out the model at <br> [https://danovando.github.io/marlin/](https://danovando.github.io/marlin/)
+
+-   email: dovando@iattc.org
+
+-   github: danovando
+
+-   twitter: @danovand0
+
+- website: [danovando.com](https://www.weirdfishes.blog/)
+:::
+
+::: {.column width="30%"}
+![](imgs/IMG_1679.JPG)
+:::
+:::
+
+## Distributional Trade-Offs Matter
+
+![](imgs/03_marlin_paper_files/figure-pdf/fig-coral-1.png){.absolute left=50 height="600"}
+
+
+## Distributional Trade-Offs Matter
+
+
+![](imgs/03_marlin_paper_files/figure-pdf/fig-coral-results-1.png){.absolute left=50 height="600"}
+
+
+
