@@ -12,11 +12,33 @@ fit_twopbd <- function(tmp_fauna, tmp_fleets){
   depletion <- purrr::map_df(baseline[[length(baseline)]], ~ sum(.x$ssb_p_a) / .x$ssb0) |> 
     pivot_longer(everything(), names_to = "critter", values_to = "depletion")
   
-  tmp_fleets <- purrr::modify_in(tmp_fleets,list(1, "base_effort"), \(x) x * 5)
+  
+  depfoo <- function(fmult,target, tmp_fleets, tmp_fauna){
+    
+    tmp_fleets <- purrr::modify_in(tmp_fleets,list(1, "base_effort"), \(x) x * fmult)
+    
+    fished_down <- simmar(tmp_fauna, tmp_fleets, steps = 100)
+    
+    initial_conditions <- fished_down[[length(fished_down)]]
+    
+    initial_depletion <- sum(initial_conditions[[1]]$ssb_p_a ) / initial_conditions[[1]]$ssb0
+    
+    ss <- (initial_depletion - target)^2
+    
+    return(ss)
+  }
+  
+  hmm <-  nlminb(0.1, depfoo, target = 0.1, tmp_fleets = tmp_fleets, tmp_fauna = tmp_fauna, lower = .1, upper = 5)
+  tmp_fleets <- purrr::modify_in(tmp_fleets,list(1, "base_effort"), \(x) x * hmm$par)
   
   fished_down <- simmar(tmp_fauna, tmp_fleets)
+  
   initial_conditions <- fished_down[[length(fished_down)]]
   
+  initial_depletion <- sum(initial_conditions[[1]]$ssb_p_a ) / initial_conditions[[1]]$ssb0
+  
+  glue::glue("initial depletion is {initial_depletion}")
+
   close_everything <- expand_grid(x = 1:resolution[1], y= 1:resolution[2]) |> 
     mutate(mpa = TRUE)
   
@@ -66,7 +88,7 @@ fit_twopbd <- function(tmp_fauna, tmp_fleets){
   only_b = purrr::modify_depth(
     rebuild,
     2,
-    \(x, scorched_earth) data.frame(b = rowSums(x$b_p_a)) |> mutate(
+    \(x, scorched_earth) data.frame(ssb = rowSums(x$ssb_p_a)) |> mutate(
       scorched_earth = scorched_earth,
       patch = 1:nrow(close_everything)
     ),
@@ -84,9 +106,9 @@ fit_twopbd <- function(tmp_fauna, tmp_fleets){
       time_step = as.integer(year) + decimal_season
     ) |>
     group_by(time_step, critter, scorched_earth) |>
-    summarise(b = sum(b)) |>
+    summarise(ssb = sum(ssb)) |>
     ungroup() |> 
-    pivot_wider(names_from = "scorched_earth", values_from = "b") |> 
+    pivot_wider(names_from = "scorched_earth", values_from = "ssb") |> 
     group_by(critter) |> 
     nest() |> 
     mutate(b_t_p = map(data, \(x) as.matrix(x |> select(-time_step))))
@@ -97,7 +119,7 @@ fit_twopbd <- function(tmp_fauna, tmp_fleets){
   foo <- function(tmp, local_dd, plim = 0.2) {
     twopbd_data <- list(
       b_t_p = tmp,
-      patch_size = 0.5,
+      mpa_size = 0.5, # by assumption in this phase
       n_t = nrow(tmp),
       n_p = ncol(tmp),
       local_dd = local_dd,
@@ -119,31 +141,31 @@ fit_twopbd <- function(tmp_fauna, tmp_fleets){
   
   
   
-  get_params <- function(fit, vars = c("g","k","phi","mu")){
+  get_params <- function(fit, vars = c("g","k","phi","m")){
     
     out <- fit$summary() |> 
       filter(variable %in% vars)
   }
   
-  # i <- 2
-  # observed <- critter_b_t_p$b_t_p[[i]] |> 
-  #   as.data.frame() |> 
-  #   pivot_longer(everything(), names_to = "patch", values_to = "biomass") |> 
-  #   mutate(patch = as.numeric(as.logical(patch)) + 1) |> 
-  #   group_by(patch) |> 
+  # i <- 1
+  # observed <- critter_b_t_p$b_t_p[[i]] |>
+  #   as.data.frame() |>
+  #   pivot_longer(everything(), names_to = "patch", values_to = "biomass") |>
+  #   mutate(patch = as.numeric(as.logical(patch)) + 1) |>
+  #   group_by(patch) |>
   #   mutate(year = 1:length(biomass))
   # 
-  # predicted <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]],	
-  #                         hat_b_t_p[year,patch]) |> 
-  #   left_join(observed, by = c("patch", "year")) |> 
+  # predicted <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]],
+  #                         hat_b_t_p[year,patch]) |>
+  #   left_join(observed, by = c("patch", "year")) |>
   #   mutate(patch = factor(patch))
   # 
-  # a = predicted |> 
-  #   filter(year < 100) |> 
-  #   ggplot() + 
-  #   geom_point(aes(year, biomass, color = patch)) + 
+  # a = predicted |>
+  #   filter(year < 200) |>
+  #   ggplot() +
+  #   geom_point(aes(year, biomass, color = patch)) +
   #   geom_line(aes(year, hat_b_t_p, color = patch))
-  # browser()
+  # 
   out <- critter_b_t_p |> 
     mutate(twopbd_params = map(twopbd_fit, get_params)) |>
     select(critter, local_dd, depletion, twopbd_params)

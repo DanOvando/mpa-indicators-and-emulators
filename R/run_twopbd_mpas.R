@@ -40,7 +40,7 @@ run_twopbd_mpas <-
       r = params$g,
       k = params$k,
       b = baseline_b,
-      m = params$mu,
+      m = params$m,
       u = baseline_u,
       p_mpa = p_mpa,
       local_dd = local_dd,

@@ -4,7 +4,7 @@ create_experiment_fleet <-
            sels,
            prices,
            use_ports,
-           port_locations,
+           port_locations = NULL,
            tune_type = "explt",
            effort_cost_exponent = 1,
            resolution) {

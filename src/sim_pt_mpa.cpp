@@ -2,7 +2,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List sim_pt_mpa(double r, double k,double b, double m, double u, double p_mpa,
+List sim_pt_mpa(double r, double k,double init_b_inside, double init_b_outside, double m, double u, double p_mpa,
                       int local_dd,int years, double phi, bool pt,
                       double plim) {
   
@@ -27,9 +27,9 @@ List sim_pt_mpa(double r, double k,double b, double m, double u, double p_mpa,
   
   n = years;
   
-  last_inside_b = inside_b[0] =  b * p_mpa;
+  last_inside_b = inside_b[0] =  init_b_inside;
   
-  last_outside_b = outside_b[0] = b * (1 - p_mpa);
+  last_outside_b = outside_b[0] = init_b_outside;
   
   yield[0] = u * outside_b[0];
   
