@@ -1,0 +1,355 @@
+---
+title: "Which Models for What Questions"
+author: "Dan Ovando"
+format:
+  html: 
+    toc: true
+  pdf:
+    toc: true
+bibliography: references.bib
+---
+
+```{r}
+#|label: setup
+
+library(tidyverse)
+
+library(marlin)
+
+library(here)
+
+foos <- list.files(here::here("R"))
+
+purrr::walk(foos, ~ source(here::here("R", .x)))
+
+prep_run(run_name = "test2") # loads packages and creates and returns some global variables for the analysis
+
+difficulties <- c("simple","medium","complex")
+
+
+
+```
+
+
+```{r}
+#| label: load-results
+
+
+results <- list.files(results_dir)
+
+results <- results[str_detect(results,"(processed_sims.rds$)|(emulated_experiment_results.rds)|(placement_experiments.rds)|(state_experiments.rds)")]
+
+purrr::walk(results, ~ assign(str_remove_all(.x,"\\.rds$"), read_rds(here(results_dir,.x)), envir = .GlobalEnv))
+
+
+simple <- simple_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "complex")
+
+# results of all marlin simulations
+highres <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
+  mutate(id = glue("{difficulty}-{id}"))
+
+
+simple <- simple_emulated_experiment_results |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_emulated_experiment_results |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_emulated_experiment_results |> 
+  mutate(difficulty = "complex")
+
+# results of all PT simulations
+lowres <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
+  unnest(cols = mpa_experiment) |> 
+  filter(year == max(year))
+
+rm(list = c("simple", "medium", "complex"))
+
+
+```
+
+
+
+## Abstract
+
+## Introduction
+
+The field of ecology depends on models; it is how we move from simply *describing* ecological phenomena to *understanding* ecological processes. All models are abstractions of reality though, requiring scientists to make decisions as to how best to approximate the system in question to address the ecological question at hand. In some cases, these decisions can be be based simply on first principles based on our understanding of the basic physics of the universe. In many other cases we are faced with multiple competing models of the ecological process in question, with a common goal being the search for a "parsimonious" model that best explains the phenomena in question without containing extraneous features that may reduce the performance or efficiency of the model \[citation\]. For example, @murdoch2002 examined under what conditions a single-species model may and may not be a valid representation of a species existing in a multi-specie environment XX.
+
+While the scientific method has employed numerous practices for judging the performance of competing models \[citation\], for much of recent history we have relied largely on confronting models with data, and whether through for example experimentation \[citation\] or predictive skill, as measured for example by various forms of information criteria \[citation\]. Regardless of the method, the key feature here is that models are judged by their ability to explain observed data.
+
+More recently though, the increasing "dimensionality" of questions asked by ecology (e.g. number of species, spatial and temporal scales), combined with the rapid increase in computation capabilities since the XXYEARXX has greatly expanded the use of a slightly different class of model, which we can generally term "simulation models". The key feature of these models is that while they can perhaps be "tuned" to reality based on best available knowledge, they cannot be fit to data in a conventional statistical sense, either due to a lack of degrees of freedom (having many more parameters than available data), or an inability to measure the phenomena being simulated on a reasonable time scale, for example projections of climate drive shifts in species ranges \[citation\].
+
+These simulation models are extremely powerful, particularly as we increasingly turn to ecological sciences to help make complex policy decisions in a dynamic world. For example, the widely used Ecopath with Ecosim modeling framework \[citation\] allows for complex simulation of the effects of environmental and/or policy drivers on marine ecosystems, allowing scientists to ask for example how changes in climate might affect trophic levels of XX \[citation\], a question which cannot be realistically be directly evaluated empirically. However, this power comes with limitations, namely in that without the ability to rely solely on first principles or statistical confrontation with data it is unclear how we should judge the performance of alternative simulation models, particularly if alternative models provide conflicting guidance as to the impact of a phenomena or policy in question.
+
+This challenge is well illustrated by the science of Marine Protected Areas (MPAs). While MPAs have taken and continue to take numerous forms throughout human history \[citation\], we refer to them here broadly as spatially defined areas in which some forms of human activities are restricted xx. Most commonly XX, MPAs involve the restriction of some to all forms of extractive activities such as fishing without their borders \[citation\]. The exact form of these restrictions may vary but the choice of what is implemented is generally made to achieve some policy objective, for example protection of sensitive habitat \[citation\], rebuilding of depleted fish populations \[citation\], and support of food security or economic objectives \[citation\].
+
+The use of MPAs to achieve various policy objectives has exploded in recent years \[citation\] and looks to grow further, as best expressed by the goals of the 30x30 movement, which seeks to place 30% of terrestrial and marine ecosystems in some form of protected area by 2030 \[citation\]. While individual MPAs may differ in their specific objectives, they share a common theme that whatever the policy goal decisions must be made as to how to design a given MPA to achieve a given set of objectives, for example exactly where should the MPA be placed, how big should it be, and exactly what rules will be implemented within its borders.
+
+The difficulty is that baring the most straight-forward of cases (e.g. protection of sensitive habitat of sessile species such as deep-water corals \[citation\]), determining how to design MPAs to achieve a given policy objective is almost entirely dependent on simulation models \[citation\]. This is due in large part to the scale of the processes involved in determining the outcomes of a given MPA or MPA network. Many marine organisms move vast distances at one or more parts of their life cycle \[citation\]. The growth rates of populations are affected by both natural and anthopogenic factors that can change in space and time for exogenous reasons than MPAs.. build this up..
+
+Consider for example the increasing focus on providing spatial protection such as MPAs in the areas beyond national jurisdiction, as embodied by the BBNJ agreement signed in XX. Pelagic ecosystems are characterized by highly mobile species and dynamic habitats. For example, the iconic Atlantic Bluefin Tuna (*Thunnus thynnus*) is capable of moving thousands of kilometers within a year. At the same time.. build this up.
+
+Given then that we cannot realistically design experiments to design networks of high seas MPAs, and lack the vast time series of data before and after MPAs at scale around the world to rely on observational methods, we must turn to simulation modeling to determining how to design MPAs that stand the best chance of achieving our policy objectives. A vast array of simulation models have been developed to fill this gap and help us project the potential policy impacts of MPAs [@fulton2015]. These models vary wildly in complexity, ranging from single species two-patch biomass dynamics models with analytical solutions [@hastings1999] to end-to-end spatially explicit social-ecological models with thousands xx of parameters such as ATLANTIS [@audzijonyte2019]
+
+The question then is what models of MPAs are best suited for addressing which policy questions? The answer is mechanical in some cases. For example, if the goal of a given policy is to increase the mean length of a given target species, at minimum a model that tracks length is required. Conversely, if the goal of a given MPA is to rebuild the trophic structure of a fished ecosystem closer to unfished conditions, at minimum a multi-species model is needed. How though do we determine what model to use across a range of models that are all capable of tracking the same outcomes? For example, two commonly desired outcomes of MPAs are changes in total population biomass and total fishery catches \[citation\]. These metrics, or at least representations of them, are produced both by a two-patch biomass dynamics model and an ATLANTIS model, and essentially every MPA model in between. It is unclear then how to decide which of the many models capable of simulation biomass and catch outcomes of MPAs is parsimonious for the task at hand.
+
+Our hope might be that complexity is additive in nature, which might be expressed by a belief that model complexity is simply a gradient of strategic to tactical, with the key assumption here being that all models capture the core processes around MPAs in an unbiased manner, but some are better capable of capturing finer-scale variation in MPA outcomes related to local context. If this is the case, then we would expect the predictions of say a two-patch biomass dynamics model to be right on average over a region, providing strategic guidance as to the potential outcomes of MPAs in a region, while a more detailed model is needed provide tactical advice for the design of a specific closed area.
+
+While this outcome is ideal, we are unaware of any work that has explicitly tested whether models of increasing MPA complexity fall along the strategic to tactical gradient implicit in much of the MPA modeling literature. Answering this question has real policy implications, particularly because the a wide range of models are currently used to provide advice around MPA models. If these models are not simply increasingly real drawings of the same system, but rather provide fundamentally different predictions of the outcomes of spatial policies such as MPAs (\@fig-cartoon), the predicted effects and subsequent design of MPA networks that will increasingly affect marine ecosystems and dependent peoples may simply be an artifact of an arbitrarily selected type of model rather than a reflection of a robust understanding of the dynamics of these social-ecological systems xx clean this up xx.
+
+To illustrate the potential consequences of diverging predictions of untestable model, consider the case of @sala2021. That paper used a single species two-patch biomass dynamiics modeling framework to predict the conservation and food security outcomes of a proposed global network of no-take MPAs, and as of publication of this paper is among the most highly cited and widely publicized findings in the recent marine conservation literature (<https://nature.altmetric.com/details/101895056>).However, @ovando2023 showed that minor changes to core untestable assumptions of the assumptions made by @sala2021 fundamentally altered both the total predicted outcomes of MPAs for food security and the prioritization map of this proposed global.
+
+The question of exactly what model is appropriate for what question related to spatial policies such as MPAs in marine social-ecological systems if far beyond the scope of this paper. However, this paper seeks to provide a step towards this broader goal by assessing whether models of differing complexity provide complimentary or contradictory predictions of the effects of MPAs across multiple policy dimensions. Specifically, we simulated a range of MPA outcomes using a spatially explicit age structured multi-species and multi-fleet simulation framework presented in @ovando2023a called `marlin`. We then tuned a two-patch biomass dynamics model presented in @ovando2023 and based on @cabral2020, the foundation for the results presented in @sala2021 to emulate the simulated dynamics of the more complex `marlin` model. We then compared the effects of no-take MPAs predicted by these two models, and evaluated if and when the two models were in agreement. We find evidence that rather than existing along a gradient of strategic to tactical, the two models provided vastly different and often contradictory predictions of the outcomes of MPAs for food security and conservation.
+
+## Methods
+
+### Spatially explicit multi species and multi fleet model
+
+#### Simulation Habitats
+
+### Singe species spatially implicit biomass dynamics model
+
+## Results
+
+```{r}
+#| label: fig-example
+# make a figure showing biomass and catch as a function of time and MPA size, mostly just MPA size, for the two complexity levels. Let's start with the raw values rather than the percent stuff just since you got a little lost
+
+
+i <- 42
+
+i <- as.integer(sample(unique(simple_processed_sims$mpa_outcomes$state_id),1))
+
+emulation <- simple_emulated_experiment_results |> 
+  filter(state_id == i) |> 
+  unnest(cols = mpa_experiment) |> 
+  filter(year == max(year)) 
+
+
+reality <- simple_processed_sims$mpa_outcomes |> 
+  mutate(state_id = as.integer(state_id)) |> 
+  filter(state_id == i)
+
+reality$fleet_model[[1]]
+
+
+
+
+
+```
+
+
+
+```{r}
+#| label: fig-size-and-msy
+
+# make a figure plotting yield maximizing MPA size PT vs marlin, and MSY PT vs marlin
+
+# pull out the size and outcome of MPA that maximizes catch for highres and lowres scenarios
+highres_max_catch <- highres |> 
+  filter(name == "catch") |> 
+  group_by(critter, state_id, placement_id) |> 
+  filter(value == max(value)) |> 
+  select(state_id, critter, placement_id, prop_mpa, value,difficulty) |>
+  rename(highres_prop_mpa = prop_mpa, highres_catch = value)
+
+lowres_max_catch <- lowres |> 
+  group_by(critter, state_id) |> 
+  filter(yield_mpa == max(yield_mpa)) |> 
+  rename(lowres_prop_mpa = prop_mpa, lowres_catch = yield_mpa)
+
+compare_max_catch_mpa <-  highres_max_catch |>
+  left_join(lowres_max_catch, by = c("critter", "state_id", "difficulty"))
+ 
+
+compare_max_catch_mpa |> 
+  ggplot(aes(highres_prop_mpa,lowres_prop_mpa, color = difficulty)) + 
+  geom_point() + 
+  geom_abline(slope = 1, intercept = 0) + 
+  geom_smooth(method = "lm") +
+  facet_wrap(~difficulty)
+
+
+```
+
+
+```{r}
+
+emulated_model_results <- simple_emulated_experiment_results |>
+  select(state_id, prop_mpa, critter, mpa_experiment, depletion) |>
+  unnest(cols = mpa_experiment) |>
+  filter(year == max(year)) |>
+  mutate(
+    emulated_percent_mpa_effect = pmin(5, yield_mpa / yield_bau - 1),
+    rough_f = 1 - depletion
+  )
+
+
+plot_stuff <- emulated_model_results |>
+  mutate(
+    yield_effect = pmin(100, 100 * (yield_mpa / yield_bau - 1)),
+    biomass_effect = pmin(100, 100 * (b_mpa / b_bau - 1))
+  ) 
+
+quad_labels <-
+  data.frame(
+    x = c(50, 50, -25, -25),
+    y = c(50, -50, 50, -50),
+    label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
+  )
+
+
+basic_thirty_protected_plot <- plot_stuff |>
+  filter(between(prop_mpa, 0.2, 0.4)) |>
+  ggplot(aes(biomass_effect, yield_effect, color = rough_f)) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_point(alpha = 0.25, size = 3) +
+  geom_text(
+    data = quad_labels,
+    aes(x, y, label = label),
+    size = 6,
+    color = "red"
+  ) +
+  scale_color_viridis_c(
+    "BAU Fishing Mortality",
+    breaks = c(0,1),
+    labels = c("Low","High"),
+    limits = c(0, 1),
+    option = "plasma",
+    guide = guide_colorbar(
+      frame.colour = "black",
+      ticks.colour = "black",
+      barwidth =  unit(11, "lines")
+    )
+  )  +
+  scale_x_continuous(name = "% Change in Species Biomass", limits = c(-50,100)) +
+  scale_y_continuous(name = "% Change in Species Catch") +
+  theme(legend.position = "bottom") + 
+  labs(caption = "20-40% of area in MPA")
+
+basic_thirty_protected_plot <- ggMarginal(basic_thirty_protected_plot, type = "histogram", fill = "steelblue") 
+
+
+basic_thirty_protected_plot
+
+emulated_yield_and_biomass_results <- emulated_model_results |>
+  mutate(
+    catch_effect = (yield_mpa / yield_bau - 1),
+    biomass_effect = (b_mpa / b_bau - 1)
+  ) |>
+  select(state_id, critter, prop_mpa, ends_with("_effect")) |>
+  pivot_longer(ends_with("_effect"),
+               values_to = "emulated_percent_mpa_effect",
+               names_to = "name") |>
+  mutate(name = str_remove_all(name, "_effect"),
+         state_id = as.character(state_id))
+
+
+
+tmp <- simple_processed_sims$mpa_outcomes |>
+  select(percent_mpa_effect,
+         fleet,
+         state_id,
+         placement_id,
+         critter,
+         prop_mpa,
+         name) |>
+  left_join(
+    simple_processed_sims$species_variables,
+    by = c("state_id", "critter" = "scientific_name")
+  ) |>
+  left_join(simple_placement_experiments,
+            by = c("placement_id", "prop_mpa")) |>
+  mutate(percent_mpa_effect = pmin(1, 1 * percent_mpa_effect))
+
+fleet_outcomes <- tmp |> 
+  filter(fleet != "nature") |>
+  pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
+
+nature_outcomes <- tmp |> 
+  filter(fleet == "nature") |> 
+  select(ends_with("id"),critter,prop_mpa, name, percent_mpa_effect) |> 
+  pivot_wider(names_from = "name", values_from = "percent_mpa_effect") 
+
+wide_mpa_outcomes <- fleet_outcomes |>
+  left_join(nature_outcomes,
+            by = join_by(state_id, placement_id, critter, prop_mpa))
+
+tidy_mpa_outcomes <- wide_mpa_outcomes |> 
+  pivot_longer(catch:fished_biomass, names_to = "name", values_to = "percent_mpa_effect")
+
+warning("check if you are being consistent with biomass vs. ssb")
+comparison <- tidy_mpa_outcomes |> 
+  left_join(emulated_yield_and_biomass_results, by = c("state_id", "critter","prop_mpa", "name")) |> 
+  filter(name %in% c("catch", "biomass"))
+
+state_variables <- simple_state_experiments |>
+  select(state_id, data) |>
+  unnest(cols = data) |>
+  select(
+    state_id,
+    kiss,
+    mpa_response,
+    starts_with("sigma"),
+    starts_with("spatial"),
+    fleet_model
+  ) |>
+  unique() |>
+  mutate(state_id = as.character(state_id))
+
+
+marlin_vs_pt_plot <- comparison |>
+  filter(between(prop_mpa, 0.2, 0.4), fleet_model == "constant effort") |>
+  ggplot(aes(
+    pmin(1, percent_mpa_effect),
+    pmin(1, emulated_percent_mpa_effect)
+  )) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  geom_point(alpha = 0.25,
+             size = 2,
+             color = "steelblue") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              color = "tomato") +
+  facet_wrap( ~ name, scales = "free") +
+  scale_x_continuous(
+    "Complex-er Model MPA Effect",
+    oob = squish,
+    limits = c(-1,1)
+  ) +
+  scale_y_continuous("Simpler Model MPA Effect", limits = c(-1,1),
+                     oob = squish) +
+  labs(caption = "Simpler model tuned to emulate complex model. 20-40% MPA") +
+  scale_fill_viridis_c()
+marlin_vs_pt_plot
+
+```
+
+
+## Discussion
+
+Complexity does not equal correctness.
+
+Reference spatial stock assessment literature (eventually and in some cases we may have enough data before, after, inside, and outside of MPAs for a range of species to estimate the effect of MPAs within a spatial stock assessment framework, but we're a long way from that.
+
+Cheung style climate projection models
+
+While we do not yet have an answer for what model when, we suggest that authors engaged in simulation modeling in this space clearly acknowledge this challenge and provide justification for why they believe the choice of modeling framework presented is appropriate to the question at hand. While computational efficiency clearly plays a role, we suggest that authors should not make this the sole basis for their choice.
+
+## References

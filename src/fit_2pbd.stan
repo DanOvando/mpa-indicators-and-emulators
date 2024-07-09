@@ -122,7 +122,7 @@ model {
   
   init_dep ~ normal(0.5,0.5);
   
-  log_phi ~ normal(log(0.188),.4);
+  log_phi ~ normal(log(0.188),.2);
 
 }
 

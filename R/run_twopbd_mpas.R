@@ -35,11 +35,11 @@ run_twopbd_mpas <-
       baseline_u <- pmin(0.999,1 - (1 - baseline_u) ^ (1 / (1 - p_mpa))) # displace effort to outside the MPA
       
     } 
-    
     mpa_sim <-  sim_pt_mpa(
       r = params$g,
       k = params$k,
-      b = baseline_b,
+      init_b_inside = baseline_b * p_mpa,
+      init_b_outside = baseline_b * (1 - p_mpa),
       m = params$m,
       u = baseline_u,
       p_mpa = p_mpa,
@@ -64,7 +64,6 @@ run_twopbd_mpas <-
         depletion_mpa = b_mpa / params$k,
         year = 1:years
       )
-    
-    
+
     return(out)
   }

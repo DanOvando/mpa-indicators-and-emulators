@@ -33,7 +33,7 @@ List sim_pt_mpa(double r, double k,double init_b_inside, double init_b_outside, 
   
   yield[0] = u * outside_b[0];
   
-  mu = m * (1 - p_mpa); // this is OK since when estimating mu p_mpa = 0
+  mu = m * (1 - p_mpa); 
   
   for(int t = 1; t < n; ++t) {    
     // Pella-Tomlinsson Toggle

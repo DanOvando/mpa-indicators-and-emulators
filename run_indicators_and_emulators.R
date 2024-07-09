@@ -6,13 +6,13 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 10, run_name = "sigh") # loads packages and creates and returns some global variables for the analysis
-
+prep_run(n_states = 5, run_name = "test") # loads packages and creates and returns some global variables for the analysis
+library(tictoc)
 resolution <- c(rx, ry)
 
 # difficulties <- c("simple")
 
-difficulties <- c("simple","medium","complex")
+difficulties <- c("medium","complex")
 
 
 difficulty_species <- list(
@@ -38,7 +38,7 @@ baseline_state_experiments <-
     habitat_smoothness = runif(n_states, 1e-3, 1),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
-      c(TRUE,FALSE),
+      c(TRUE, FALSE),
       n_states,
       replace = TRUE,
       prob = c(1,3)
@@ -50,6 +50,7 @@ baseline_state_experiments <-
 
 
 for (difficulty in difficulties){
+  tic()
 
 critters <-
   tibble(
@@ -80,17 +81,17 @@ state_experiments <- baseline_state_experiments %>%
     seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
     spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
     spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-    f_v_m = runif(length(state_id), 0.01, 0.33),
+    f_v_m = runif(length(state_id), 0.042, 0.42),
     adult_diffusion = runif(
       length(state_id),
       min = 0, 
-      max = patches / 2
+      max = patch_area
     ),
     steepness = runif(length(state_id), min = 0.6, max = 1),
     ssb0 = rlnorm(length(state_id), log(100 * patches),0.6),
     recruit_diffusion = runif(length(state_id),
                               min = 0,
-                              max = (patches) / 2),
+                              max =  patch_area),
     hyperallometry = sample(c(1,2),length(state_id), replace = TRUE),
     density_dependence = sample(
       c(
@@ -143,7 +144,7 @@ state_experiments <- state_experiments %>%
   group_by(state_id) %>%
   nest() %>%
   mutate(fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
-         sels = map(fauna, ~ runif(length(.x), 0.25, 1.75)),
+         sels = map(fauna, ~ runif(length(.x), 0.1, 1.25)),
          prices = map(fauna, ~ runif(length(.x), 1, 5)))
 
 # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
@@ -204,6 +205,29 @@ state_experiments$proc_starting_conditions <-
 state_experiments <- state_experiments %>%
   select(-tmp)
 
+state_depletions <-
+  map_df(state_experiments$starting_conditions,
+         ~ map_df(.x, ~ map_df(.x, ~ sum(.x$ssb_p_a) / .x$ssb0)),
+         .id = "state_id") |> 
+  pivot_longer(-state_id, names_to = "critter", values_to = "step_depletion") |> 
+  group_by(state_id, critter) |> 
+  summarise(depletion = mean(step_depletion)) |> 
+  mutate(state_id = as.integer(state_id))
+
+state_experiments <- state_experiments |> 
+  left_join(state_depletions |> group_by(state_id) |> nest(.key = "depletion"), by = "state_id")
+
+init_dep_plot <-  state_depletions %>%
+  ggplot(aes(depletion)) +
+  geom_histogram() +
+  facet_wrap( ~ critter) 
+
+ggsave(file.path(
+  fig_dir,
+  glue::glue("{difficulty}_init_dep.pdf")
+), init_dep_plot)
+
+
 for (i in 1:nrow(state_experiments)) {
   tmp <- state_experiments$proc_starting_conditions[[i]]$fauna |>
     filter(step == max(step)) |> 
@@ -245,6 +269,8 @@ emulated_state_experiments <- state_experiments |>
   select(state_id, fleet,twopbd_params) |> 
   unnest(cols = twopbd_params)
 
+stop()
+
 emulated_experiment_results <-
   expand_grid(
     state_id = unique(emulated_state_experiments$state_id),
@@ -253,6 +279,7 @@ emulated_experiment_results <-
   left_join(emulated_state_experiments,
             relationship = "many-to-many",
             by = "state_id") |>
+  left_join(state_depletions, by = c("state_id", "critter")) |> 
   mutate(mpa_experiment = pmap(
     list(
       params = twopbd_params,
@@ -292,31 +319,6 @@ write_rds(state_experiments,
 
 write_rds(emulated_state_experiments,
           file = file.path(results_dir, glue("{difficulty}_emulated_state_experiments.rds")))
-
-tmp <-
-  map(state_experiments$starting_conditions,
-      ~ map_df(.x,  ~ sum(.x[[1]]$ssb_p_a) / .x[[1]]$ssb0))
-
-check <-
-  tibble(state_id = state_experiments$state_id, tmp = (tmp)) %>%
-  unnest(cols = tmp) %>%
-  pivot_longer(cols = -state_id,
-               names_to = "step",
-               values_to = "depletion")
-
-init_dep_plot <-  check %>%
-  ggplot(aes(depletion)) +
-  geom_histogram() +
-  facet_wrap( ~ step)
-
-
-ggsave(file.path(
-  fig_dir,
-  glue::glue("{difficulty}_state_{i}_init_dep.pdf")
-), init_dep_plot)
-
-
-
 
 future::plan(future::multisession, workers = experiment_workers)
 
@@ -381,7 +383,6 @@ processed_sims <- process_sims(difficulty_level = difficulty, results_dir = resu
 write_rds(processed_sims,
           file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
 
-warning("need to figure out how to deal with multiple fleet results at  ~ line 373. Has something to do with this weird 'nature' fleet you created")
 tmp <- processed_sims$mpa_outcomes |>
   select(percent_mpa_effect,
          fleet,
@@ -453,6 +454,6 @@ ggsave(file.path(
 thirty_protected_plot <- ggMarginal(thirty_protected_plot, type = "histogram", fill = "steelblue") 
 
 thirty_protected_plot
-
+toc()
 } # close difficulty loop
 

@@ -19,6 +19,7 @@ presentations/imgs/*
 *.mp4
 *.pdf
 presentations/*_files/
+*_files/
 # History files
 .Rhistory
 .Rapp.history
