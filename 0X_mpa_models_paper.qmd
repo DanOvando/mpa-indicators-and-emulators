@@ -22,7 +22,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "test2") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "test") # loads packages and creates and returns some global variables for the analysis
 
 difficulties <- c("simple","medium","complex")
 
@@ -146,6 +146,28 @@ reality <- simple_processed_sims$mpa_outcomes |>
 
 reality$fleet_model[[1]]
 
+reality$adult_diffusion[[1]]
+
+reality$steepness[[1]]
+
+reality$kiss[[1]]
+
+emulation$twopbd_params[[1]]
+
+
+ggplot() +
+  geom_line(
+    data = reality |> filter(name == "spawning_biomass"),
+    aes(prop_mpa, value / ssb0, color = placement_strategy)
+  ) +
+  geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Emulation")) +
+  scale_y_continuous(limits = c(0, NA), name = "depletion")
+
+ggplot() +
+  geom_line(data = reality |> filter(name == "catch"),
+            aes(prop_mpa, value, color = placement_strategy)) +
+  geom_point(data = emulation, aes(prop_mpa, yield_mpa, color = "Emulation")) +
+  scale_y_continuous(limits = c(0, NA), name = "catch")
 
 
 
@@ -181,7 +203,9 @@ compare_max_catch_mpa |>
   geom_point() + 
   geom_abline(slope = 1, intercept = 0) + 
   geom_smooth(method = "lm") +
-  facet_wrap(~difficulty)
+  facet_wrap(~difficulty) + 
+  scale_x_continuous(limits = c(0,1)) + 
+  scale_y_continuous(limits = c(0,1))
 
 
 ```
@@ -189,20 +213,18 @@ compare_max_catch_mpa |>
 
 ```{r}
 
+
 emulated_model_results <- simple_emulated_experiment_results |>
   select(state_id, prop_mpa, critter, mpa_experiment, depletion) |>
   unnest(cols = mpa_experiment) |>
   filter(year == max(year)) |>
-  mutate(
-    emulated_percent_mpa_effect = pmin(5, yield_mpa / yield_bau - 1),
-    rough_f = 1 - depletion
-  )
+  mutate(rough_f = 1 - depletion)
 
 
 plot_stuff <- emulated_model_results |>
   mutate(
-    yield_effect = pmin(100, 100 * (yield_mpa / yield_bau - 1)),
-    biomass_effect = pmin(100, 100 * (b_mpa / b_bau - 1))
+    yield_effect =   (yield_mpa / yield_bau - 1),
+    biomass_effect =  (b_mpa / b_bau - 1)
   ) 
 
 quad_labels <-
@@ -213,9 +235,9 @@ quad_labels <-
   )
 
 
-basic_thirty_protected_plot <- plot_stuff |>
+lowres_thirty_protected_plot <- plot_stuff |>
   filter(between(prop_mpa, 0.2, 0.4)) |>
-  ggplot(aes(biomass_effect, yield_effect, color = rough_f)) +
+  ggplot(aes(100 * biomass_effect, 100 * yield_effect, color = rough_f)) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_point(alpha = 0.25, size = 3) +
@@ -237,19 +259,29 @@ basic_thirty_protected_plot <- plot_stuff |>
       barwidth =  unit(11, "lines")
     )
   )  +
-  scale_x_continuous(name = "% Change in Species Biomass", limits = c(-50,100)) +
-  scale_y_continuous(name = "% Change in Species Catch") +
+  scale_x_continuous(name = "% Change in Species Biomass", limits = c(-50,NA), oob = squish) +
+  scale_y_continuous(name = "% Change in Species Catch", oob = squish) +
   theme(legend.position = "bottom") + 
   labs(caption = "20-40% of area in MPA")
 
-basic_thirty_protected_plot <- ggMarginal(basic_thirty_protected_plot, type = "histogram", fill = "steelblue") 
+lowres_thirty_protected_plot <- ggMarginal(lowres_thirty_protected_plot, type = "histogram", fill = "steelblue") 
 
 
-basic_thirty_protected_plot
+lowres_thirty_protected_plot
+```
+
+
+```{r}
+
+emulated_model_results <- simple_emulated_experiment_results |>
+  select(state_id, prop_mpa, critter, mpa_experiment, depletion) |>
+  unnest(cols = mpa_experiment) |>
+  filter(year == max(year)) |>
+  mutate(rough_f = 1 - depletion)
 
 emulated_yield_and_biomass_results <- emulated_model_results |>
   mutate(
-    catch_effect = (yield_mpa / yield_bau - 1),
+    catch_effect =  (yield_mpa / yield_bau - 1),
     biomass_effect = (b_mpa / b_bau - 1)
   ) |>
   select(state_id, critter, prop_mpa, ends_with("_effect")) |>
@@ -275,7 +307,7 @@ tmp <- simple_processed_sims$mpa_outcomes |>
   ) |>
   left_join(simple_placement_experiments,
             by = c("placement_id", "prop_mpa")) |>
-  mutate(percent_mpa_effect = pmin(1, 1 * percent_mpa_effect))
+  mutate(percent_mpa_effect =  percent_mpa_effect)
 
 fleet_outcomes <- tmp |> 
   filter(fleet != "nature") |>
@@ -316,8 +348,8 @@ state_variables <- simple_state_experiments |>
 marlin_vs_pt_plot <- comparison |>
   filter(between(prop_mpa, 0.2, 0.4), fleet_model == "constant effort") |>
   ggplot(aes(
-    pmin(1, percent_mpa_effect),
-    pmin(1, emulated_percent_mpa_effect)
+    pmin(100000, percent_mpa_effect),
+    pmin(100000, emulated_percent_mpa_effect)
   )) +
   geom_hline(yintercept = 0, linetype = 2) +
   geom_vline(xintercept = 0, linetype = 2) +
@@ -329,11 +361,11 @@ marlin_vs_pt_plot <- comparison |>
               color = "tomato") +
   facet_wrap( ~ name, scales = "free") +
   scale_x_continuous(
-    "Complex-er Model MPA Effect",
+    "Highres Model MPA Effect",
     oob = squish,
-    limits = c(-1,1)
+    limits = c(-1,200)
   ) +
-  scale_y_continuous("Simpler Model MPA Effect", limits = c(-1,1),
+  scale_y_continuous("Lowres Model MPA Effect", limits = c(-1,200),
                      oob = squish) +
   labs(caption = "Simpler model tuned to emulate complex model. 20-40% MPA") +
   scale_fill_viridis_c()

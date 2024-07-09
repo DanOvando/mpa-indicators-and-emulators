@@ -56,7 +56,7 @@ sim_habitat <-
       as.matrix() * patch_width
     
     # following Thorson & Barnett 2017 doi:10.1093/icesjms/fsw193
-    # kp = 1e-1 # the rate parmeter; closer to 0, the more farther correlation among patches persists
+    # kp = 1e-1 # the rate parameter; closer to 0, the farther correlation among patches persists
     
     n = 1 # set N to 1 per paper
     

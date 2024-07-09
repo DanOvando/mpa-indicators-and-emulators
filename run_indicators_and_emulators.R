@@ -6,13 +6,13 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 5, run_name = "test") # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 12, run_name = "test") # loads packages and creates and returns some global variables for the analysis
 library(tictoc)
 resolution <- c(rx, ry)
 
 # difficulties <- c("simple")
 
-difficulties <- c("medium","complex")
+difficulties <- c("simple","medium","complex")
 
 
 difficulty_species <- list(
@@ -35,7 +35,7 @@ baseline_state_experiments <-
   tibble(
     kiss = sample(c(FALSE,TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
-    habitat_smoothness = runif(n_states, 1e-3, 1),
+    habitat_patchiness = runif(n_states, 1e-3, .25),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
@@ -44,7 +44,7 @@ baseline_state_experiments <-
       prob = c(1,3)
     ),
     spatial_allocation = sample(c("ppue", "rpue","revenue"), n_states, replace = TRUE),
-    fleet_model = sample(c("open access", "constant effort"), n_states, replace = TRUE)
+    fleet_model = sample(c("constant effort"), n_states, replace = TRUE)
   ) %>%
   mutate(state_id = 1:nrow(.))
 
@@ -60,7 +60,7 @@ critters <-
 state_experiments <- baseline_state_experiments %>%
   mutate(
     habitats = pmap(
-      list(kp = habitat_smoothness,
+      list(kp = habitat_patchiness,
            max_abs_cor = max_abs_cor),
       sim_habitat,
       critters = critters$scientific_name,
@@ -173,7 +173,7 @@ state_experiments <- state_experiments %>%
   )
 
 # add in starting conditions
-init_condit <- function(fauna, fleets, years = 100) {
+init_condit <- function(fauna, fleets, years = 125) {
   starting_trajectory <-
     simmar(fauna = fauna,
            fleets = fleets,
@@ -268,8 +268,6 @@ emulated_state_experiments <- state_experiments |>
   mutate(twopbd_params = map(twopbd_params, "result")) |> 
   select(state_id, fleet,twopbd_params) |> 
   unnest(cols = twopbd_params)
-
-stop()
 
 emulated_experiment_results <-
   expand_grid(
@@ -393,8 +391,8 @@ tmp <- processed_sims$mpa_outcomes |>
          name) |>
   left_join(processed_sims$species_variables,
             by = c("state_id", "critter" = "scientific_name")) |>
-  left_join(placement_experiments, by = c("placement_id", "prop_mpa")) |>
-  mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))  
+  left_join(placement_experiments, by = c("placement_id", "prop_mpa")) # |>
+  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))  
 
 fleet_outcomes <- tmp |> 
   filter(fleet != "nature") |>
@@ -411,10 +409,9 @@ test <- fleet_outcomes |>
 
 
 quad_labels <- data.frame(x = c(50,50,-24,-24),y =c(50,-50,50,-50), label = c("Win-Win", "Win-Lose","Lose-Win","Lose-Lose"))
-
 thirty_protected_plot <- test |>
   filter(between(prop_mpa, 0.2, 0.4)) |>
-  ggplot(aes(biomass, catch)) +
+  ggplot(aes( biomass,  catch)) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_point(aes(color = f_v_m), alpha = 0.25, size = 3) +
@@ -426,9 +423,9 @@ thirty_protected_plot <- test |>
   ) +
   scale_color_viridis_c(
     "BAU Fishing Mortality",
-    breaks = c(0,0.25),
+    breaks = c(0,.5),
     labels = c("Low","High"),
-    limits = c(0, 0.25),
+    limits = c(0, .5),
     option = "plasma",
     guide = guide_colorbar(
       frame.colour = "black",
@@ -436,8 +433,8 @@ thirty_protected_plot <- test |>
       barwidth =  unit(11, "lines")
     )
   )  +
-  scale_x_continuous(name = "% Change in Species Biomass", limits = c(-50,100)) +
-  scale_y_continuous(name = "% Change in Species Catch") +
+  scale_x_continuous(name = "X Change in Species Biomass", limits = c(-50,100), oob = squish) +
+  scale_y_continuous(name = "X Change in Species Catch") +
   theme(legend.position = "bottom") + 
   labs(caption = "20-40% of area in MPA")
 

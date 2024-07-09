@@ -53,6 +53,10 @@ fit_twopbd <- function(fauna, fleets) {
       upper = 20
     )
     
+    if (hmm$objective > 0.05){
+      stop("failed to reach desired depletion, rejection emulation")
+    }
+    
     tmp_fleets <- purrr::modify_in(tmp_fleets, list(1, "base_effort"), \(x) x * hmm$par)
     
     fished_down <- simmar(tmp_fauna, tmp_fleets) # fish the populations down to target depletion level
