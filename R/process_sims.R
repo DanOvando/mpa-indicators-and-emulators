@@ -1,15 +1,28 @@
-process_sims <- function(difficulty_level = "complex", results_dir) {
-  
+process_sims <- function(difficulty_level = "complex",
+                         results_dir,
+                         drop_patches = TRUE) {
   experiment_results <-
-    read_rds(file = file.path(results_dir, paste0(difficulty_level,"_experiment_results.rds")))
+    read_rds(file = file.path(
+      results_dir,
+      paste0(difficulty_level, "_experiment_results.rds")
+    ))
   
   placement_experiments <-
-    read_rds(file = file.path(results_dir, paste0(difficulty_level,"_placement_experiments.rds")))
+    read_rds(file = file.path(
+      results_dir,
+      paste0(difficulty_level, "_placement_experiments.rds")
+    ))
   
   state_experiments <-
-    read_rds(file = file.path(results_dir, paste0(difficulty_level,"_state_experiments.rds")))
+    read_rds(file = file.path(
+      results_dir,
+      paste0(difficulty_level, "_state_experiments.rds")
+    ))
   
-  emulated_experiment_results <-  read_rds(file = file.path(results_dir, paste0(difficulty_level,"_emulated_experiment_results.rds")))
+  emulated_experiment_results <-  read_rds(file = file.path(
+    results_dir,
+    paste0(difficulty_level, "_emulated_experiment_results.rds")
+  ))
   
   
   results <- placement_experiments %>%
@@ -81,17 +94,16 @@ process_sims <- function(difficulty_level = "complex", results_dir) {
       ungroup() |>
       pivot_longer(-c(fleet, critter, step))
     
-    
     # calculate benchmark
-    
-    mpas <- treatment$fauna[[1]] |>
-      filter(step == max(step)) |>
-      select(x, y, mpa) |>
-      unique()
-    
+    # mpas <- treatment$fauna[[1]] |>
+    #   filter(step == max(step)) |>
+    #   select(x, y, mpa) |>
+    #   unique()
+    # 
+
     control_fauna <- control$fauna[[1]] |>
-      select(-mpa) |>
-      left_join(mpas, by = c("x", "y")) |>
+      # select(-mpa) |>
+      # left_join(mpas, by = c("x", "y")) |>
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -106,8 +118,8 @@ process_sims <- function(difficulty_level = "complex", results_dir) {
     
     
     control_fleets <- control$fleets[[1]] |>
-      select(-mpa) |>
-      left_join(mpas, by = c("x", "y")) |>
+      # select(-mpa) |>
+      # left_join(mpas, by = c("x", "y")) |>
       group_by(fleet, critter, step) |>
       summarise(
         catch = sum(catch, na.rm = TRUE),
@@ -198,9 +210,18 @@ process_sims <- function(difficulty_level = "complex", results_dir) {
     ungroup() |>
     # slice(1) |>
     mutate(
-      outcomes = map2(treatment, control, calculate_outcomes, .progress = "calculating MPA outcomes"),
-      gradients = map2(treatment, prop_mpa, calculate_gradients, .progress = "calculating MPA gradients")
+      outcomes = map2(treatment, control, calculate_outcomes, .progress = "calculating MPA outcomes")
     )
+  
+  if (!drop_patches) {
+    tmp <- tmp |>
+      mutate(
+        gradients = map2(treatment, prop_mpa, calculate_gradients, .progress = "calculating MPA gradients")
+        
+      )
+  } else {
+    tmp$gradients <- vector(mode = "list", length = nrow(tmp))
+  }
   
   # then, calculate MPA outcomes
   
@@ -232,28 +253,33 @@ process_sims <- function(difficulty_level = "complex", results_dir) {
     left_join(species_variables,
               by = c("state_id", "critter" = "scientific_name")) |>
     left_join(placement_experiments, by = c("placement_id", "prop_mpa"))
+
   
-  mpa_gradients <- tmp |>
-    select(-treatment, -control, -outcomes) |>
-    unnest(cols = gradients) |>
-    ungroup()
+  if (!drop_patches) {
+    mpa_gradients <- tmp |>
+      select(-treatment, -control, -outcomes) |>
+      unnest(cols = gradients) |>
+      ungroup()
+    
+    slopes <- mpa_gradients |>
+      group_by(fleet, prop_mpa) |>
+      summarise(
+        real_neg_slope = mean(cpue_gradient < -0.025, na.rm = TRUE),
+        real_pos_slope = mean(cpue_gradient > 0.025, na.rm = TRUE)
+      )
+    
+    mpa_outcomes <- mpa_outcomes |>
+      left_join(mpa_gradients,
+                by = join_by(id, placement_id, state_id, prop_mpa, critter, step, fleet))
+  } # close drop patches
   
-  slopes <- mpa_gradients |>
-    group_by(fleet, prop_mpa) |>
-    summarise(
-      real_neg_slope = mean(cpue_gradient < -0.025, na.rm = TRUE),
-      real_pos_slope = mean(cpue_gradient > 0.025, na.rm = TRUE)
-    )
-  
-  mpa_outcomes <- mpa_outcomes |>
-    left_join(mpa_gradients,
-              by = join_by(id, placement_id, state_id, prop_mpa, critter, step, fleet))
-  
-  out <- list(mpa_outcomes = mpa_outcomes,
-              fauna_results = fauna_results,
-              difficulty = difficulty_level,
-              species_variables = species_variables,
-              state_variables = state_variables)
+  out <- list(
+    mpa_outcomes = mpa_outcomes,
+    fauna_results = fauna_results,
+    difficulty = difficulty_level,
+    species_variables = species_variables,
+    state_variables = state_variables
+  )
   
   return(out)
   

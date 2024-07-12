@@ -52,7 +52,7 @@ create_experiment_critters <-
     } else {
       hab <- list(hab, hab)
     }
-    if (spawning_aggregation){
+    if (spawning_aggregation & !all(is.na(spawning_seasons))){
       
       tmp_hab <- hab[[spawning_seasons]]
       

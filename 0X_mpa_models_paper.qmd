@@ -18,6 +18,8 @@ library(marlin)
 
 library(here)
 
+library(ggdist)
+
 foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
@@ -26,7 +28,7 @@ prep_run(run_name = "test") # loads packages and creates and returns some global
 
 difficulties <- c("simple","medium","complex")
 
-
+min_depletion <- 0.05
 
 ```
 
@@ -40,6 +42,29 @@ results <- list.files(results_dir)
 results <- results[str_detect(results,"(processed_sims.rds$)|(emulated_experiment_results.rds)|(placement_experiments.rds)|(state_experiments.rds)")]
 
 purrr::walk(results, ~ assign(str_remove_all(.x,"\\.rds$"), read_rds(here(results_dir,.x)), envir = .GlobalEnv))
+
+simple <- simple_state_experiments |> 
+  select(state_id, depletion) |> 
+  unnest(cols = depletion) |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_state_experiments |> 
+  select(state_id, depletion) |> 
+  unnest(cols = depletion) |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_state_experiments |> 
+  select(state_id, depletion) |> 
+  unnest(cols = depletion) |> 
+  mutate(difficulty = "complex")
+
+  state_depletions <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}"))
+  
+  valid_state_depletions <- state_depletions |> 
+    filter(depletion >= min_depletion)
 
 
 simple <- simple_processed_sims$mpa_outcomes |> 
@@ -56,7 +81,8 @@ highres <- simple |>
   bind_rows(medium) |> 
   bind_rows(complex) |> 
   mutate(state_id = glue("{difficulty}_{state_id}")) |> 
-  mutate(id = glue("{difficulty}-{id}"))
+  mutate(id = glue("{difficulty}-{id}")) |> 
+  mutate(prop_mpa = as_factor(prop_mpa))
 
 
 simple <- simple_emulated_experiment_results |> 
@@ -74,7 +100,27 @@ lowres <- simple |>
   bind_rows(complex) |> 
   mutate(state_id = glue("{difficulty}_{state_id}")) |> 
   unnest(cols = mpa_experiment) |> 
-  filter(year == max(year))
+  filter(year == max(year)) |> 
+  mutate(prop_mpa = as_factor(prop_mpa))
+
+
+tidy_lowres <- lowres |>
+  mutate(percent_biomass = b_mpa / b_bau - 1,
+         percent_catch = yield_mpa / yield_bau - 1) |>
+  select(state_id, prop_mpa, critter, starts_with("percent")) |>
+  pivot_longer(
+    starts_with("percent"),
+    names_to = "name",
+    values_to = "lowres_percent_mpa_effect",
+    names_prefix = "percent_"
+  ) 
+
+highres_vs_lowres <- highres |>
+  left_join(tidy_lowres, by = c("state_id", "name", "critter", "prop_mpa")) |> 
+  filter(!is.na(lowres_percent_mpa_effect)) |> 
+  left_join(state_depletions |> select(state_id, critter, depletion), by = c("state_id","critter")) |> 
+  filter(depletion > min_depletion) |> 
+  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
 
 rm(list = c("simple", "medium", "complex"))
 
@@ -125,14 +171,23 @@ The question of exactly what model is appropriate for what question related to s
 
 ## Results
 
+## Case Study
+
+ Spatia
+
 ```{r}
-#| label: fig-example
+#| label: fig-simple-example
 # make a figure showing biomass and catch as a function of time and MPA size, mostly just MPA size, for the two complexity levels. Let's start with the raw values rather than the percent stuff just since you got a little lost
 
 
 i <- 42
 
-i <- as.integer(sample(unique(simple_processed_sims$mpa_outcomes$state_id),1))
+i <- as.integer(sample(unique(simple_emulated_experiment_results$state_id),1))
+
+# i <- 48
+
+# test <- simple_state_experiments |> 
+#   filter(state_id == 48)
 
 emulation <- simple_emulated_experiment_results |> 
   filter(state_id == i) |> 
@@ -154,27 +209,78 @@ reality$kiss[[1]]
 
 emulation$twopbd_params[[1]]
 
-
-ggplot() +
+a = ggplot() +
   geom_line(
     data = reality |> filter(name == "spawning_biomass"),
-    aes(prop_mpa, value / ssb0, color = placement_strategy)
+    aes(prop_mpa, value / ssb0, color = "High-Resolution Model")
   ) +
-  geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Emulation")) +
-  scale_y_continuous(limits = c(0, NA), name = "depletion")
+  geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Low-Resolution Model")) +
+  scale_y_continuous(limits = c(0, 1), name = "~B/K") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent) +
+  facet_wrap(~placement_strategy) + 
+  labs(title = "A")
 
-ggplot() +
-  geom_line(data = reality |> filter(name == "catch"),
-            aes(prop_mpa, value, color = placement_strategy)) +
-  geom_point(data = emulation, aes(prop_mpa, yield_mpa, color = "Emulation")) +
-  scale_y_continuous(limits = c(0, NA), name = "catch")
+b = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "catch"),
+    aes(prop_mpa, value, color = "High-Resolution Model")
+  ) +
+  geom_point(data = emulation, aes(prop_mpa, yield_mpa, color = "Low-Resolution Model")) +
+  scale_y_continuous(limits = c(0, NA), name = "Catch") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent) +
+  facet_wrap(~placement_strategy) + 
+  labs(title = "B")
 
 
+(a | b) + plot_layout(guides = "collect") & theme(legend.position = "bottom", axis.text.x = element_text(size = 8))
 
 
 ```
+Needs work
+
+```{r}
+
+i <- 42
+
+i <- as.integer(sample(unique(medium_emulated_experiment_results$state_id),1))
+
+emulation <- medium_emulated_experiment_results |> 
+  filter(state_id == i) |> 
+  unnest(cols = mpa_experiment) |> 
+  filter(year == max(year)) 
 
 
+reality <- medium_processed_sims$mpa_outcomes |> 
+  mutate(state_id = as.integer(state_id)) |> 
+  filter(state_id == i)
+
+
+a = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "spawning_biomass"),
+    aes(
+      prop_mpa,
+      value / ssb0,
+      color = critter
+    )
+  ) +
+  geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = critter)) +
+  scale_y_continuous(limits = c(0, NA), name = "depletion") +
+  facet_wrap( ~ placement_strategy)
+
+b = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "catch"),
+    aes(prop_mpa, value, color = critter, linetype = fleet)
+  ) +
+  geom_point(data = emulation, aes(prop_mpa, yield_mpa, color = critter)) +
+  scale_y_continuous(limits = c(0, NA), name = "Catch") + 
+  facet_wrap(~placement_strategy)
+a
+# (a | b) + plot_layout(guides = "collect") & theme(legend.position = "bottom", axis.text.x = element_text(size = 8))
+
+```
+### Optimal MPA Size
 
 ```{r}
 #| label: fig-size-and-msy
@@ -186,30 +292,108 @@ highres_max_catch <- highres |>
   filter(name == "catch") |> 
   group_by(critter, state_id, placement_id) |> 
   filter(value == max(value)) |> 
-  select(state_id, critter, placement_id, prop_mpa, value,difficulty) |>
-  rename(highres_prop_mpa = prop_mpa, highres_catch = value)
+  select(state_id, critter, placement_id, prop_mpa, value,difficulty,percent_mpa_effect, kiss, spatial_q) |>
+  rename(highres_prop_mpa = prop_mpa, highres_catch = value, highres_catch_percent = percent_mpa_effect)
 
 lowres_max_catch <- lowres |> 
   group_by(critter, state_id) |> 
   filter(yield_mpa == max(yield_mpa)) |> 
+  mutate(lowres_catch_percent = yield_mpa / yield_bau - 1) |> 
   rename(lowres_prop_mpa = prop_mpa, lowres_catch = yield_mpa)
 
 compare_max_catch_mpa <-  highres_max_catch |>
-  left_join(lowres_max_catch, by = c("critter", "state_id", "difficulty"))
- 
+  right_join(lowres_max_catch, by = c("critter", "state_id", "difficulty"))
+
 
 compare_max_catch_mpa |> 
-  ggplot(aes(highres_prop_mpa,lowres_prop_mpa, color = difficulty)) + 
-  geom_point() + 
+  ggplot(aes(highres_prop_mpa,lowres_prop_mpa, fill = kiss)) + 
+  geom_bin_2d() + 
+  geom_abline(slope = 1, intercept = 0) + 
+  geom_smooth(method = "lm") +
+  facet_wrap(~difficulty) 
+
+
+compare_max_catch_mpa |> 
+  ggplot(aes(pmin(2,highres_catch_percent),pmin(2,lowres_catch_percent), fill = difficulty)) + 
+  geom_bin_2d() + 
   geom_abline(slope = 1, intercept = 0) + 
   geom_smooth(method = "lm") +
   facet_wrap(~difficulty) + 
-  scale_x_continuous(limits = c(0,1)) + 
-  scale_y_continuous(limits = c(0,1))
+  scale_x_continuous(limits = c(NA,2), oob = squish) + 
+  scale_y_continuous(limits = c(NA, 2), oob = squish)
+
+```
+
+### Asbolute Agreement
+
+
+```{r}
+
+
+
+highres_vs_lowres |> 
+  filter(between(numeric_prop_mpa,0.2,0.4)) |> 
+  ggplot(aes(percent_mpa_effect, lowres_percent_mpa_effect, color = f_v_m)) + 
+  geom_point() + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0) +
+  geom_abline(slope = 1, intercept = 0) +
+  facet_grid(name~difficulty, scales = "free") +
+  scale_x_continuous(name = "highres MPA effect", labels = scales::percent,limits = c(NA,2), oob = squish) +
+  scale_y_continuous(name = "lowres MPA effect", labels = scales::percent,limits = c(NA,2), oob = squish) +
+  scale_color_viridis_c()
+
 
 
 ```
 
+
+```{r}
+
+highres_vs_lowres |>
+  mutate(
+    delta =   (pmin(lowres_percent_mpa_effect, 2) - pmin(2, percent_mpa_effect)),
+    delta2 = delta ^ 2
+  ) |>
+  select(contains("percent"), delta2, everything()) |>
+  ggplot(aes(prop_mpa, (delta), group = prop_mpa)) +
+  geom_hline(yintercept = 0) +
+  stat_halfeye(na.rm = TRUE) +
+  facet_grid(name ~ difficulty, scales = "free") + 
+  scale_y_continuous(name = "Percentage Points Difference")
+```
+
+
+
+```{r}
+highres_vs_lowres |> 
+  mutate(delta = lowres_percent_mpa_effect - percent_mpa_effect) |>
+  ggplot(aes(percent_mpa_effect, delta)) + 
+  geom_bin_2d(bins = 30) + 
+  facet_wrap(~name, scales = "free")
+
+
+```
+
+### Quadrant Agreement
+
+
+
+## Discussion
+
+Complexity does not equal correctness.
+
+Reference spatial stock assessment literature (eventually and in some cases we may have enough data before, after, inside, and outside of MPAs for a range of species to estimate the effect of MPAs within a spatial stock assessment framework, but we're a long way from that.
+
+Cheung style climate projection models
+
+Referecne costello paper on markets for MPAs; what happens if different models bias different results and different regions have access to different kidns of models?
+
+While we do not yet have an answer for what model when, we suggest that authors engaged in simulation modeling in this space clearly acknowledge this challenge and provide justification for why they believe the choice of modeling framework presented is appropriate to the question at hand. While computational efficiency clearly plays a role, we suggest that authors should not make this the sole basis for their choice.
+
+## References
+
+## Scraps
 
 ```{r}
 
@@ -227,26 +411,26 @@ plot_stuff <- emulated_model_results |>
     biomass_effect =  (b_mpa / b_bau - 1)
   ) 
 
-quad_labels <-
-  data.frame(
-    x = c(50, 50, -25, -25),
-    y = c(50, -50, 50, -50),
-    label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
-  )
+# quad_labels <-
+#   data.frame(
+#     x = c(50, 50, -25, -25),
+#     y = c(50, -50, 50, -50),
+#     label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
+#   )
 
 
 lowres_thirty_protected_plot <- plot_stuff |>
   filter(between(prop_mpa, 0.2, 0.4)) |>
-  ggplot(aes(100 * biomass_effect, 100 * yield_effect, color = rough_f)) +
+  ggplot(aes(biomass_effect,yield_effect, color = rough_f)) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_point(alpha = 0.25, size = 3) +
-  geom_text(
-    data = quad_labels,
-    aes(x, y, label = label),
-    size = 6,
-    color = "red"
-  ) +
+  # geom_text(
+  #   data = quad_labels,
+  #   aes(x, y, label = label),
+  #   size = 6,
+  #   color = "red"
+  # ) +
   scale_color_viridis_c(
     "BAU Fishing Mortality",
     breaks = c(0,1),
@@ -259,7 +443,7 @@ lowres_thirty_protected_plot <- plot_stuff |>
       barwidth =  unit(11, "lines")
     )
   )  +
-  scale_x_continuous(name = "% Change in Species Biomass", limits = c(-50,NA), oob = squish) +
+  scale_x_continuous(name = "% Change in Species Biomass", limits = c(NA,NA), oob = squish) +
   scale_y_continuous(name = "% Change in Species Catch", oob = squish) +
   theme(legend.position = "bottom") + 
   labs(caption = "20-40% of area in MPA")
@@ -270,118 +454,3 @@ lowres_thirty_protected_plot <- ggMarginal(lowres_thirty_protected_plot, type = 
 lowres_thirty_protected_plot
 ```
 
-
-```{r}
-
-emulated_model_results <- simple_emulated_experiment_results |>
-  select(state_id, prop_mpa, critter, mpa_experiment, depletion) |>
-  unnest(cols = mpa_experiment) |>
-  filter(year == max(year)) |>
-  mutate(rough_f = 1 - depletion)
-
-emulated_yield_and_biomass_results <- emulated_model_results |>
-  mutate(
-    catch_effect =  (yield_mpa / yield_bau - 1),
-    biomass_effect = (b_mpa / b_bau - 1)
-  ) |>
-  select(state_id, critter, prop_mpa, ends_with("_effect")) |>
-  pivot_longer(ends_with("_effect"),
-               values_to = "emulated_percent_mpa_effect",
-               names_to = "name") |>
-  mutate(name = str_remove_all(name, "_effect"),
-         state_id = as.character(state_id))
-
-
-
-tmp <- simple_processed_sims$mpa_outcomes |>
-  select(percent_mpa_effect,
-         fleet,
-         state_id,
-         placement_id,
-         critter,
-         prop_mpa,
-         name) |>
-  left_join(
-    simple_processed_sims$species_variables,
-    by = c("state_id", "critter" = "scientific_name")
-  ) |>
-  left_join(simple_placement_experiments,
-            by = c("placement_id", "prop_mpa")) |>
-  mutate(percent_mpa_effect =  percent_mpa_effect)
-
-fleet_outcomes <- tmp |> 
-  filter(fleet != "nature") |>
-  pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
-
-nature_outcomes <- tmp |> 
-  filter(fleet == "nature") |> 
-  select(ends_with("id"),critter,prop_mpa, name, percent_mpa_effect) |> 
-  pivot_wider(names_from = "name", values_from = "percent_mpa_effect") 
-
-wide_mpa_outcomes <- fleet_outcomes |>
-  left_join(nature_outcomes,
-            by = join_by(state_id, placement_id, critter, prop_mpa))
-
-tidy_mpa_outcomes <- wide_mpa_outcomes |> 
-  pivot_longer(catch:fished_biomass, names_to = "name", values_to = "percent_mpa_effect")
-
-warning("check if you are being consistent with biomass vs. ssb")
-comparison <- tidy_mpa_outcomes |> 
-  left_join(emulated_yield_and_biomass_results, by = c("state_id", "critter","prop_mpa", "name")) |> 
-  filter(name %in% c("catch", "biomass"))
-
-state_variables <- simple_state_experiments |>
-  select(state_id, data) |>
-  unnest(cols = data) |>
-  select(
-    state_id,
-    kiss,
-    mpa_response,
-    starts_with("sigma"),
-    starts_with("spatial"),
-    fleet_model
-  ) |>
-  unique() |>
-  mutate(state_id = as.character(state_id))
-
-
-marlin_vs_pt_plot <- comparison |>
-  filter(between(prop_mpa, 0.2, 0.4), fleet_model == "constant effort") |>
-  ggplot(aes(
-    pmin(100000, percent_mpa_effect),
-    pmin(100000, emulated_percent_mpa_effect)
-  )) +
-  geom_hline(yintercept = 0, linetype = 2) +
-  geom_vline(xintercept = 0, linetype = 2) +
-  geom_point(alpha = 0.25,
-             size = 2,
-             color = "steelblue") +
-  geom_abline(slope = 1,
-              intercept = 0,
-              color = "tomato") +
-  facet_wrap( ~ name, scales = "free") +
-  scale_x_continuous(
-    "Highres Model MPA Effect",
-    oob = squish,
-    limits = c(-1,200)
-  ) +
-  scale_y_continuous("Lowres Model MPA Effect", limits = c(-1,200),
-                     oob = squish) +
-  labs(caption = "Simpler model tuned to emulate complex model. 20-40% MPA") +
-  scale_fill_viridis_c()
-marlin_vs_pt_plot
-
-```
-
-
-## Discussion
-
-Complexity does not equal correctness.
-
-Reference spatial stock assessment literature (eventually and in some cases we may have enough data before, after, inside, and outside of MPAs for a range of species to estimate the effect of MPAs within a spatial stock assessment framework, but we're a long way from that.
-
-Cheung style climate projection models
-
-While we do not yet have an answer for what model when, we suggest that authors engaged in simulation modeling in this space clearly acknowledge this challenge and provide justification for why they believe the choice of modeling framework presented is appropriate to the question at hand. While computational efficiency clearly plays a role, we suggest that authors should not make this the sole basis for their choice.
-
-## References

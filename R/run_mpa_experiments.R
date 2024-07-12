@@ -14,7 +14,8 @@ run_mpa_experiment <-
            resolution,
            patch_area,
            years = 50,
-           future_habitat = list()) {
+           future_habitat = list(),
+           drop_patches = TRUE) {
     
     options(dplyr.summarise.inform = FALSE)
     
@@ -196,15 +197,44 @@ run_mpa_experiment <-
     
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>
       select(-patch)
-
+    
     out$fauna <- out$fauna |>
       left_join(mpa_distances, by = c("x","y")) |> 
       left_join(mpas |> select(-patch,-mpa), by = c("x","y"))
-
+    
     out$fleets <- out$fleets |>
       left_join(mpa_distances, by = c("x","y")) |> 
       left_join(mpas |> select(-patch,-mpa), by = c("x","y"))
     
+    if (drop_patches){
+  
+      # hacky step to get rid of patches when you don't need them to save memory
+      out$fauna <- out$fauna |>
+        group_by(step, critter, age, year, season, mpa) |>
+        summarise(
+          n = sum(n),
+          b = sum(b),
+          ssb = sum(ssb),
+          c = sum(c, na.rm = TRUE)
+        ) |> 
+        ungroup()
+      
+      
+      out$fleets <- out$fleets |>
+        group_by(step, critter, fleet, year, season, mpa) |>
+        summarise(
+          catch = sum(catch,na.rm = TRUE),
+          revenue = sum(revenue,na.rm = TRUE),
+          effort = sum(effort, na.rm = TRUE)
+        ) |> 
+        ungroup() |> 
+       mutate(cpue = catch / effort)
+      
+      
+      
+    }
+
+
     
     outcomes <- list()
     

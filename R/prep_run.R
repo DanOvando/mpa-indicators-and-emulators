@@ -8,7 +8,8 @@ prep_run <- function(run_name = "test",
                      dy = 20000,
                      patch_area = 10,
                      experiment_workers = 5,
-                     seasons = 2) {
+                     seasons = 2,
+                     drop_patches = TRUE) {
   set.seed(seed)
   
   
@@ -39,6 +40,8 @@ prep_run <- function(run_name = "test",
   library(Rcpp)
   
   library(glue)
+  
+  library(patchwork)
   
   Rcpp::sourceCpp(here('src', "sim_pt_mpa.cpp"))
   
@@ -91,5 +94,5 @@ prep_run <- function(run_name = "test",
   
   patches <<- rx * ry
 
-  
+  drop_patches <<- drop_patches
 }
