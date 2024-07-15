@@ -24,11 +24,11 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "test") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "v0.1") # loads packages and creates and returns some global variables for the analysis
 
 difficulties <- c("simple","medium","complex")
 
-min_depletion <- 0.05
+min_depletion <- 0.00001
 
 ```
 
@@ -366,11 +366,13 @@ highres_vs_lowres |>
 
 
 ```{r}
-highres_vs_lowres |> 
-  mutate(delta = lowres_percent_mpa_effect - percent_mpa_effect) |>
-  ggplot(aes(percent_mpa_effect, delta)) + 
-  geom_bin_2d(bins = 30) + 
-  facet_wrap(~name, scales = "free")
+highres_vs_lowres |>
+  mutate(delta = pmin(1000, lowres_percent_mpa_effect) - pmin(1000, percent_mpa_effect)) |>
+  ggplot(aes(pmin(1000, percent_mpa_effect), delta)) +
+  geom_bin_2d(bins = 20) +
+  scale_x_continuous(limits = c(-1, 5), oob = squish) +
+  scale_y_continuous(limits = c(-5, 5), oob = squish) +
+  facet_wrap( ~ name, scales = "free")
 
 
 ```

@@ -6,7 +6,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 5, run_name = "test", drop_patches = TRUE) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 150, run_name = "v0.1", drop_patches = TRUE) # loads packages and creates and returns some global variables for the analysis
 
 library(tictoc)
 
@@ -14,9 +14,9 @@ resolution <- c(rx, ry)
 
 # difficulties <- c("simple")
 
-difficulties <- c("simple","medium","complex")
+difficulties <- c("complex","medium","simple")
 
-difficulties <- c("complex")
+# difficulties <- c("complex")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -324,7 +324,7 @@ for (difficulty in difficulties) {
     glue("{difficulty}_placement_experiments.rds")
   ))
   
-  write_rds(state_experiments, file = file.path(results_dir, glue("{difficulty}_state_experiments.rds")))
+  write_rds(state_experiments |> select(-contains("starting_conditions")), file = file.path(results_dir, glue("{difficulty}_state_experiments.rds")))
   
   write_rds(emulated_state_experiments, file = file.path(
     results_dir,
@@ -388,7 +388,6 @@ for (difficulty in difficulties) {
   write_rds(experiment_results, file = file.path(results_dir, glue(
     "{difficulty}_experiment_results.rds"
   )))
-  stop()
   rm(experiment_results)
   
   processed_sims <- process_sims(difficulty_level = difficulty, results_dir = results_dir, drop_patches = drop_patches)
@@ -451,8 +450,8 @@ for (difficulty in difficulties) {
         barwidth =  unit(11, "lines")
       )
     )  +
-    scale_x_continuous(name = "X Change in Species Biomass", oob = squish, limits = c(NA, 2)) +
-    scale_y_continuous(name = "X Change in Species Catch", oob = squish, limits = c(NA,2)) +
+    scale_x_continuous(name = "X Change in Species Biomass", oob = squish, limits = c(NA, 0.5)) +
+    scale_y_continuous(name = "X Change in Species Catch", oob = squish, limits = c(NA,0.5)) +
     theme(legend.position = "bottom") +
     labs(caption = "20-40% of area in MPA")
   
@@ -473,5 +472,5 @@ for (difficulty in difficulties) {
   thirty_protected_plot
   toc()
   
-  rm(list = c("experiment_results", "emulated_experiment_results"))
+  rm(list = c("emulated_experiment_results","state_experiments"))
 } # close difficulty loop
