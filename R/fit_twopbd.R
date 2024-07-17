@@ -54,7 +54,7 @@ fit_twopbd <- function(fauna, fleets) {
     )
     
     if (hmm$objective > 0.05){
-      stop("failed to reach desired depletion, rejection emulation")
+      stop("failed to reach desired depletion, rejecting emulation")
     }
     
     tmp_fleets <- purrr::modify_in(tmp_fleets, list(1, "base_effort"), \(x) x * hmm$par)
@@ -171,13 +171,15 @@ fit_twopbd <- function(fauna, fleets) {
       mutate(b_t_p = map(data, \(x) as.matrix(x |> select(-time_step))))
     
     # tune twopsp ------------------------------------------
-    foo <- function(tmp, local_dd, plim = 0.2) {
+    foo <- function(b_t_p, b_c_t,local_dd, plim = 0.2) {
       twopbd_data <- list(
-        b_t_p = tmp,
+        b_t_p = b_t_p,
+        downward_b = b_c_t[,1],
+        downward_catch = b_c_t[,2],
         mpa_size = 0.5,
         # by assumption in this phase
-        n_t = nrow(tmp),
-        n_p = ncol(tmp),
+        n_t = nrow(b_t_p),
+        n_p = ncol(b_t_p),
         local_dd = local_dd,
         plim = plim
       )
@@ -187,17 +189,16 @@ fit_twopbd <- function(fauna, fleets) {
       fit <- sigh$optimize(data = twopbd_data, seed = 123)
     }
     
-    
     critter_b_t_p <- critter_b_t_p |>
       left_join(dd_type, by = "critter") |>
-      mutate(twopbd_fit = map2(b_t_p, local_dd, foo))
+      left_join(downward_slide |> select(critter, b_c_t), by = "critter") |> 
+      mutate(twopbd_fit = pmap(list(b_t_p = b_t_p, local_dd = local_dd, b_c_t = b_c_t), foo))
     
     
     get_params <- function(fit, vars = c("g", "k", "phi", "m")) {
       out <- fit$summary() |>
         filter(variable %in% vars)
     }
-    #
     # i <- 1
     # observed <- critter_b_t_p$b_t_p[[i]] |>
     #   as.data.frame() |>
@@ -210,13 +211,26 @@ fit_twopbd <- function(fauna, fleets) {
     #   left_join(observed, by = c("patch", "year")) |>
     #   mutate(patch = factor(patch))
     # 
+    # observed <- critter_b_t_p$b_c_t[[i]] |>
+    #   as.data.frame() 
+    # 
+    # 
+    # test <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]], hat_downward_b[year]) 
+    # 
+    # test2 <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]], hat_downward_catch[year]) 
+    # 
+    # plot(observed$biomass, test$hat_downward_b)
+    # abline(0,1)
+    # 
+    # plot(observed$catch, test2$hat_downward_catch)
+    # abline(0,1)
+    # 
     # a = predicted |>
     #   filter(year < 200) |>
     #   ggplot() +
     #   geom_point(aes(year, biomass, color = patch)) +
     #   geom_line(aes(year, hat_b_t_p, color = patch))
     # a
-    
     out[[f]] <- critter_b_t_p |>
       mutate(twopbd_params = map(twopbd_fit, get_params)) |>
       select(critter, local_dd, twopbd_params)

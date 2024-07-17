@@ -43,6 +43,14 @@ prep_run <- function(run_name = "test",
   
   library(patchwork)
   
+  library(vip)
+  
+  library(DALEXtra)
+  
+  library(DALEX)
+  
+  library(ggdist)
+  
   Rcpp::sourceCpp(here('src', "sim_pt_mpa.cpp"))
   
   options(dplyr.summarise.inform = FALSE)

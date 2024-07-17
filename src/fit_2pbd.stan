@@ -2,17 +2,21 @@ data {
   int<lower=0> n_t; // number of time steps
   int<lower=0> n_p; // number of patches
   matrix[n_t,n_p] b_t_p;
+  vector[n_t] downward_b;
+  vector[n_t] downward_catch;
   real<upper = 1> mpa_size;
   int<lower = 0, upper = 1> local_dd;
 }
 
 
 parameters {
+  real<lower = 1e-6, upper = 5> f;
   real<lower = 1e-2,upper = 0.75> g;
   real<lower = 0, upper = log(10e9)> log_k;
   real<upper = log(2)> log_phi; 
   real<lower = 0, upper = 1> m;
   real<lower=1e-3> sigma;
+  real<lower=1e-3> sigma_catch;
   real<lower = 1e-3, upper = 1> init_dep;
 }
 
@@ -44,10 +48,30 @@ k = exp(log_k);
 
 matrix[n_t,n_p] hat_b_t_p = rep_matrix(0, n_t, n_p);
 
+vector[n_t] hat_downward_b;
+
+vector[n_t] hat_downward_catch;
+
+
 hat_b_t_p[1,1] = k * init_dep; // when you add the density dependent option here, change this to k * mpa_size * init_dep 
+
+hat_downward_b[1] = k;
+
+hat_downward_catch[1] = k * (1 - exp(-f));
 
 for (t in 2:n_t){
   
+  //  downward slide
+  
+    last_b = hat_downward_b[t-1];
+  
+    total_growth =  ((phi + 1) / phi) * g * last_b * (1 - pow(last_b / (k),phi));
+
+    hat_downward_b[t] =  fmax(1e-6,last_b + total_growth - hat_downward_catch[t-1]);
+
+    hat_downward_catch[t] = hat_downward_b[t] * (1 - exp(-f));
+
+  // process MPA rebuilding
   if (local_dd == 0){
   
     last_b = sum(hat_b_t_p[t - 1,1:n_p]);
@@ -100,6 +124,10 @@ model {
 
   }
 
+  log(downward_b) ~ normal(log(hat_downward_b), sigma);
+  
+  log(downward_catch) ~ normal(log(hat_downward_catch), sigma_catch);
+
   log(b_t_p[1,1]) ~ normal(log(hat_b_t_p[1,1]), sigma);
   
   
@@ -122,7 +150,7 @@ model {
   
   init_dep ~ normal(0.5,0.5);
   
-  log_phi ~ normal(log(0.188),.2);
+  log_phi ~ normal(log(0.188),.4);
 
 }
 

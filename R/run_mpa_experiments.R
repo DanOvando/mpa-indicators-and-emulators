@@ -174,7 +174,6 @@ run_mpa_experiment <-
       bind_cols(ssb0s)
 
     # run MPA simulation
-    
     starting_step = marlin::clean_steps(last(names(starting_conditions)))
   
     processed_step <- marlin::process_step(last(names(starting_conditions)))

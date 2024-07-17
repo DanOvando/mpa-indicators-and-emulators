@@ -12,24 +12,18 @@ bibliography: references.bib
 ```{r}
 #|label: setup
 
-library(tidyverse)
-
-library(marlin)
-
-library(here)
-
-library(ggdist)
-
 foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "v0.1") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "v0.11") # loads packages and creates and returns some global variables for the analysis
+
 
 difficulties <- c("simple","medium","complex")
 
 min_depletion <- 0.00001
 
+tune_grids <- FALSE
 ```
 
 
@@ -41,7 +35,14 @@ results <- list.files(results_dir)
 
 results <- results[str_detect(results,"(processed_sims.rds$)|(emulated_experiment_results.rds)|(placement_experiments.rds)|(state_experiments.rds)")]
 
+
+
 purrr::walk(results, ~ assign(str_remove_all(.x,"\\.rds$"), read_rds(here(results_dir,.x)), envir = .GlobalEnv))
+
+
+# process marlin simulations
+
+## get MPA sizes
 
 simple <- simple_state_experiments |> 
   select(state_id, depletion) |> 
@@ -173,11 +174,9 @@ The question of exactly what model is appropriate for what question related to s
 
 ## Case Study
 
- Spatia
-
 ```{r}
-#| label: fig-simple-example
-# make a figure showing biomass and catch as a function of time and MPA size, mostly just MPA size, for the two complexity levels. Let's start with the raw values rather than the percent stuff just since you got a little lost
+#| label: fig-eg-simple
+#| fig-cap: Example simulated effects of MPAs on biomass and catch under the "simple" scenario (High-resolution model only has one species and one fleet). High-resolution model refers to the `marlin` model outputs, Low-resolution model is the two-patch Pella-Tomlinson model. X-axis shows the percent of the seascape protected in a no-take MPA. Y-axis shows biomass divided unfished biomass (A) or catch (B). Panel columns show MPA placement strategy used in High-resolution model. 
 
 
 i <- 42
@@ -194,20 +193,9 @@ emulation <- simple_emulated_experiment_results |>
   unnest(cols = mpa_experiment) |> 
   filter(year == max(year)) 
 
-
 reality <- simple_processed_sims$mpa_outcomes |> 
   mutate(state_id = as.integer(state_id)) |> 
   filter(state_id == i)
-
-reality$fleet_model[[1]]
-
-reality$adult_diffusion[[1]]
-
-reality$steepness[[1]]
-
-reality$kiss[[1]]
-
-emulation$twopbd_params[[1]]
 
 a = ggplot() +
   geom_line(
@@ -215,10 +203,11 @@ a = ggplot() +
     aes(prop_mpa, value / ssb0, color = "High-Resolution Model")
   ) +
   geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Low-Resolution Model")) +
-  scale_y_continuous(limits = c(0, 1), name = "~B/K") + 
-  scale_x_continuous(name = "MPA Size", labels = scales::percent) +
+  scale_y_continuous(limits = c(0, 1), name = "~B/B0") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
   facet_wrap(~placement_strategy) + 
-  labs(title = "A")
+  labs(title = "A") + 
+  scale_color_discrete(name = '')
 
 b = ggplot() +
   geom_line(
@@ -227,30 +216,35 @@ b = ggplot() +
   ) +
   geom_point(data = emulation, aes(prop_mpa, yield_mpa, color = "Low-Resolution Model")) +
   scale_y_continuous(limits = c(0, NA), name = "Catch") + 
-  scale_x_continuous(name = "MPA Size", labels = scales::percent) +
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
   facet_wrap(~placement_strategy) + 
-  labs(title = "B")
+  labs(title = "B") + 
+    scale_color_discrete(name = '')
+
 
 
 (a | b) + plot_layout(guides = "collect") & theme(legend.position = "bottom", axis.text.x = element_text(size = 8))
 
 
 ```
-Needs work
+
 
 ```{r}
+#| fig-label: fig-eg-complex
+#| fig-cap: Example simulated effects of MPAs on biomass and catch under the "complex" scenario (High-resolution model has four species targeted differentially by two fleets). High-resolution model refers to the `marlin` model outputs, Low-resolution model is the two-patch Pella-Tomlinson model. X-axis shows the percent of the seascape protected in a no-take MPA. Y-axis shows biomass divided unfished biomass (A) or catch (B). In *A*, color indicates species points are the Low-resolution model and lines are the high-resolution model. In *B*, color indicates the fleet, and each row of the panel is a separate species. Panel columns show MPA placement strategy used in High-resolution model. 
+
 
 i <- 42
 
-i <- as.integer(sample(unique(medium_emulated_experiment_results$state_id),1))
+i <- as.integer(sample(unique(complex_emulated_experiment_results$state_id),1))
 
-emulation <- medium_emulated_experiment_results |> 
+emulation <- complex_emulated_experiment_results |> 
   filter(state_id == i) |> 
   unnest(cols = mpa_experiment) |> 
   filter(year == max(year)) 
 
 
-reality <- medium_processed_sims$mpa_outcomes |> 
+reality <- complex_processed_sims$mpa_outcomes |> 
   mutate(state_id = as.integer(state_id)) |> 
   filter(state_id == i)
 
@@ -265,25 +259,38 @@ a = ggplot() +
     )
   ) +
   geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = critter)) +
-  scale_y_continuous(limits = c(0, NA), name = "depletion") +
-  facet_wrap( ~ placement_strategy)
+  scale_y_continuous(limits = c(0, NA), name = "~B/B0") +
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  scale_color_viridis_d(name = '') +
+  facet_wrap( ~ placement_strategy) + 
+  guides(color = guide_legend(nrow = 2))
 
 b = ggplot() +
   geom_line(
-    data = reality |> filter(name == "catch"),
-    aes(prop_mpa, value, color = critter, linetype = fleet)
+    data = reality |> filter(name == "catch") |> mutate(fleet = paste0("High-Resolution Fleet ",fleet)),
+    aes(prop_mpa, value, color = fleet)
   ) +
-  geom_point(data = emulation, aes(prop_mpa, yield_mpa, color = critter)) +
+  geom_point(data = emulation |> mutate(fleet = "Low-resolution Fleet"), aes(prop_mpa, yield_mpa, color = fleet)) +
   scale_y_continuous(limits = c(0, NA), name = "Catch") + 
-  facet_wrap(~placement_strategy)
-a
-# (a | b) + plot_layout(guides = "collect") & theme(legend.position = "bottom", axis.text.x = element_text(size = 8))
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  facet_grid(critter~placement_strategy,scales = "free") + 
+  scale_color_brewer(name = '',palette = "Accent") +
+  guides(color = guide_legend(nrow = 2)) + 
+  theme(strip.text.y = element_text(size = 6))
+
+(a | b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8))
+
 
 ```
+
 ### Optimal MPA Size
 
 ```{r}
-#| label: fig-size-and-msy
+#| label: fig-msy-size
+#| fig-cap: "Percent of seascape protected in MPA that maximizes catch predicted by the Highres model (x-axis) and Lowres model (y-axis)"
+#| eval: false
+
+# not including for now since somewhat misleading since area != K protected in marlin model
 
 # make a figure plotting yield maximizing MPA size PT vs marlin, and MSY PT vs marlin
 
@@ -305,22 +312,31 @@ compare_max_catch_mpa <-  highres_max_catch |>
   right_join(lowres_max_catch, by = c("critter", "state_id", "difficulty"))
 
 
-compare_max_catch_mpa |> 
-  ggplot(aes(highres_prop_mpa,lowres_prop_mpa, fill = kiss)) + 
-  geom_bin_2d() + 
-  geom_abline(slope = 1, intercept = 0) + 
-  geom_smooth(method = "lm") +
-  facet_wrap(~difficulty) 
+compare_max_catch_mpa |>
+  mutate(highres_prop_mpa = as.numeric(as.character(highres_prop_mpa))) |> 
+  mutate(lowres_prop_mpa = as.numeric(as.character(lowres_prop_mpa))) |> 
+  ggplot(aes(highres_prop_mpa, lowres_prop_mpa)) +
+  geom_bin_2d(bins = 10) +
+  geom_abline(slope = 1, intercept = 0) +
+  scale_x_continuous(limits = c(NA, 1), oob = squish, labels = scales::percent, name = "Highres Catch Maximizing MPA") +
+  scale_y_continuous(limits = c(NA, 1), oob = squish,labels = scales::percent, name = "Lowres Catch Maximizing MPA") + 
+  facet_grid(kiss ~ difficulty) 
+```
 
 
+
+```{r}
+#|label: fig-max-catch
+#| fig-cap: "Maximum potential percent increase in catch caused by an MPA predicted by the Highres (x-axis) and Lowres (y-axis) models."
 compare_max_catch_mpa |> 
-  ggplot(aes(pmin(2,highres_catch_percent),pmin(2,lowres_catch_percent), fill = difficulty)) + 
-  geom_bin_2d() + 
+  ggplot(aes(highres_catch_percent,lowres_catch_percent)) + 
+  geom_bin_2d(bins = 15) + 
   geom_abline(slope = 1, intercept = 0) + 
-  geom_smooth(method = "lm") +
   facet_wrap(~difficulty) + 
-  scale_x_continuous(limits = c(NA,2), oob = squish) + 
-  scale_y_continuous(limits = c(NA, 2), oob = squish)
+  scale_x_continuous(limits = c(NA, 2), oob = squish, labels = scales::percent, name = "Highres Maximum Potential Catch Increase") +
+  scale_y_continuous(limits = c(NA, 2), oob = squish,labels = scales::percent, name = "Lowres Maximum Potential Catch Increase") + 
+  scale_fill_viridis_b(name = "# of Simulations")
+
 
 ```
 
@@ -333,34 +349,186 @@ compare_max_catch_mpa |>
 
 highres_vs_lowres |> 
   filter(between(numeric_prop_mpa,0.2,0.4)) |> 
-  ggplot(aes(percent_mpa_effect, lowres_percent_mpa_effect, color = f_v_m)) + 
-  geom_point() + 
+  ggplot(aes(percent_mpa_effect, lowres_percent_mpa_effect, color = depletion)) + 
+  geom_point(alpha = 0.2) + 
   geom_hline(yintercept = 0) + 
   geom_vline(xintercept = 0) +
   geom_abline(slope = 1, intercept = 0) +
   facet_grid(name~difficulty, scales = "free") +
-  scale_x_continuous(name = "highres MPA effect", labels = scales::percent,limits = c(NA,2), oob = squish) +
-  scale_y_continuous(name = "lowres MPA effect", labels = scales::percent,limits = c(NA,2), oob = squish) +
-  scale_color_viridis_c()
+  scale_x_continuous(
+    name = "Highres % MPA Effect",
+    labels = scales::percent,
+    limits = c(NA, 2),
+    oob = squish
+  ) +
+  scale_y_continuous(
+    name = "Lowres % MPA Effect",
+    labels = scales::percent,
+    limits = c(NA, 2),
+    oob = squish
+  ) +
+  scale_color_viridis_b(name = "BAU B/B0", option = "plasma") + 
+  theme(legend.position = "top")
 
 
 
 ```
 
+xx make rank plot plotting the biomass and catch rank of each 
+
+```{r}
+
+
+highres_vs_lowres |>
+  group_by(prop_mpa, name, difficulty) |>
+  mutate(
+    highres_rank = percent_rank(percent_mpa_effect),
+    lowres_rank = percent_rank(lowres_percent_mpa_effect)
+  ) |> 
+  ggplot(aes(highres_rank, lowres_rank)) + 
+  geom_point(alpha = 0.05, aes(color = depletion)) +
+  geom_abline(slope = 1, intercept = 0) +
+  facet_grid(name~difficulty, scales = "free") +
+  scale_x_continuous(
+    name = "Highres % Rank",
+    labels = scales::percent,
+    limits = c(0, 1),
+    oob = squish
+  ) +
+  scale_y_continuous(
+    name = "Lowres % Rank",
+    labels = scales::percent,
+    limits = c(0, 1),
+    oob = squish
+  ) +
+  scale_color_viridis_b(name = "BAU B/B0", option = "plasma", direction = -1) + 
+  theme(legend.position = "top")
+
+```
+
+
+column that says which quadrant it is in for each model
+then, whether or not the quadrants agree
+then, how often do they agree
+
+```{r}
+
+# need to do this in a few confusing stages since there are multiple fleets per run
+fleet_outcomes <- highres_vs_lowres |>
+  filter(name != "biomass") |>
+  pivot_longer(contains("percent"),
+               names_to = "model",
+               values_to = "percent_effect_catch")  |> 
+  select(-name)
+
+nature_outcomes <- highres_vs_lowres |>
+  filter(name == "biomass") |>
+  pivot_longer(contains("percent"),
+               names_to = "model",
+               values_to = "percent_effect_biomass") |> 
+  select(state_id, placement_id, prop_mpa, critter, difficulty, model,percent_effect_biomass,-name)
+
+compare_outcomes <- fleet_outcomes |>
+  left_join(nature_outcomes,
+            by = join_by(prop_mpa, placement_id, state_id, critter, difficulty, model)) |>
+  mutate(
+    quadrant = case_when(
+      abs(percent_effect_biomass) < 0.05 &
+        abs(percent_effect_catch) < 0.05 ~ "No Effect",
+      percent_effect_biomass > 0 &
+        percent_effect_catch > 0 ~ "Biomass Increases & Catch Increases",
+      percent_effect_biomass > 0 &
+        percent_effect_catch < 0 ~ "Biomass Increases & Catch Decreases",
+      percent_effect_biomass < 0 &
+        percent_effect_catch > 0 ~ "Biomass Decreases & Catch Increases",
+      percent_effect_biomass < 0 &
+        percent_effect_catch < 0 ~ "Biomass Decreases & Catch Decreases"
+    )
+  ) 
+
+lowres_quadrants <- compare_outcomes |> 
+  filter(str_detect(model, "lowres")) |> 
+  rename(lowres_quadrant = quadrant)
+
+highres_quadrants <- compare_outcomes |> 
+  filter(!str_detect(model, "lowres")) |> 
+  rename(highres_quadrant = quadrant) |> 
+  select(-matches("percent|model"))
+
+confusion_matrix <- lowres_quadrants |> 
+  left_join(highres_quadrants) |> 
+  filter(between(numeric_prop_mpa,0.2,0.4), kiss) |> 
+  group_by(highres_quadrant, lowres_quadrant, difficulty) |>
+  count() |>
+  group_by(difficulty) |>
+  mutate(
+    highres_quadrant = factor(highres_quadrant),
+    lowres_quadrant = factor(lowres_quadrant, levels = levels(highres_quadrant))
+  ) |>
+  complete(highres_quadrant, lowres_quadrant, fill = list(n = 0)) |>
+  group_by(difficulty, highres_quadrant) |>
+  mutate(pn = n / sum(n),
+         label_pn = percent(pn, accuracy = 1)) 
+
+confusion_matrix_plot <-  confusion_matrix |>
+  ggplot(aes(highres_quadrant, lowres_quadrant)) +
+  geom_tile(aes(fill = pn), color = "black") +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    alpha = 0.25,
+    linetype = 2
+  ) +
+  geom_text(aes(label = label_pn), size = 2) +
+  facet_wrap(~ fct_rev(difficulty)) +
+  scale_fill_gradient(
+    low = "white",
+    high = "steelblue2",
+    name = "% Simulations",
+    labels = scales::percent,
+    limits = c(0, 1)
+  ) +
+  theme(axis.text.x = element_text(
+    angle = 45,
+    vjust = 1,
+    hjust = 1
+  )) +
+  scale_x_discrete(name = "Highres Predicted Quadrant") +
+  scale_y_discrete(name = "Lowres Predicted Quadrant")
+
+agreement_plot <- confusion_matrix |> 
+  filter(highres_quadrant == lowres_quadrant) |> 
+  group_by(difficulty) |> 
+  complete(highres_quadrant, fill = list(pn = 0)) |>
+  ggplot(aes(reorder(highres_quadrant, pn),pn, fill = fct_rev(difficulty))) + 
+  geom_col(position = "dodge",color = "black") + 
+  scale_y_continuous(limits = c(0,1), labels = scales::percent, name = "% Agreement") +
+  coord_flip() + 
+  scale_fill_viridis_d(name = "Scenario")
+
+confusion_matrix_plot
+
+agreement_plot
+```
+
+
 
 ```{r}
 
 highres_vs_lowres |>
+  mutate(prop_mpa = as.numeric(as.character(prop_mpa))) |> 
   mutate(
     delta =   (pmin(lowres_percent_mpa_effect, 2) - pmin(2, percent_mpa_effect)),
     delta2 = delta ^ 2
   ) |>
   select(contains("percent"), delta2, everything()) |>
-  ggplot(aes(prop_mpa, (delta), group = prop_mpa)) +
+  ggplot(aes(prop_mpa,lowres_percent_mpa_effect - percent_mpa_effect , group = prop_mpa)) +
   geom_hline(yintercept = 0) +
   stat_halfeye(na.rm = TRUE) +
   facet_grid(name ~ difficulty, scales = "free") + 
-  scale_y_continuous(name = "Percentage Points Difference")
+  scale_y_continuous(name = "Percentage Points Difference") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent)
+
 ```
 
 
@@ -377,6 +545,161 @@ highres_vs_lowres |>
 
 ```
 
+
+
+```{r}
+
+tmp <- highres_vs_lowres |>
+  mutate(delta = pmax(-2, pmin(
+    2, lowres_percent_mpa_effect - percent_mpa_effect
+  ))) |>
+  filter(name == "catch", between(numeric_prop_mpa,0.2, 0.4) )|>
+  select(-matches("percent|value|id|numeric|f_v_m")) |>
+  mutate(random = rnorm(length(delta))) |>
+  filter(is.finite(range_cor), difficulty == "complex")
+
+tmp <- tmp[, which(map_lgl(tmp,  ~ !any(is.na(.x))))]
+
+
+model_spec <-
+  rand_forest(mtry = tune(),
+              min_n = tune(),
+              trees = tune()) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("regression")
+
+model_recipe <- recipe(delta ~ ., data = tmp)
+
+model_workflow <- 
+  workflow() %>% 
+  add_model(model_spec) %>% 
+  add_recipe(model_recipe)
+
+if (tune_grids | !file.exists(file.path(results_dir,"tuned_catch_grid.rds"))){
+
+tuned_catch_grid <-
+  model_workflow %>%
+  tune_grid(
+    resamples = vfold_cv(tmp,4),
+    grid = 10,
+    control = control_grid(save_pred = TRUE)
+  )
+
+write_rds(tuned_catch_grid, file.path(results_dir,"tuned_catch_grid.rds"))
+} else {
+  
+  tuned_catch_grid <- read_rds(file.path(results_dir,"tuned_catch_grid.rds"))
+  
+}
+
+best_params <- tune::select_best(tuned_catch_grid, metric = "rmse")
+
+tuned_model_workflow <- model_workflow |> 
+  finalize_workflow(best_params)
+
+tuned_fit <- parsnip::fit(tuned_model_workflow, tmp)
+
+tuned_fit %>% 
+  extract_fit_parsnip() %>% 
+  vip(num_features = 40)
+
+
+explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
+                                       data = tmp, 
+                              y = tmp$delta,
+                                       label = "rf",
+                                       colorize = TRUE,
+                                       verbose = FALSE)
+
+pdp_fit  <- model_profile(
+  explain_fit,
+  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "habitat_patchiness", "range_cor"),
+  type = "partial"
+)
+
+
+plot(pdp_fit)
+```
+
+
+```{r}
+
+tmp <- highres_vs_lowres |>
+  mutate(delta = pmax(-2, pmin(
+    2, lowres_percent_mpa_effect - percent_mpa_effect
+  ))) |>
+  filter(name == "biomass", between(numeric_prop_mpa,0.2, 0.4) )|>
+  select(-matches("percent|value|id|numeric|f_v_m")) |>
+  mutate(random = rnorm(length(delta))) |>
+  filter(is.finite(range_cor), difficulty == "complex")
+
+tmp <- tmp[, which(map_lgl(tmp,  ~ !any(is.na(.x))))]
+
+
+model_spec <-
+  rand_forest(mtry = tune(),
+              min_n = tune(),
+              trees = tune()) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("regression")
+
+model_recipe <- recipe(delta ~ ., data = tmp)
+
+model_workflow <- 
+  workflow() %>% 
+  add_model(model_spec) %>% 
+  add_recipe(model_recipe)
+
+
+if (tune_grids | !file.exists(file.path(results_dir,"tuned_biomass_grid.rds"))){
+
+tuned_biomass_grid <-
+  model_workflow %>%
+  tune_grid(
+    resamples = vfold_cv(tmp,4),
+    grid = 10,
+    control = control_grid(save_pred = TRUE)
+  )
+
+write_rds(tuned_biomass_grid, file.path(results_dir,"tuned_biomass_grid.rds"))
+} else {
+  
+  tuned_biomass_grid <- read_rds(file.path(results_dir,"tuned_biomass_grid.rds"))
+  
+}
+
+best_params <- tune::select_best(tuned_biomass_grid, metric = "rmse")
+
+tuned_model_workflow <- model_workflow |> 
+  finalize_workflow(best_params)
+
+tuned_fit <- parsnip::fit(tuned_model_workflow, tmp)
+
+tuned_fit %>% 
+  extract_fit_parsnip() %>% 
+  vip(num_features = 40)
+
+
+explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
+                                       data = tmp, 
+                              y = tmp$delta,
+                                       label = "rf",
+                                       colorize = TRUE,
+                                       verbose = FALSE)
+
+
+pdp_fit  <- model_profile(
+  explain_fit,
+  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "habitat_patchiness", "range_cor"),
+  type = "partial"
+)
+
+
+plot(pdp_fit)
+```
+
+https://htmlpreview.github.io/?https://github.com/ModelOriented/DALEX-docs/blob/master/vignettes/DALEX_parsnip.html
+
 ### Quadrant Agreement
 
 
@@ -390,6 +713,8 @@ Reference spatial stock assessment literature (eventually and in some cases we m
 Cheung style climate projection models
 
 Referecne costello paper on markets for MPAs; what happens if different models bias different results and different regions have access to different kidns of models?
+
+we gave reacged a point in ecology where our ability to model far outstrips our ability to monitor, due to spatial and or temporal scale
 
 While we do not yet have an answer for what model when, we suggest that authors engaged in simulation modeling in this space clearly acknowledge this challenge and provide justification for why they believe the choice of modeling framework presented is appropriate to the question at hand. While computational efficiency clearly plays a role, we suggest that authors should not make this the sole basis for their choice.
 
@@ -423,7 +748,7 @@ plot_stuff <- emulated_model_results |>
 
 lowres_thirty_protected_plot <- plot_stuff |>
   filter(between(prop_mpa, 0.2, 0.4)) |>
-  ggplot(aes(biomass_effect,yield_effect, color = rough_f)) +
+  ggplot(aes(biomass_effect,yield_effect, color = depletion)) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_point(alpha = 0.25, size = 3) +

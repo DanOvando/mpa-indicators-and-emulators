@@ -6,7 +6,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 150, run_name = "v0.1", drop_patches = TRUE) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 142, run_name = "v0.11", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
 
 library(tictoc)
 
