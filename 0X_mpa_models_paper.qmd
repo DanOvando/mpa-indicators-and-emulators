@@ -286,9 +286,6 @@ b = ggplot() +
 ### Optimal MPA Size
 
 ```{r}
-#| label: fig-msy-size
-#| fig-cap: "Percent of seascape protected in MPA that maximizes catch predicted by the Highres model (x-axis) and Lowres model (y-axis)"
-#| eval: false
 
 # not including for now since somewhat misleading since area != K protected in marlin model
 
@@ -311,6 +308,14 @@ lowres_max_catch <- lowres |>
 compare_max_catch_mpa <-  highres_max_catch |>
   right_join(lowres_max_catch, by = c("critter", "state_id", "difficulty"))
 
+```
+
+
+```{r}
+#| label: fig-msy-size
+#| fig-cap: "Percent of seascape protected in MPA that maximizes catch predicted by the Highres model (x-axis) and Lowres model (y-axis)"
+#| eval: false
+
 
 compare_max_catch_mpa |>
   mutate(highres_prop_mpa = as.numeric(as.character(highres_prop_mpa))) |> 
@@ -327,15 +332,17 @@ compare_max_catch_mpa |>
 
 ```{r}
 #|label: fig-max-catch
-#| fig-cap: "Maximum potential percent increase in catch caused by an MPA predicted by the Highres (x-axis) and Lowres (y-axis) models."
+#| fig-cap: "Maximum potential percent increase in catch caused by an MPA predicted by the High-resolution (y-axis) and Low-resolution (x-axis) models. Facets indicate simulation set. "
+
 compare_max_catch_mpa |> 
-  ggplot(aes(highres_catch_percent,lowres_catch_percent)) + 
-  geom_bin_2d(bins = 15) + 
+  ggplot(aes(lowres_catch_percent,highres_catch_percent)) + 
+  # geom_bin_2d(bins = 15) + 
+  geom_point(aes(color = depletion), alpha = 0.5,size = 2) +
   geom_abline(slope = 1, intercept = 0) + 
-  facet_wrap(~difficulty) + 
-  scale_x_continuous(limits = c(NA, 2), oob = squish, labels = scales::percent, name = "Highres Maximum Potential Catch Increase") +
-  scale_y_continuous(limits = c(NA, 2), oob = squish,labels = scales::percent, name = "Lowres Maximum Potential Catch Increase") + 
-  scale_fill_viridis_b(name = "# of Simulations")
+  facet_wrap(~fct_rev(difficulty)) + 
+  scale_y_continuous(limits = c(NA, 1), oob = squish, labels = scales::percent, name = "High-resolution Maximum Potential Catch Increase") +
+  scale_x_continuous(limits = c(NA, 1), oob = squish,labels = scales::percent, name = "Low-resolution Maximum Potential Catch Increase") + 
+  scale_color_viridis_b(name = "BAU B/B0", option = "mako", direction = 1) 
 
 
 ```
@@ -344,40 +351,71 @@ compare_max_catch_mpa |>
 
 
 ```{r}
-
+#| label: fig-hi-v-low
+#| fig-cap: Percent change in biomass (top row) and catch (bottom row) resulting from MPAs covering between 20-40% of the simulated seascape predicted by the High-resolution (x-axis) and Low-resolution (y-axis) models. Panel columns correspond to the simulation set used. Color inducates the biomass divided by unfished biomass (B/B0) under business as usual (BAU) conditions without any MPA. 
 
 
 highres_vs_lowres |> 
   filter(between(numeric_prop_mpa,0.2,0.4)) |> 
-  ggplot(aes(percent_mpa_effect, lowres_percent_mpa_effect, color = depletion)) + 
-  geom_point(alpha = 0.2) + 
+  ggplot(aes(lowres_percent_mpa_effect,percent_mpa_effect, color = depletion)) + 
   geom_hline(yintercept = 0) + 
   geom_vline(xintercept = 0) +
-  geom_abline(slope = 1, intercept = 0) +
-  facet_grid(name~difficulty, scales = "free") +
-  scale_x_continuous(
-    name = "Highres % MPA Effect",
-    labels = scales::percent,
-    limits = c(NA, 2),
-    oob = squish
-  ) +
+  geom_abline(slope = 1, intercept = 0, color = "tomato") +
+    geom_point(alpha = 0.1) + 
+  facet_grid(name~difficulty) +
   scale_y_continuous(
-    name = "Lowres % MPA Effect",
+    name = "High-resolution % MPA Effect",
     labels = scales::percent,
     limits = c(NA, 2),
     oob = squish
   ) +
-  scale_color_viridis_b(name = "BAU B/B0", option = "plasma") + 
+  scale_x_continuous(
+    name = "Low-resolution % MPA Effect",
+    labels = scales::percent,
+    limits = c(NA, 2),
+    oob = squish
+  ) +
+  scale_color_viridis_b(name = "BAU B/B0", option = "mako", direction = 1) + 
   theme(legend.position = "top")
 
 
 
 ```
 
-xx make rank plot plotting the biomass and catch rank of each 
+Biggest mismatch is when MPA causes unintended consequences
+
+
+
 
 ```{r}
+#| label: fig-delta
+#| fig-cap: Distribution of percentage point difference (Low-resolution minus High-resolution) in predicted MPA effect size on biomass (top row) and catch (bottom row) (y-axis) as a function of percent of seascape in MPA (x-axis). Positive y-axis values indicates that the Low-resolution predicts a more positive effect than the High-resolution model, negative a more negative effect. Columns indicate simulation set used. Line is median value, bands are 50% and 90% interquantile ranges, respectively. Color indicates the biomass divided by unfished biomass (B/B0) under business as usual (BAU) conditions without any MPA. 
 
+highres_vs_lowres |>
+  mutate(prop_mpa = as.numeric(as.character(prop_mpa))) |> 
+  mutate(
+    delta =   (pmin(lowres_percent_mpa_effect, 2) - pmin(2, percent_mpa_effect)),
+    delta2 = delta ^ 2
+  ) |>
+  select(contains("percent"), delta2, everything()) |>
+  mutate(depbin = cut(depletion,breaks = seq(0,1,by = 0.25))) |> 
+  ggplot(aes(prop_mpa,100 * delta , fill = depbin, color = depbin)) +
+  geom_hline(yintercept = 0) +
+  stat_lineribbon(na.rm = TRUE, alpha = 1/4, .width = c(0.5,0.9)) +
+  facet_grid(name ~ fct_rev(difficulty), scales = "free_y") + 
+  scale_y_continuous(name = "Percentage Points Difference") + 
+  scale_x_continuous(name = "% Seascape in MPA", labels = scales::percent) + 
+  scale_color_viridis_d(name = "BAU B/B0", option = "mako", direction = 1) +
+  scale_fill_viridis_d(name = "BAU B/B0", option = "mako", direction = 1) + 
+  theme(legend.position = "top")
+
+
+```
+
+
+```{r}
+#| label: fig-ranks
+#| fig-cap: Percent rank of individual "fisheries" (intersection of fleet and species) conditional on proportion of seascape protected in a no-take MPA predicted by High-resolution (x-axis) and Low-resolution (y-axis). Higher percent rank indicates that an MPA is predicted to have more positive outcomes for a given fishery, lower worse outcomes. Top row shows results for biomass, bottom row shows results for catch. Columns indicate simulation set. Color indicates the biomass divided by unfished biomass (B/B0) under business as usual (BAU) conditions without any MPA. 
 
 highres_vs_lowres |>
   group_by(prop_mpa, name, difficulty) |>
@@ -385,33 +423,39 @@ highres_vs_lowres |>
     highres_rank = percent_rank(percent_mpa_effect),
     lowres_rank = percent_rank(lowres_percent_mpa_effect)
   ) |> 
-  ggplot(aes(highres_rank, lowres_rank)) + 
-  geom_point(alpha = 0.05, aes(color = depletion)) +
-  geom_abline(slope = 1, intercept = 0) +
+  arrange(highres_rank, desc(lowres_rank)) |> 
+  ggplot(aes(lowres_rank,highres_rank)) + 
+  geom_abline(slope = 1, intercept = 0, color = "tomato") +
+    geom_point(alpha = 0.05, aes(color = depletion)) +
   facet_grid(name~difficulty, scales = "free") +
-  scale_x_continuous(
+  scale_y_continuous(
     name = "Highres % Rank",
     labels = scales::percent,
     limits = c(0, 1),
     oob = squish
   ) +
-  scale_y_continuous(
+  scale_x_continuous(
     name = "Lowres % Rank",
     labels = scales::percent,
     limits = c(0, 1),
     oob = squish
   ) +
-  scale_color_viridis_b(name = "BAU B/B0", option = "plasma", direction = -1) + 
+  scale_color_viridis_b(name = "BAU B/B0", option = "mako", direction = 1) + 
   theme(legend.position = "top")
 
 ```
-
 
 column that says which quadrant it is in for each model
 then, whether or not the quadrants agree
 then, how often do they agree
 
+
+Having lowres on the x-axis is saying conditional on testing positive, what's probabilit you have it
+having lowres on the y-axis is saying that conditional on having the condition, whats probability that a test tests positive
+
 ```{r}
+#| label: fig-agreement
+#| fig-cap: A) Percent agreement between quadrant predicted by Low-resolution and High-resolution model. Percent values normalized to sum to 100% for each Low-resolution prediction bin. Red dashed diagonla line shows 1:1 line which passes through cells that indicate agreement between Low-resolution and High-resolution models. Grey cells indicate that the Low-resolution model made no prediction in a given quadrant. B) Percent agreement values for a given Low-resolution prediction. Percent of seascape in MPA restricted to between 10-40%. "No Effect" indicates that |percent change| is less than or equal to 5% for both biomass and catch.
 
 # need to do this in a few confusing stages since there are multiple fleets per run
 fleet_outcomes <- highres_vs_lowres |>
@@ -455,9 +499,13 @@ highres_quadrants <- compare_outcomes |>
   rename(highres_quadrant = quadrant) |> 
   select(-matches("percent|model"))
 
-confusion_matrix <- lowres_quadrants |> 
+confusion_components <- lowres_quadrants |> 
   left_join(highres_quadrants) |> 
-  filter(between(numeric_prop_mpa,0.2,0.4), kiss) |> 
+  filter(between(numeric_prop_mpa,0.1,0.4)) 
+
+confusion_matrix <- confusion_components |> 
+  left_join(highres_quadrants) |> 
+  filter(between(numeric_prop_mpa,0.1,0.4)) |> 
   group_by(highres_quadrant, lowres_quadrant, difficulty) |>
   count() |>
   group_by(difficulty) |>
@@ -466,17 +514,20 @@ confusion_matrix <- lowres_quadrants |>
     lowres_quadrant = factor(lowres_quadrant, levels = levels(highres_quadrant))
   ) |>
   complete(highres_quadrant, lowres_quadrant, fill = list(n = 0)) |>
-  group_by(difficulty, highres_quadrant) |>
+  group_by(difficulty, lowres_quadrant) |>
   mutate(pn = n / sum(n),
          label_pn = percent(pn, accuracy = 1)) 
 
+confusion_matrix
+
 confusion_matrix_plot <-  confusion_matrix |>
-  ggplot(aes(highres_quadrant, lowres_quadrant)) +
+  ggplot(aes(lowres_quadrant, highres_quadrant)) +
   geom_tile(aes(fill = pn), color = "black") +
   geom_abline(
+    color = "tomato",
     slope = 1,
     intercept = 0,
-    alpha = 0.25,
+    alpha = 0.5,
     linetype = 2
   ) +
   geom_text(aes(label = label_pn), size = 2) +
@@ -493,61 +544,32 @@ confusion_matrix_plot <-  confusion_matrix |>
     vjust = 1,
     hjust = 1
   )) +
-  scale_x_discrete(name = "Highres Predicted Quadrant") +
-  scale_y_discrete(name = "Lowres Predicted Quadrant")
+  scale_y_discrete(name = "Highres Predicted Quadrant") +
+  scale_x_discrete(name = "Lowres Predicted Quadrant") + 
+  labs(title = "A") + 
+  guides(fill = "none")
 
 agreement_plot <- confusion_matrix |> 
   filter(highres_quadrant == lowres_quadrant) |> 
   group_by(difficulty) |> 
-  complete(highres_quadrant, fill = list(pn = 0)) |>
+  complete(lowres_quadrant, fill = list(pn = 0)) |>
   ggplot(aes(reorder(highres_quadrant, pn),pn, fill = fct_rev(difficulty))) + 
-  geom_col(position = "dodge",color = "black") + 
+  geom_col(position = "dodge") + 
   scale_y_continuous(limits = c(0,1), labels = scales::percent, name = "% Agreement") +
+  scale_x_discrete(name = "") +
   coord_flip() + 
-  scale_fill_viridis_d(name = "Scenario")
+  scale_fill_viridis_d(name = "Scenario") + 
+  labs(title = "B")
 
-confusion_matrix_plot
-
-agreement_plot
+confusion_matrix_plot / agreement_plot
 ```
 
 
 
-```{r}
-
-highres_vs_lowres |>
-  mutate(prop_mpa = as.numeric(as.character(prop_mpa))) |> 
-  mutate(
-    delta =   (pmin(lowres_percent_mpa_effect, 2) - pmin(2, percent_mpa_effect)),
-    delta2 = delta ^ 2
-  ) |>
-  select(contains("percent"), delta2, everything()) |>
-  ggplot(aes(prop_mpa,lowres_percent_mpa_effect - percent_mpa_effect , group = prop_mpa)) +
-  geom_hline(yintercept = 0) +
-  stat_halfeye(na.rm = TRUE) +
-  facet_grid(name ~ difficulty, scales = "free") + 
-  scale_y_continuous(name = "Percentage Points Difference") + 
-  scale_x_continuous(name = "MPA Size", labels = scales::percent)
-
-```
-
-
 
 ```{r}
-highres_vs_lowres |>
-  mutate(delta = pmin(1000, lowres_percent_mpa_effect) - pmin(1000, percent_mpa_effect)) |>
-  ggplot(aes(pmin(1000, percent_mpa_effect), delta)) +
-  geom_bin_2d(bins = 20) +
-  scale_x_continuous(limits = c(-1, 5), oob = squish) +
-  scale_y_continuous(limits = c(-5, 5), oob = squish) +
-  facet_wrap( ~ name, scales = "free")
-
-
-```
-
-
-
-```{r}
+#| label: fig-catch-importance
+#| fig-cap: A) Permutation-based variable importance score of included covariates on predictions of model disagreement (Low-resolution minus High-resolution) on catch effects. B) Partial dependency plots of selected covariates. Points are permutted values, lines are.. blue line is..
 
 tmp <- highres_vs_lowres |>
   mutate(delta = pmax(-2, pmin(
@@ -599,9 +621,11 @@ tuned_model_workflow <- model_workflow |>
 
 tuned_fit <- parsnip::fit(tuned_model_workflow, tmp)
 
-tuned_fit %>% 
+catch_vip_plot <- tuned_fit %>% 
   extract_fit_parsnip() %>% 
-  vip(num_features = 40)
+  vip(num_features = 40) + 
+  scale_y_continuous(name = "Permutation-Based Variable Importance") + 
+  labs(title = "A)")
 
 
 explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
@@ -611,18 +635,38 @@ explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
                                        colorize = TRUE,
                                        verbose = FALSE)
 
+
+
+
 pdp_fit  <- model_profile(
   explain_fit,
-  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "habitat_patchiness", "range_cor"),
-  type = "partial"
+  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "habitat_patchiness", "max_cor"),
+  type = "partial",
+  N = 500
 )
 
 
-plot(pdp_fit)
+pd_plot <- plot(
+  pdp_fit,
+  geom = "points",
+  variables = c(
+    "depletion",
+    "steepness",
+    "adult_diffusion",
+    "max_cor"
+  )
+) +
+  theme_minimal() +
+  labs(title = "B)", subtitle = '', y = "Predicted Delta")
+
+catch_vip_plot| pd_plot
+
 ```
 
 
 ```{r}
+#| label: fig-biomass-importance
+#| fig-cap: A) Permutation-based variable importance score of included covariates on predictions of model disagreement (Low-resolution minus High-resolution) on biomass effects. B) Partial dependency plots of selected covariates. Points are permutted values, lines are.. blue line is..
 
 tmp <- highres_vs_lowres |>
   mutate(delta = pmax(-2, pmin(
@@ -675,10 +719,11 @@ tuned_model_workflow <- model_workflow |>
 
 tuned_fit <- parsnip::fit(tuned_model_workflow, tmp)
 
-tuned_fit %>% 
+biomass_vip_plot <- tuned_fit %>% 
   extract_fit_parsnip() %>% 
-  vip(num_features = 40)
-
+  vip(num_features = 40) + 
+  scale_y_continuous(name = "Permutation-Based Variable Importance") + 
+  labs(title = "A)")
 
 explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
                                        data = tmp, 
@@ -688,14 +733,31 @@ explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
                                        verbose = FALSE)
 
 
+
+
 pdp_fit  <- model_profile(
   explain_fit,
-  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "habitat_patchiness", "range_cor"),
-  type = "partial"
+  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "habitat_patchiness", "max_cor"),
+  type = "partial",
+  N = 500
 )
 
 
-plot(pdp_fit)
+biomass_pd_plot <- plot(
+  pdp_fit,
+  geom = "points",
+  variables = c(
+    "depletion",
+    "steepness",
+    "adult_diffusion",
+    "max_cor"
+  )
+) +
+  theme_minimal() +
+  labs(title = "B)", subtitle = '', y = "Predicted Delta")
+
+biomass_vip_plot| biomass_pd_plot
+
 ```
 
 https://htmlpreview.github.io/?https://github.com/ModelOriented/DALEX-docs/blob/master/vignettes/DALEX_parsnip.html
@@ -706,7 +768,12 @@ https://htmlpreview.github.io/?https://github.com/ModelOriented/DALEX-docs/blob/
 
 ## Discussion
 
+Simple to complex gradient not that information, indicating that much of the difference comes from simply the nature of age structure and 2D populations
+
 Complexity does not equal correctness.
+
+broad areas of agreement
+  - depletion effect
 
 Reference spatial stock assessment literature (eventually and in some cases we may have enough data before, after, inside, and outside of MPAs for a range of species to estimate the effect of MPAs within a spatial stock assessment framework, but we're a long way from that.
 
@@ -715,6 +782,14 @@ Cheung style climate projection models
 Referecne costello paper on markets for MPAs; what happens if different models bias different results and different regions have access to different kidns of models?
 
 we gave reacged a point in ecology where our ability to model far outstrips our ability to monitor, due to spatial and or temporal scale
+
+How good is good enough
+
+What are the costs of basing something on the wrong model? Direct effects (biomass and catch) and opportunity cost
+
+What do to if can only have the simpelr model? good enough? Under what conditions is doing nother better?
+
+caveat lack of open access dynamics etc. 
 
 While we do not yet have an answer for what model when, we suggest that authors engaged in simulation modeling in this space clearly acknowledge this challenge and provide justification for why they believe the choice of modeling framework presented is appropriate to the question at hand. While computational efficiency clearly plays a role, we suggest that authors should not make this the sole basis for their choice.
 
