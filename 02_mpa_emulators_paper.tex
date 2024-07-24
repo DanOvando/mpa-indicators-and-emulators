@@ -1,0 +1,1941 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  default,
+  lineno,
+  referee]{sn-jnl}
+
+\setlength\evensidemargin{\oddsidemargin}
+
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+%%%% Standard Packages
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{algorithm}%
+\usepackage{algorithmicx}%
+\usepackage{algpseudocode}%
+\usepackage{listings}%
+
+%%%%
+
+\raggedbottom
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Predicted Effects of Marine Protected Areas on Conservation and Catches are Highly Sensitive to Model Structure},
+  pdfauthor={Daniel Ovando},
+  pdfkeywords={MPA, Simulation Modeling, Model Selection, Conservation
+Planning, Food Security},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title[Predicted Effects of Marine Protected Areas on Conservation and
+Catches are Highly Sensitive to Model Structure]{Predicted Effects of
+Marine Protected Areas on Conservation and Catches are Highly Sensitive
+to Model Structure}
+
+% author setup
+\author*[1]{\fnm{Daniel} \sur{Ovando}}\equalcont{These authors contributed equally to this work.}
+% affil setup
+\affil[1]{\orgdiv{Ecosystem \& Bycatch Group}, \orgname{Inter-American
+Tropical Tuna Commission}, \orgaddress{\street{8901 La Jolla Shores
+Drive}, \city{La Jolla}, \postcode{92037}}}
+
+% abstract 
+
+\abstract{Use of Marine Protected Areas (MPAs) is expanding around the
+world. While MPAs can have a wide variety of objectives, scientific
+guidance on how to design MPAs to achieve objectives is generally based
+on simulation modeling. While some types of model are not able to answer
+some types of question, in other cases many different models may all
+provide an answer of some kind, such as the predicted change in
+population biomass and fisheries catches resulting from implementation
+of an MPA. In these cases, the spatial and temporal scale of MPAs often
+prevents us from determining which model is most parsimoneous
+empirically, and as such the choice of model can be somewhat \emph{ad
+hoc}. In this paper we compare the effects of MPAs on catch and biomass
+predicted by a spatially explicit age-structured multi-species and
+multi-fleet (\emph{High-definition}) model to the predictions generated
+by a two-patch surplus production (\emph{Low-definition}) model fit to
+emulate the \emph{High-definition} model. We found that while there are
+some areas of agreement, in many cases the predictions of the two models
+were markedly different, with the Low-definition model frequently
+predicting substantially higher biomass and catch benefits from MPAs
+than the High-definition model, and in many cases incorrectly estimating
+the direction (positive or negative) of the MPA effects. Our results
+show that care should be taken in selecting and interpreting the results
+of MPA simultion models, and that research is needed to understand what
+models are best suited to what policy recommendations when multiple
+viable options exist.}
+
+% keywords
+\keywords{MPA,  Simulation Modeling,  Model Selection,  Conservation
+Planning,  Food Security}
+
+\begin{document}
+\maketitle
+
+\renewcommand*\contentsname{Table of contents}
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\subsection{Introduction}\label{introduction}
+
+The field of ecology depends on models; it is how we move from simply
+\emph{describing} ecological phenomena to \emph{understanding}
+ecological processes. All models are abstractions of reality though,
+requiring scientists to make decisions as to how best to approximate the
+system in question to address the ecological question at hand. In some
+cases, these decisions can be be based simply on first principles such
+as our understanding of the basic physics of the universe. In many other
+cases we are faced with multiple competing models of the ecological
+process in question, with a common goal being the search for a
+``parsimonious'' model that best explains the phenomena in question
+without containing extraneous features that may reduce the performance
+or efficiency of the model. For example, Murdoch et al. (2002) examined
+under what conditions a single-species model may or may not be a valid
+representation of a species existing in a multi-species
+environment.While the scientific method has employed numerous practices
+for judging the performance of competing models, for much of recent
+history we have relied largely on confronting models with data (Hilborn
+and Mangel 1997), whether through for example experimentation or
+predictive skill commonly measured through various forms of information
+criteria (Sutherland et al. 2023). Regardless of the method, the key
+feature is that models are judged by their ability to explain observed
+data in some ways shape or form.
+
+More recently though, the increasing ``dimensionality'' of questions
+asked by ecology (e.g.~number of species, spatial and temporal scales),
+combined with the rapid increase in computation capabilities in the last
+few decades has greatly expanded the use of a slightly different class
+of model, which can generally be called ``simulation models''. The key
+feature of these models is that while they can perhaps be ``tuned'' to
+reality based on best available knowledge, they cannot be fit to data in
+a conventional statistical sense, either due to a lack of degrees of
+freedom (having many more parameters than available data), or an
+inability to measure the phenomena being simulated on a reasonable time
+scale.
+
+These simulation models are extremely powerful, particularly as we
+increasingly turn to ecological sciences to help make complex policy
+decisions in a dynamic world. For example, the widely used Ecopath with
+Ecosim (Christensen and Walters 2004) modeling framework allows for
+complex simulation of the effects of environmental and/or policy drivers
+on marine ecosystems that cannot realistically be directly evaluated
+empirically. However, this power comes with limitations, namely in that
+without the ability to rely solely on first principles or statistical
+confrontation with data it is unclear how we should judge the
+performance of alternative simulation models, particularly if
+alternative models provide conflicting guidance as to the impact of a
+phenomena or policy in question.
+
+This challenge is well illustrated by the science of Marine Protected
+Areas (MPAs). While MPAs have taken and continue to take numerous forms
+throughout human history (Johannes 1978; Grorud-Colvert et al. 2021) ,
+we refer to them here broadly as spatially defined areas in which some
+forms of human activities are restricted. The most conventional form of
+MPAs involve the restriction of some to all forms of extractive
+activities such as fishing without their borders. The exact form of
+these restrictions may vary but the choice of what is implemented is
+generally made to achieve some policy objective, for example protection
+of sensitive habitat, rebuilding of depleted fish populations, and
+support of food security or economic objectives.
+
+The use of MPAs to achieve various policy objectives has exploded in
+recent years and looks to grow further, as best expressed by the goals
+of the 30x30 movement, which seeks to place 30\% of terrestrial and
+marine ecosystems in some form of protected area by 2030 (CBD 2022).
+While individual MPAs may differ in their specific objectives, they
+share a common theme that whatever the policy goal decisions must be
+made as to how to design a given MPA to achieve a given set of
+objectives, for example exactly where should the MPA be placed, how big
+should it be, and exactly what rules will be implemented within its
+borders.
+
+The difficulty is that baring the most straight-forward of cases
+(e.g.~protection of sensitive habitat of sessile species such as
+deep-water corals), determining how to design MPAs to achieve a given
+policy objective is almost entirely dependent on simulation models
+(O'Leary et al. 2016). This is due in large part to the scale of the
+processes involved in determining the outcomes of a given MPA or MPA
+network. Many marine organisms move vast distances at one or more parts
+of their life cycle (Leah R. Gerber et al. 2005). The impacts of
+protection can take years or decades to develop (Nickols et al. 2019).
+This means that empirical studies of the net effect of MPAs inside and
+outside of their borders can require collection data over a large
+spatial scale over many years, an important but costly task. Even once
+those data are collected, observational studies lacking appropriate
+statistical controls can easily misdiagnose the effects of a spatial
+policy such as an MPA (Ovando et al. 2021; Ferraro, Sanchirico, and
+Smith 2018).
+
+Given then that we cannot realistically rely on experiments to design
+large-scale networks of MPAs, and lack the vast time series of data
+before and after MPAs at scale around the world to rely on observational
+methods, we must turn to simulation modeling to determining how to
+design MPAs that stand the best chance of achieving our policy
+objectives. A vast array of simulation models have been developed to
+fill this gap and help us project the potential policy impacts of MPAs
+(Fulton et al. 2015). These models vary greatly in complexity, ranging
+from single species two-patch biomass dynamics models with analytical
+solutions (Hastings and Botsford 1999) to end-to-end spatially explicit
+social-ecological models with thousands of parameters such as ATLANTIS
+(Audzijonyte et al. 2019).
+
+Several important works have surveyed the MPA modeling landscape. Leah
+R. Gerber et al. (2003) reviewed a range of different MPA models and
+summarized the types of processes included and common insights across
+models. Pelletier and Mahévas (2005) evaluated a wide range of MPA
+models and qualitatively scored their suitability for addressing
+different kinds of policy questions, but found that a very wide range of
+model complexities could be appropriate for broad questions like
+addressing ``Enhancement of fisheries yield''. Fulton et al. (2015)
+considered the landscape of models that have been used to model MPAs,
+and provided recommendations on the types of models that might be
+appropriate for asking different questions around MPAs. While this is an
+extremely important contribution to the literature, the list of models
+categorized as appropriate for particular MPA questions can span a vast
+range, from single-species population dynamics models up to more
+end-to-end style models such as
+\href{https://osmose-model.org/publications/}{OSMOSE}. Across these
+works then, while it is clear that some models are more capable than
+others of addressing certain types of questions, conditional on being
+capable of addressing a question (such as the impacts of MPAs on total
+catch), it remains unclear to what extent the choice of a specific
+viable model might influence the direction and magnitude of the effect
+being studied.
+
+The ideal case in this modelling landscape is that complexity is
+additive in nature, meaning that all models capture the core processes
+around MPAs in an unbiased manner, but some are better capable of
+capturing finer-scale variation in MPA outcomes related to local
+context. If this is the case, then we would expect the predictions of
+say a two-patch biomass dynamics model to be right on average over a
+region, providing strategic guidance as to the potential outcomes of
+MPAs in that area, while a more detailed model is needed provide
+tactical advice for the design of a specific closed area. While this
+additive gradient in MPA model complexity would be ideal, we are unaware
+of any work that has explicitly tested whether it exists. Answering this
+question has real policy implications, particularly because models are
+the primary tool used to provide advice on MPA design (O'Leary et al.
+2016) (Fulton et al. 2015). If different models along a complexity
+gradient do not simply provide more detailed illustrations of the same
+image, but rather are painting completely different landscapes, the
+predicted effects and subsequent design of MPA networks that will
+increasingly affect marine ecosystems and dependent peoples may simply
+be an artifact of the type of model selected rather than a reflection of
+a robust understanding of the dynamics of these social-ecological
+systems.
+
+To illustrate the potential consequences of diverging predictions of
+alternative models, consider the case of Sala et al. (2021). That paper
+used a single species two-patch biomass dynamics modeling framework to
+predict the conservation and food security outcomes of a proposed global
+network of no-take MPAs, and as of publication of this paper is among
+the most highly cited and widely publicized findings in the recent
+marine conservation literature
+(\url{https://nature.altmetric.com/details/101895056}).However, Ovando,
+Liu, et al. (2023) showed that minor changes to core untestable
+assumptions made by Sala et al. (2021) fundamentally altered both the
+total predicted outcomes of MPAs for food security and the
+prioritization map of this proposed global MPA network.
+
+The question then is what models of MPAs are best suited for addressing
+which policy questions when multiple different models can in theory
+serve? The answer is mechanical in some cases. For example, if the goal
+of a given policy is to increase the mean length of a given target
+species, at minimum a model that tracks length is required. Conversely,
+if the goal of a given MPA is to rebuild the trophic structure of a
+fished ecosystem closer to unfished conditions, at minimum a
+multi-species model is needed. How though do we determine what model to
+use across a range of models that are all capable of tracking the same
+outcomes? For example, two commonly desired outcomes of MPAs are changes
+in total population biomass and total fishery catches. These metrics, or
+at least representations of them, are produced both by a two-patch
+biomass dynamics model and a full ecosystem model, and essentially every
+MPA model in between. It is unclear then how to decide which of the many
+models capable of simulation biomass and catch outcomes of MPAs is
+parsimonious for the task at hand.
+
+The question of exactly what model is appropriate for what question
+related to spatial policies such as MPAs in marine social-ecological
+systems if far beyond the scope of this paper. However, this paper seeks
+to provide a step towards this broader goal by assessing whether models
+of differing complexity provide complimentary or contradictory
+predictions of the effects of MPAs across multiple policy dimensions.
+Specifically, we simulated a range of MPA outcomes using a spatially
+explicit age structured multi-species and multi-fleet simulation
+framework presented in Ovando, Bradley, et al. (2023) called
+\texttt{marlin}. We then tuned a two-patch biomass dynamics model
+presented in Ovando, Liu, et al. (2023) and based on Cabral et al.
+(2020), the foundation for the results presented in Sala et al. (2021),
+to emulate the simulated dynamics of the more complex \texttt{marlin}
+model. We compared the effects of no-take MPAs predicted by these two
+models, and evaluated if and when the two models were in agreement.
+While these are only two models out of the many available to model MPAs,
+they are instructive as both types of models have been used to provide
+predictions of the effects of MPAs on biomass and catch. We find
+evidence that rather than existing along a gradient of strategic to
+tactical, the two models provided vastly different and often
+contradictory predictions of the outcomes of MPAs for food security and
+conservation.
+
+\subsection{Methods}\label{methods}
+
+This paper uses two general classes of models that we call the
+\emph{High} and \emph{Low} resolution models. The \emph{High-definition}
+model uses a framework called \texttt{marlin} described in Ovando,
+Bradley, et al. (2023) . The \texttt{marlin} model simulates arbitrary
+numbers of independent age-structured fish-like populations distributed
+in a two-dimensional seascape. These fish populations can be targeted by
+arbitrary numbers of fishing fleets each of which can have individual
+\emph{métiers} that specify the relationship between a given fleet and a
+specific fish species. The \emph{Low-definition} model is two-patch
+Pella-Tomlinson (Pella and Tomlinson 1969) surplus production model,
+described in Ovando, Liu, et al. (2023) and based on Cabral et al.
+(2020).
+
+Each simulation follows the same general structure:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Generate a set of state variables (e.g.~life history parameters and
+  fleet dynamics) from a range of \emph{simple} (one species one fleet),
+  \emph{medium} (four species one fleet), and \emph{complex} (four
+  species two fleets) scenarios (Table~\ref{tbl-scenes})
+\item
+  Run the simulation with those state variables (Table~\ref{tbl-states})
+  using the \emph{High-definition} model
+\item
+  Generate data from the \emph{High-definition} model and use it to
+  estimate the parameters of the \emph{Low-definition} model
+\item
+  Apply a range of MPA designs comprised of size (percent of seascape)
+  and placement strategy for the \emph{High-definition} case, and size
+  only for the Low-definition model
+\item
+  Compare the percent change in biomass and catch predicted by the
+  \emph{High} and \emph{Low-definition} models
+\end{enumerate}
+
+\subsubsection{High-definition Model and
+Simulations}\label{high-definition-model-and-simulations}
+
+The equations and processes describing \texttt{marlin} model used in the
+\emph{High-definition} are presented in detail in Ovando, Bradley, et
+al. (2023). Briefly, the model simulates fish populations using an
+age-structured population. Length-at-age is calculated using the von
+Bertalanffy growth equation with log-normally distributed variation in
+the length at age. Natural mortality at age is calculated using the
+length-inverse mortality function described in Lorenzen (2022).
+Fecundity at age is a function of weight at age, with the potential for
+hyperallometric fecundity in which fecundity increases faster than
+weight. Recruitment follows a Beverton-Holt dynamics parameterized
+around steepness (\emph{h}), with multiple options for the timing and
+spatial scale of density dependence (e.g.~local vs.~global or pre-
+vs.~post-dispersal). Movement is simulated using a continuous-time
+Markov chain (CTMC), as described in Thorson et al. (2021). This process
+breaks movement in a diffusion and taxis component, where the taxis
+component allows fish to preferentially move towards better habitat. The
+model runs in 6-month time steps for these simulations. Core life
+history values are pulled from \texttt{Fishlife} (Thorson 2020).
+
+Fishing fleets are simulated based on effort. Each fleet exerts an
+amount of fishing effort in a time step, and chooses how to allocate
+that effort in space based on a spatial-allocation strategy
+(e.g.~revenue-per-unit-effort in the previous time step). Effort in a
+given patch applies fishing mortality to simulated species based on the
+\emph{métier} in question. The \emph{métier} specifies the contact
+selectivity at age of that fleet for each simulated species, the price
+per unit weight for each species, and the proportion of the total
+fishing mortality experienced by that fish species contributed by the
+\emph{métier} in question. Fishing fleets can have home ports, which add
+a cost to fishing in a given patch that increase with linear distance
+from the home port.
+
+Together, these fish and fleet dynamics allow \texttt{marlin} to
+simulate the effects of multiple fishing fleets on multiple species. For
+example, by simulating multiple fleets and fish species simultaneously,
+the model can capture bycatch dynamics in which a fleet targets one
+species but incidentally captures another species if it occurs in the
+same location as the target species.
+
+\paragraph{Simulated States}\label{simulated-states}
+
+The four possible species simulated are a grouper (\emph{Epinephelus
+fuscoguttatus}, Serranidae), a shallow-reef snapper (\emph{Lutjanus
+malabaricus}, Lutjanidae), a deep-reef snapper (\emph{Pristipomoides
+filamentosus}, Lutjanidae), and a reef shark (\emph{Carcharhinus
+amblyrhynchos}, Carcharhinidae). Two possible fleets are simulated. When
+there is only one fleet, the parameters of that fleet, e.g.~selectivity
+and price for a given species, are randomly drawn. When two fleets are
+simulated, fleet \(\alpha\) primarily targets the grouper and shark
+species, fleet \(\beta\) primarily targets the two snapper species,
+though both fleets catch all four species to some extent. The set of
+scenarios evaluated are shown in Table~\ref{tbl-scenes}.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1486}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.5541}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2973}}@{}}
+\caption{Description of the three categories of simulation states
+evaluated.}\label{tbl-scenes}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Species
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fleets
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Species
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fleets
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\emph{simple} & \emph{Snapper} & \(\alpha\) \\
+\emph{medium} & \emph{Snapper, Deep-Snapper, Grouper, Shark} &
+\(\alpha\) \\
+\emph{complex} & \emph{Snapper, Deep-Snapper, Grouper, Shark} &
+\(\alpha\) and \(\beta\) \\
+\end{longtable}
+
+For each scenario set we simulated 142 states. Each state was generated
+by drawing a random variable from the sets described in
+Table~\ref{tbl-states}.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2639}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7361}}@{}}
+\caption{Variables that define a given simulation state. See
+accompanying code at
+https://github.com/DanOvando/mpa-indicators-and-emulators. Clean version
+will be stored and shared via Figshare once paper is
+completed.}\label{tbl-states}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+KISS & Keep it Simple Stupid. When TRUE, sets habitat equal in all
+patches for all species \\
+MPA Response & Dictates whether effort that used to fish inside MPAs
+``stays'' and is redistributed or ``leaves'' the fishery \\
+habitat\_patchiness (\(\kappa\)) & Low values create smooth habitat,
+higher values patchy habitat \\
+Max Absolute Correlation & Scales the maximum absolute correlation
+between species \\
+Spatial Catchability & Whether catchability of the fishing fleets varies
+in space \\
+Spatial Fleet Allocation & How the fleet distributes itself in space,
+one of revenue, profit per unit effort, and revenue per unit effort \\
+seasonal\_movement & Whether habitat flips in one half of the year to
+another \\
+Spawning Aggregation & Whether spawning occurs in a concentrated
+location \\
+F vs.~M & Ratio of instantaneous fishing mortality rate relative to
+natural mortality \\
+Adult Diffusion & The diffusion rate of ``adult'' (non-larval) fish \\
+Larval Diffusion & The diffusion rate of the larval fish \\
+Steepness & Beverton-Holt steepness value \\
+ssb0 & The unfished spawning biomass for a given species \\
+Hyperallometry & Degree of hyperallometry in fecundity at age
+relationship \\
+Density Dependence & The timing of density dependence, one of
+``global\_habitat'', ``local\_habitat'', ``pre\_dispersal'',
+``post\_dispersal''. \\
+ontogenetic\_shift & Whether recruitment habitat is the inverse of adult
+habitat \\
+Use Ports? & Whether or not to assign ports to individual fleets that
+alter cost per unit effort in patches \\
+Selectivity at age & Selectivity at age, set separately for every
+\emph{métier} \\
+Price per unit weight & Price per unit weight for every \emph{métier} \\
+\end{longtable}
+
+\paragraph{Simulating Habitats}\label{simulating-habitats}
+
+Marine species are often distributed heterogeneously in space with
+various degrees of covariance among species, i.e.~some species tend to
+be found together, others tend to be found apart, and those
+distributions can be clustered in space. We modified the methods
+described in Thorson and Barnett (2017) to automate simulation of these
+spatial habitat dynamics. The key parameters process is a parameter
+\(\kappa\) that dictates the rate at which correlation among patches
+decrease with distance from each other. \(\kappa\) is \textgreater0. The
+closer \(\kappa\) is to 0, the greater the distance at which habitat
+among patches are still correlated becomes. The larger \(\kappa\)
+becomes, the less correlated habitat becomes with distance. The other
+parameter is a \emph{c} by \emph{c} matrix \textbf{R}, where \emph{c} is
+the number of species being simulated. The upper-triangle of \textbf{R}
+is the correlation (bounded between -1 and 1) in habitat between each
+simulated species. A value of 1 indicates that that given pair share
+habitat perfectly, -1 that they share no habitat. When only one species
+is present, \textbf{R} has no effect.
+
+Together then \(\kappa\) dictates how ``patchy'' a simulated seascape
+is, with lower values producing a smoother habitat distribution per
+species, and \textbf{R} dictates how similar the habitats are across
+species. Generating random draws of \(\kappa\) and \textbf{R} allows us
+to automatically generate simulations that range from essentially
+uniform habitats across species to cases where habitat is patchy and
+individual species tend to avoid each other (@fig-hab).
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{results/v1.0/figs/complex_state_50_habitat.pdf}
+
+}
+
+\caption{\label{fig-hab}Example simulated habitat distributions. Each
+panel is one species, color shows the scaled number of individuals in
+each patch under unfished conditions.}
+
+\end{figure}%
+
+\subsubsection{Low-definition Model}\label{low-definition-model}
+
+Much of the early MPA modeling literature used various forms of
+``surplus production'' models (see Kokkalis et al. 2024) often using a
+two ``patch'' system in which MPAs are modeled by tracking total biomass
+in each patch while adjusting the relative size of patches and setting
+fishing mortality to zero in the MPA patch (Leah R. Gerber et al. 2003).
+While much more detailed models have been developed since then, these
+types of models are still used, particularly in cases where the goal is
+to simulate large number of fisheries or states (e.g. Sala et al. 2021).
+
+The form of two-patch surplus production model used here is the same
+Pella-Tomlinson structure used in Costello et al. (2016) although
+modified to allow for the kinds of two-patch MPA dynamics used in Sala
+et al. (2021). The equations are as follows, where \emph{B} is biomass,
+\emph{t} is time, \(\phi\) scales the shape of the production curve
+(when \$\textbackslash phi\$ = 0.188 \(B_{MSY}/K = 0.4\)), \emph{g} is
+the growth rate, \emph{K} is the carrying capacity, \emph{R} is the
+proportion of the total carrying capacity inside the MPA, \(F\) is the
+fishing mortality rate, and \emph{m} is the movement rate:
+
+\(F\) can be calculated with or without effort displacement. When effort
+displacement is turned off, total F is constant.
+
+\[F_t = F_{BAU}\]
+
+When effort displacement is turned on, fishing mortality outside the
+MPAs increases proportionally to the size of the protected area, in the
+same manner as Sala et al. (2021) .
+
+\[F_t = 1 - (1 - F_{BAU})^{\frac{1}{1 - R}}\]
+
+Under ``local'' density dependence, the population model is
+
+\[
+\begin{aligned}
+B_{t+1,MPA = 1} = B_{t,MPA = 1} + \frac{\phi + 1}{\phi}gB_{t,MPA = 1} \left(1 - \left(\frac{B_{t,MPA = 1}}{K \times R}\right)^{\phi} \right) \\ - m(B_{t,MPA = 1} - \frac{R}{1 - R}B_{t,MPA = 0}).
+\end{aligned}
+\]
+
+\[
+\begin{aligned}
+B_{t+1,MPA = 0} = (1 - F_{t}) \times ( B_{t,MPA = 0} + \frac{\phi + 1}{\phi}gB_{t,MPA = 0} \left(1 - \left(\frac{B_{t,MPA = 0}}{K \times (1 - R)}\right)^{\phi} \right) \\ +  m\left(B_{t,MPA = 1} - \frac{R}{1 - R}B_{t,MPA= 0}\right) ).
+\end{aligned}
+\]
+
+Under ``pooled'' density dependence, the population model is
+
+\[B_{t,Total} = B_{t,MPA = 1} + B_{t,MPA = 0},\]
+
+\[
+\begin{aligned}
+B_{t+1,MPA = 1} = B_{t,MPA = 1} + R \frac{\phi + 1}{\phi}gB_{t,Total} \left(1 - \left(\frac{B_{t,Total}}{K}\right)^{\phi} \right) \\ -  m\left(B_{t,MPA = 1} - \frac{R}{1 - R}B_{t,MPA=0}\right).
+\end{aligned}
+\]
+
+\[
+\begin{aligned}
+B_{t+1,MPA = 0} = (1 - F_{t}) \times ( B_{t,MPA = 0} + (1 - R) \frac{\phi + 1}{\phi}gB_{t,Total} \left(1 - \left(\frac{B_{t,Total}}{K}\right)^{\phi} \right) \\ +  m\left(B_{t,MPA = 1} - \frac{R}{1 - R}B_{t,MPA=0}\right) ).
+\end{aligned}
+\]
+
+The model uses ``local'' density dependence when the form of density
+dependence used in the High-definition model is in some way local, and
+``pooled'' when the High-definition model density dependence is in some
+way global.
+
+\paragraph{Fitting Low-definition
+Model}\label{fitting-low-definition-model}
+
+The Low-definition model has five core parameters: \(\phi\), \emph{g},
+\emph{m}, \emph{K}, and \emph{D}, where \emph{D} is the depletion (B/K)
+at the start of the simulation. Clearly all of these parameters could be
+made up. However, the goal of this paper is to assess the impact of
+model structure on simulated outcome, holding as much else constant as
+possible. This means that we want to find values of these parameters
+that allow the Low-definition model to best match the dynamics of the
+High-definition model.
+
+To achieve these, we estimated these five parameters along with required
+variance parameters using the Stan programming language and the cmdstanR
+(Gabry et al. 2024) interface. For a given scenario \emph{s} simulated
+by the High-definition model, we created the following experiment.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Fish each population from unfished biomass B0 down to a depletion of
+  0.1 B0, generating a vector of total biomass \textbf{bdep} and catch
+  \textbf{cdep} over time.
+\item
+  From that depletion of 0.1 B0, move all the fish to the left-hand side
+  of the simulated seascape, such that the right 50\% of the seascape is
+  empty of fish.
+\item
+  Close the seascape to fishing, and then let the population rebuild and
+  disperse, create a vector of biomass in the left-hand \textbf{bleft}
+  and right-hand \textbf{bright} side of the seascape as the population
+  approaches B0 again and fills in the right-hand side of the seascape
+  through adult movement and larval dispersal.
+\item
+  Pass \textbf{bdep,cdep,bleft, bright} to the Low-definition estimation
+  model to estimate the parameters of the model.
+\end{enumerate}
+
+The concept here is that \textbf{bdep} and \textbf{cdep} provide
+information on the scale of the population (B0,unfished biomass, and the
+volume of catch the population can sustain), where as \textbf{bleft} and
+\textbf{bright} provide additional information on \emph{g}, \(\phi\),
+and \emph{m}, as the model can see how fast the population grows from a
+depleted state as a function of biomass, and how fast the population
+recolonizes the right-hand patch.
+
+The structure of the model is given below, variables with \(\hat{}\)
+indicate estimates by the model. Prior distributions were selected to be
+generally uninformative while providing some guidance as to the general
+parameter space of the variables. This model could be refined, but
+provides a general means for quickly and robustly fitting the data
+generated by the \emph{High-definition} model.
+
+\[
+log(bdep) \sim N(log(\hat{bdep}),\sigma_b)
+\]
+
+\[
+log(cdep) \sim N(log(\hat{cdep}),\sigma_c)
+\]
+
+\[
+log(bright) \sim N(log(\hat{bright}),\sigma_b)
+\]
+
+\[
+log(bleft) \sim N(log(\hat{bleft}),\sigma_b)
+\]
+
+\[
+log(K) \sim N(10,2)
+\]
+
+\[
+m \sim N(0.2,0.2), 0 < m < 1
+\]
+
+\[
+\sigma_b \sim N(0.05,0.1), \sigma_b > 0
+\]
+
+\[
+D \sim N(0.5,0.5) ,0 < D < 1
+\]
+
+\[
+log(phi) \sim N(log(0.188),0.4))
+\]
+
+The model was fit using penalized maximum likelihood through the
+\texttt{cmdstan} \texttt{optimize} function rather than fit using full
+Bayesian inference, in order to speed up computation and since we are
+not interested in examining uncertainty in this analysis. Models that
+failed to converge were discarded from the process (a very small
+number). We confirmed that this model was capable of recovering
+simulated parameters when fit to data generated by itself, and confirmed
+that the model was able to match the data generated by the
+High-definition model as well as possible given the presence of model
+misspecification (i.e.~that the Low- and High-definition models have
+fundamentally different assumptions). Once the Low-definition parameters
+were estimated for a given state, the Low-definition model was then run
+through the appropriate MPA scenarios.
+
+\subsubsection{MPA Placement Scenarios}\label{mpa-placement-scenarios}
+
+MPAs in this simulations are defined as fully no-take MPAs for all of
+the species simulated in a given iteration of the model. MPA size is
+defined by the proportion of the seascape placed inside the MPA. In the
+High-definition case, this is the proportion of cells in the
+two-dimensional space. In the Low-definition case, this is the patch
+size parameter \emph{R}.
+
+The High-definition case must also decide which patches will be used to
+achieve a given MPA size. The three possible options are:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \emph{target\_fishing}: place MPAs in descending order of catch per
+  patch
+\item
+  \emph{avoid\_fishing}: place MPAs in ascending order of catch per
+  patch
+\item
+  \emph{area}: start placing MPAs in bottom left corner of seascape and
+  build up from there
+\end{enumerate}
+
+A given placement scenario \emph{p} then is the intersection of the
+proportion of the seascape in an MPA and the strategy for placing the
+MPA patches.
+
+\subsubsection{Types of Results}\label{types-of-results}
+
+Each simulation (a combination of scenario, state and placement)
+produces simulated biomass per species and catch per species per fleet
+with and without MPAs for the \emph{Low-} and \emph{High-definition}
+models. We measured the effect sizes of the MPAs (MPAE) for state
+\emph{s} and MPA placement scenario \emph{p} for model type \emph{m} as
+percentage differences in the outcome in question
+
+\[
+MPAE_{s,p,m} = \frac{Outcome_{MPA=1,s,p,m}}{Outcome_{MPA=0,s,p,m}} -1 
+\]
+
+Where \emph{Outcome} is one of catch or biomass in the water. We then
+calculate the percentage point difference between the two models as
+
+\[
+\Delta_{s,p} = MPAE_{s,p,m=Low} - MPAE_{s,p,m=High}
+\]
+
+Readers may be used to seeing differences in fishery outcomes measured
+in changes in maximum sustainable yield (MSY) based reference points
+such as the biomass relative to the biomass capable of producing MSY
+(B/BMSY) and the fishing mortality relative to the fishing mortality
+that would result in BMSY at equilibrium (F/FMSY). While these
+quantities are defined for the \emph{Low-definition} model, they are
+much more complex for the \emph{High-definition} model. This is because
+MSY is a function both of life history and selectivity, and under the
+\emph{High-definition} models selectivity can vary both among fleets and
+across space. This means that the MSY-based reference points would need
+to be recalculated for every equilibrium fleet distribution at a given
+MPA size, and could potentially lead to confusing results such as B/BMSY
+increasing even as B decreases if changes to the fleet result in BMSY
+decreasing. See Kapur et al. (2021) for a discussion of these
+challenges. As such, we present percentage changed based summaries of
+results.
+
+\subsection{Results}\label{results}
+
+The results of this analysis take the form of paired predictions of the
+\emph{High-definition} and \emph{Low-definition} models for a given
+combination of state \emph{s}, placement strategy \emph{p}, and percent
+of seascape in MPA (\emph{pmpa}). For each instance. data are generated
+by the \emph{High-definition} model based on the parameters of the
+\emph{state}, which are then used to estimate parameters for the
+\emph{Low-definition} model. Given these parameters, a range of MPA
+sizes are applied to the \emph{High-} and \emph{Low-definition} models,
+with placement rules for strategy \emph{p} dictating where the MPA goes
+in the \emph{High-definition model} (there is no placement option for
+the Low-definition model as the two-patch dynamics do not allow it).
+
+Possibly the clearest and most consistent prediction from the MPA
+modelling literature is that more heavily fished species are more able
+to benefit from MPAs, both in terms of biomass and catch. Given that, in
+many of the results we analyze the role of fishing pressure in outcomes,
+expressed as \(B_{bau}/B_0\) , the biomass under ``business as usual''
+relative to unfished biomass. The lower this value, the more depleted
+the species in question is.
+
+\subsubsection{Example Trajectories}\label{sec-eg}
+
+Figure~\ref{fig-eg-simple} and Figure~\ref{fig-eg-complex} illustrate
+the kinds of outcomes produced by this simulation exercise.
+Figure~\ref{fig-eg-simple} shows a result from the \emph{simple} set of
+scenarios, in which the High-definition model has only one species and
+one fleet. In this case. Figure~\ref{fig-eg-complex} shows a result from
+the \emph{complex} set of scenarios, in which the High-definition model
+simulations four different species deferentially targeted by two
+different fishing fleets.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-eg-simple-1.pdf}
+
+}
+
+\caption{\label{fig-eg-simple}Example simulated effects of MPAs on
+biomass and catch under the `simple' scenario (\emph{High-definition}
+model only has one species and one fleet). X-axis shows the percent of
+the seascape protected in a no-take MPA. Y-axis shows biomass divided
+unfished biomass (A) or catch (B). Panel columns show MPA placement
+strategy used in \emph{High-definition} model.}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-eg-complex-1.pdf}
+
+}
+
+\caption{\label{fig-eg-complex}Example simulated effects of MPAs on
+biomass and catch under the `complex' scenario (\emph{High-definition}
+model has four species targeted by two fleets). X-axis shows the percent
+of the seascape protected in a no-take MPA. Y-axis shows biomass divided
+unfished biomass (A) or catch (B). In \emph{A}, color indicates species
+points are the \emph{Low-definition} model and lines are the
+\emph{High-definition} model. In \emph{B}, color indicates the fleet,
+and each row of the panel is a separate species. Panel columns show MPA
+placement strategy used in \emph{High-definition} model.}
+
+\end{figure}%
+
+\subsubsection{Low-definition Compared to
+High-definition}\label{sec-compare}
+
+Each \emph{state}, \emph{placement strategy} and \emph{MPA size} is
+associated with predictions of percent change in biomass and catch for
+each species from the \emph{Low-} and \emph{High-definition} models
+(noting that fleet-specific predictions are only possible for the
+\emph{High-definition} model results). Plotting the
+\emph{Low-definition} versus the \emph{High-definition} predictions
+provides a measure of the degree of agreement between these two models.
+Examining first changes in biomass, the \emph{Low-definition} model
+predictions are almost universal positively biased, meaning that across
+nearly every simulation the \emph{Low-definition} model predicted a
+higher percent increase in biomass than the \emph{High-definition}
+model, often substantially so. The main area of agreement between the
+\emph{Low-} and High-definition models is that the potential increases
+in biomass are positively correlated with the degree of fishing pressure
+(as measured by BAU depletion, \(B_{bau}/B_0\)). Under the dynamics of
+the \emph{Low-definition} model, it is impossible for an MPA to result
+in a net decrease in biomass, whereas this result is possible under the
+\emph{High-definition} model, due in the case of this model to effort
+displacement from the MPA onto habitat of highly depleted species. The
+complexity of the simulation state had little impact on the biomass
+results, indicating that the basic presence of age structure and
+two-dimensional spatial dynamics is enough to cause this discrepancy in
+predicted percent changes in biomass caused by an MPA
+(Figure~\ref{fig-hi-v-low}).
+
+Examining the catch results (Figure~\ref{fig-hi-v-low}), the
+\emph{Low-definition} models had a relatively clear cutoff point where
+depletion values greater than 0.25 were less likely to provide positive
+catch benefits. In contrast, the \emph{High-definition} models predicted
+positive catch effects across many levels of depletion. This may seem
+counter-intuitive, as the literature and basic biology is fairly clear
+that MPA can only increase catch if the population was overfished in the
+first place. The increased catches under higher depletion levels (lower
+fishing pressure) predicted by the \emph{High-definition} model come
+under the \emph{avoid\_fishing} placement strategies, specifically where
+the fleet is concentrated in remaining fishing grounds given a constant
+effort fleet model and the assumption of MPA displacement rather than
+attrition. As with the biomass results, while there is a positive
+correlation between the predicted catch effects of MPAs of the
+\emph{Low-definition} and \emph{High-definition} models the relationship
+is quite weak and generally positively biased, meaning that the
+\emph{Low-definition} model on average predicted higher increases in
+catch from MPAs than its paired \emph{High-definition} model. The
+catch-based results are more sensitive to the complexity of the
+simulation, in particular the addition of a second fleet in the
+\emph{complex} scenarios, than the biomass results.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-hi-v-low-1.pdf}
+
+}
+
+\caption{\label{fig-hi-v-low}Percent change in biomass (top row) and
+catch (bottom row) resulting from MPAs covering between 10-40\% of the
+simulated seascape predicted by the High-definition (x-axis) and
+Low-definition (y-axis) models. Panel columns correspond to the
+simulation set used. Color indicates the biomass divided by unfished
+biomass (B/B0) under business as usual (BAU) conditions without any
+MPA.}
+
+\end{figure}%
+
+We quantified the differences between the Low- and High-definition
+models by calculating \(\Delta\) as the difference in the percentage
+point effect predicted by the \emph{Low-} and \emph{High-definition}
+models (Figure~\ref{fig-delta}). A positive value of \(\Delta\)
+indicates that the \emph{Low-definition} model predicted a higher
+percent change in the given metric than the \emph{High-definition}
+model, and \emph{vice versa}. The \emph{Low-definition} model
+consistently overestimated the percent increase in biomass caused by a
+given MPA across all levels of \(B_{bau}/B_0\) . When \(B_{bau}/B_0\)
+was low, the level of positive bias followed a dome-shaped pattern,
+peaking around median bias of roughly 150 percentage points between MPA
+sizes of roughly 30-60\%. When \(B_{bau}/B_0\) values were higher, the
+level of bias was lower at smaller MPA sizes but increased as MPA size
+increased. Higher levels of \(B_{bau}/B_0\) had lower bias levels, as
+the models tended to agree more that the closer a population was to
+unfished biomass, the less scope for percentage increases in biomass is
+possible. Predicted catch effects were less biased than predicted
+biomass effects, particularly at smaller MPA sizes. The
+\emph{Low-definition} model was more likely to overestimate catch
+effects when \(B_{bau}/B_0\) was low, but across all levels of
+\(B_{bau}/B_0\) the \emph{Low-definition} model started to become
+generally negatively biased (meaning it underestimated the potential
+increase in catch) as MPA size increased. However, while patterns in the
+direction of bias exist, across all scenarios and levels of
+\(B_{bau}/B_0\) the range of \(\Delta\) values were generally extremely
+large, generally spanning 50 to 200 percentage points.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-delta-1.pdf}
+
+}
+
+\caption{\label{fig-delta}Distribution of percentage point difference
+(\emph{Low-definition} minus \emph{High-definition}) in predicted MPA
+effect size on biomass (top row) and catch (bottom row) (y-axis) as a
+function of percent of seascape in MPA (x-axis). Positive y-axis values
+indicates that the Low-definition predicts a more positive effect than
+the High-definition model, negative a more negative effect. Columns
+indicate simulation set used. Line is median value, bands are 50\% and
+90\% interquantile ranges, respectively. Color indicates the biomass
+divided by unfished biomass (B/B0) under business as usual (BAU)
+conditions without any MPA.}
+
+\end{figure}%
+
+Looking across the simulations, for each \emph{state} and
+\emph{placement strategy} both the \emph{Low-} and
+\emph{High-definition} models provide a prediction of the maximum
+percent increase in catch that could be achieved through use of MPAs.
+Both models broadly agree that the potential for MPAs to increase
+broadly proportional to the magnitude of fishing pressure without the
+MPA. For simulations in which the fished population was heavily
+depleted, the \emph{Low-definition} model consistently predicted much
+greater potential increases in catch than the \emph{High-definition}
+model. When the fished population was less heavily depleted, the
+\emph{High-definition} model generally predicted greater potential for
+increased catch than the \emph{Low-definition} model, though this was
+sometimes a result of increasing fishing pressure rather than rebuilding
+populations. In general, there was some positive correlation between the
+maximum predicted catch potential from the \emph{Low-} and
+\emph{High-definition} models, but the relationship was very loose
+Figure~\ref{fig-max-catch}.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-max-catch-1.pdf}
+
+}
+
+\caption{\label{fig-max-catch}Maximum potential percent increase in
+catch caused by an MPA predicted by the High-definition (y-axis) and
+Low-definition (x-axis) models. Facets indicate simulation set.}
+
+\end{figure}%
+
+Rather than comparing specific predictions of percent point changes of
+biomass and catch, we can also compare the ``rank'' of each fishery, in
+terms of biomass or catch potential from MPAs, predicted by the
+\emph{Low-} and \emph{High-definition} models. This can be useful if the
+goal of the modeling exercise is not to make explicit statements about
+the magnitude of changes, but simply to identify which sites might be
+most amenable to achieving benefits to conservation, food security, or
+both through MPAs. To that end we grouped simulations by MPA size and
+then ranked the change in biomass and catch for each simulated fishery
+conditional on a given MPA size. This provides a prediction of, if we
+were to protect a given percentage of a seascape in an MPA, which
+fisheries stand to benefit the most and the least
+(Figure~\ref{fig-ranks}).
+
+Both the \emph{Low-} and \emph{High-definition} models agreed that for
+both catch and biomass, the highest rank fisheries were those with the
+lowest \(B_{bau}/B_0\) values. For the \emph{simple} scenarios, there
+was near 100\% agreement in the top-ranked fisheries for both biomass
+and catch. However, in the \emph{complex} scenarios there was less
+agreement between the models even at the top ranks. Beyond the top
+tanks, while both models had similar trends, there was substantial
+variation in the specific rank predicted by the two models, particularly
+for catch; for the \emph{complex} scenarios, fisheries ranked in the top
+75\% by the \emph{Low-definition} models could be anywhere between near
+the bottom 0 or top 95\% according the \emph{High-definition} model.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-ranks-1.pdf}
+
+}
+
+\caption{\label{fig-ranks}Percent rank of individual fisheries
+(intersection of fleet and species) conditional on proportion of
+seascape protected in a no-take MPA predicted by High-definition
+(x-axis) and Low-definition (y-axis). Higher percent rank indicates that
+an MPA is predicted to have more positive outcomes for a given fishery,
+lower worse outcomes. Top row shows results for biomass, bottom row
+shows results for catch. Columns indicate simulation set. Color
+indicates the biomass divided by unfished biomass (B/B0) under business
+as usual (BAU) conditions without any MPA.}
+
+\end{figure}%
+
+The objective of an MPA modeling exercise may be even coarser than
+rankings, simply asking which fisheries might benefit or lose in terms
+of biomass and catch for a given MPA size. To assess this use case, we
+assigned each of our simulation results to one of five quadrants:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Biomass increases and catch decreases
+\item
+  Biomass increases and catch increases
+\item
+  Biomass decreases and catch decreases
+\item
+  Biomass decreases and catch increases
+\item
+  No effect (neither biomass or catch changes by \(\pm\) 5\%)
+\end{enumerate}
+
+This can be viewed as a ``diagnosis'' problem, where the
+\emph{Low-definition} model predicts the quadrant a given MPA will place
+a fishery in, which we can then compare to the ``true'' quadrant
+resulting from the MPA under the \emph{High-definition} model
+(Figure~\ref{fig-agreement}). Since MPA outcomes are asymptotic as MPA
+size goes to 0 or 100\%, we restricted this analysis to the more
+realistic range of 10-40\% of the seascape. Focusing on the
+\emph{complex} set of scenarios, the \emph{Low-definition} model was a
+reliable predictor of ``No Effect'' outcomes, correctly diagnosing the
+\emph{High-definition} state 96\% of the time under the \emph{complex
+scenario} set. However, the \emph{Low-definition} model predicted the
+other quadrants quite poorly. \emph{Low-definition} predictions of
+``Biomass Increases \& Catch Increases'' were correct 50\% of the time.
+22\% of the cases in which the \emph{Low-definition} model predicted
+``Biomass Increases \& Catch Increases'' in fact had ``No Effect'',
+followed by 25\% of cases in which the true result was ``\,``Biomass
+increases \& Catch Decreases''. \emph{Low-definition} predictions of
+``Biomass increases \& Catch decreases'' were correct only 41\% of the
+time, with ``No Effect'' being the true result in 35\% of cases. While
+biomass decreases were possible according to the \emph{High-definition}
+model, this outcome was not possible under the \emph{Low-definition}
+model and as such the \emph{Low-definition} model did not correctly
+diagnose any of those outcomes.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-agreement-1.pdf}
+
+}
+
+\caption{\label{fig-agreement}A) Percent agreement between quadrant
+predicted by \emph{Low-definition} and \emph{High-definition} model.
+Percent values normalized to sum to 100\% for each \emph{Low-definition}
+prediction bin. Red dashed diagonal line shows 1:1 line which passes
+through cells that indicate agreement between \emph{Low-definition} and
+\emph{High-definition} models. Grey cells indicate that the
+\emph{Low-definition} model made no prediction in a given quadrant.}
+
+\end{figure}%
+
+\subsubsection{Drivers of Differences}\label{drivers-of-differences}
+
+The results presented here indicate that the effects of MPAs predicted
+by the \emph{Low-} and \emph{High-definition} models can be
+substantially different from each other, often with systemic biases in
+one direction or another. We used a random forest model to predict the
+magnitude of \(\Delta\) for both catch and biomass as a function of the
+state variables defining the High-definition state
+(Figure~\ref{fig-catch-importance},
+Figure~\ref{fig-biomass-importance}). \emph{Depletion} (\(B_{bau}/B_0\))
+was the most important predictor for both biomass and catch by a wide
+margin. Examining the partial dependency plots for select variables,
+\(\Delta\) tended to increase as \(B_{bau}/B_0\) decreases, meaning the
+lower biomass was, the more the \emph{Low-definition} model
+over-estimated both biomass and catch outcomes, all else being equal.
+While many other variables were important predictors, none of the other
+variables had as clear of a partial dependency effect as
+\emph{Depletion}. This does not mean that these variables do not have an
+effect on \(\Delta\), but rather that the effects of these variables may
+have strong interaction effects with other variables.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-catch-importance-1.pdf}
+
+}
+
+\caption{\label{fig-catch-importance}A) Permutation-based variable
+importance score of included covariates on predictions of model
+disagreement \(\Delta\) (\emph{Low-definition} minus
+\emph{High-definition}) on catch effects. B) Partial dependency plots of
+selected covariates. Points are permuted values, lines are partial
+dependency gradients for a given permutation set.}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-biomass-importance-1.pdf}
+
+}
+
+\caption{\label{fig-biomass-importance}A) Permutation-based variable
+importance score of included covariates on predictions of model
+disagreement (Low-definition minus High-definition) on biomass effects.
+B) Partial dependency plots of selected covariates. Points are permuted
+values, lines are partial dependency gradients for a given permutation
+set.}
+
+\end{figure}%
+
+\subsubsection{Implications of Differences in
+Predictions}\label{sec-imps}
+
+The results presented so far have compared the paired predictions of the
+\emph{Low-definition} and \emph{High-definition} models. As an
+alternative, we can use this simulation framework to evaluate the
+outcomes of following guidance based on the \emph{Low-definition} model
+in a \emph{High-definition} world. To achieve this, for each state we
+found the MPA size that maximized the total gain in catches according to
+the \emph{Low-definition model}. For single species cases in the
+\emph{Simple} scenarios, this is equal to the MPA size that maximizes
+catch for the individual species. For the \emph{complex} scenario, this
+is the single MPA size that maximized catch across all four species in
+total. We then applied that ``food maximizing'' MPA size recommended by
+the \emph{Low-definition} model to the \emph{High-definition} model and
+compared the outcomes.
+
+Under the \emph{simple} scenarios, the \emph{High-definition} model
+generally agreed that MPA size proposed by the \emph{Low-definition}
+model would be good for both biomass and catch, though with some
+exceptions, and generally with lower catch benefits than predicted by
+the Low-definition model though. However, under both the \emph{medium}
+and \emph{complex} scenarios the \emph{Low-definition} prediction became
+much less reliable. In particular, MPA sizes projected to have a
+positive effect on catch by the \emph{Low-definition} model frequently
+resulted in net reductions in catch when applied to the
+\emph{High-definition} model. This difference is driven in part by the
+fact that the \emph{Low-definition} model has no way of accounting for
+heterogeneity in habitats and fishing fleets. For example, under the
+\emph{High-definition} model, protecting 30\% of the seascape in an MPA
+may protect 30\% of the habitat of one species, but near 100\% of
+another species that primarily occurs in a small subset of the seascape.
+Similarly, if an MPA is placed primarily on the habitat of species
+\emph{A}, but effort is then displaced onto the habitat of species
+\emph{B} which is not covered by the MPA, the net result can be
+reduction in the population and catch of species \emph{B} (instances in
+the bottom-left quadrant of Figure~\ref{fig-imps} where both biomass and
+catch decrease) (Figure~\ref{fig-imps}, Figure~\ref{fig-imps2}).
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-imps-1.pdf}
+
+}
+
+\caption{\label{fig-imps}Implications for biomass (y-axis) and catch
+(x-axis) of applying the catch-maximizing MPA size predicted by the
+\emph{Low-definition} model to the \emph{High-definition} model. Axes
+values reflect the percent change in the given value caused by the
+simulated MPA using the \emph{High-definition} model. Color reflects the
+percent change in yield from applying the selected MPA size predicted by
+the \emph{Low-definition} model.}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{02_mpa_emulators_paper_files/figure-pdf/fig-imps2-1.pdf}
+
+}
+
+\caption{\label{fig-imps2}Difference in catch and biomass outcomes
+predicted by the food-maximizing MPA network predicted by the
+\emph{Low-definition} model (x-axis) applied to the
+\emph{High-definition world} (y-axis). Top row is biomass effect, bottom
+row catch, columns indicate the scenario set in question. Color
+indicates the biomass divided by unfished biomass (B/B0) under business
+as usual (BAU) conditions without any MPA.}
+
+\end{figure}%
+
+\subsection{Discussion}\label{discussion}
+
+Models are a key tool in the ecological toolbox. Recent decades have
+seen an explosion in computational capabilities that have vastly
+expanded the complexity and scale of social-ecological processes that
+can now be simulated, and this trend will only continue. While this
+expanded world of possibilities has given us the ability to take on
+previously impossible tasks, as the growing spatial and temporal scale
+of the processes being modeled make the data needed to validate these
+models increasingly unfeasible to collect, we can be placed in a
+challenging position of depending on models that cannot be confronted
+with data in the ways which we have relied on as a field in the past.
+
+The science of MPAs provides a clear example of this challenge. While
+MPAs around the world have a vast array of policy objectives, they are
+increasingly being called on not only to provide protection inside their
+borders but to provide positive effects to population-level outcomes
+such as total biomass and food security (Sala et al. 2021). However,
+with some clear exceptions, these population processes often occur on
+spatial and temporal scales that severely limit effective data
+collection, requiring simulation modeling.
+
+A wide range of models have been developed to inform MPA decisions
+(Fulton et al. 2015). The results of this paper show that while there
+are broad areas of agreement, \emph{Low-} and \emph{High-definition}
+models can provide very different predictions as to the effects of MPAs
+on conservation and food security outcomes, even when set to be as
+comparable as their internal dynamics allow.
+
+The \emph{Low-} and \emph{High-definition} models agreed in some broad
+ways. Both models agreed that under most conditions MPAs increased
+biomass of protected species, and that MPAs could also increase fishery
+catches under the right conditions, generally when the population would
+have been overfished in the absence of the MPA. The predictions of the
+two models were also generally correlated with each other, albeit with
+often very high levels of bias and variation around this relationship
+(Figure~\ref{fig-hi-v-low}). Similarly under the \emph{simple} set of
+scenarios (one species, one fleet), food maximizing MPA sizes predicted
+by the \emph{Low-definition} models generally at least had positive
+effects on catch when applied to the \emph{High-definition} world,
+though they often produced much lower catch benefits
+(Figure~\ref{fig-imps2}).
+
+While there were broad areas of agreement, the MPA effects predicted by
+the \emph{High-} and \emph{Low-definition} models generally differed in
+meaningful ways. In terms of biomass, the \emph{Low-definition} models
+over-estimated the amount that an MPA would increase biomass in nearly
+every simulated scenario, with the amount of positive bias generally
+increasing with MPA size and degree of overfishing. Under the
+\emph{complex} scenarios, the median bias was roughly 100 percentage
+points when \(B_{bau}/B_0\) was less than 0.25 (Figure~\ref{fig-delta}).
+The predicted catch effects between the \emph{Low-} and
+\emph{High-definition} models were also frequently extremely different,
+though with less bias than biomass. The \emph{Low-definition} model
+tended to be positively biased for highly depleted stocks at lower MPA
+sizes (median roughly 25 percentage points) and negatively biased for
+less-depleted stocks, with increasingly negative bias as MPA size
+increased (Figure~\ref{fig-delta}). From the perspective of potential
+food-security implications, the \emph{Low-definition} models generally
+substantially (by tens of percentage points) overestimated the maximum
+potential increase in catch it might be possible to achieve from an MPA
+in the \emph{High-definition} model (Figure~\ref{fig-max-catch}). When
+the \emph{Low-definition} model underestimated the catch effects
+generated by the \emph{High-definition} model, it was generally because
+of effort displacement concentrating effort in the
+\emph{High-definition} world, as opposed to rebuilding of biomass.
+
+While the \emph{Low-definition} and \emph{High-definition} models often
+made different predictions of absolute biomass and catch effects of
+MPAs, their \emph{rankings} also often disagreed. This is important if a
+\emph{Low-definition} model was being relied on to say prioritize
+locations for MPA rather than making explicit predictions around
+specific percentage point changes in biomass or catch. The two models
+generally agreed that that the top-ranked fisheries in terms of
+potential biomass and catch benefits of MPAs were the most depleted
+fisheries. Beyond that though, while the rankings were correlated, the
+two models generally ranked individual fisheries very differently,
+particularly for catch (Figure~\ref{fig-ranks}). Similarly, the
+Low-definition model was generally a poor predictor of the ``quadrant''
+and MPA would place a fishery in in the High-definition world
+(Figure~\ref{fig-agreement}). The two models almost always agreed on the
+``No Effect'' quadrant, which generally occured from one or both of very
+small MPA size or very high \(B_{bau}/B_0\) values. However, the
+Low-definition model quadrant predictions were much less accurate when
+at least one meaningful effect was predicted. For example, under the
+\emph{complex} states, \emph{Low-definition} predictions of a Biomass
+Increase \& Catch Increase were correct only 50\% of the time.
+
+Interestingly, many of differences between the \emph{Low-} and
+High-definition models emerged even in the \emph{simple} set of
+scenarios (one species, one fleet), even in the cases where habitat of
+the single species is heterogeneous. This indicates that the basic
+dynamics of age-structure and two-dimensional space are enough on their
+own to explain much of the discrepancy between the \emph{High-} and
+\emph{Low-definition} models. In other words, we do not find evidence
+that \emph{Low-definition} MPA models are consistently reliable
+emulators of \emph{High-definition} MPA models so long as the world is
+``simple''. Rather, even the \emph{simple} cases had very different
+predictions between the two models, and these differences were only
+amplified for the \emph{medium} and \emph{complex} states.
+
+What then are the implications of different predictions between the
+\emph{Low-} and \emph{High-definition} models? Under the \emph{simple}
+world, MPA sizes designed to maximize food security under the
+\emph{Low-definition} world generally at least provided \(\geq\) zero
+benefits to biomass and catch when applied to the \emph{High-definition}
+world, unless the MPAs were placed using the \emph{avoid\_fishing}
+placement strategy, in which cases it was possible for both biomass and
+catch benefits to be \textless{} zero. However, as the states of nature
+became increasingly complex (four species and two fleets at most, which
+is still far less complex than many fisheries), the performance of the
+MPAs predicted to maximize food by the \emph{Low-definition} model
+deteriorated, often producing net losses in catch when applied to the
+\emph{High-definition} world (Figure~\ref{fig-imps2}).
+
+From the perspective of balancing conservation and food security, the
+potential consequences of these results are that MPAs designed using the
+type of \emph{Low-definition} model implemented here may substantially
+over-estimate or just misdiagnose the potential gains in catch an MPA
+can produce, both in terms of absolute effects and rankings, if the
+world in fact works in the manner stated by the \emph{High-definition}
+model. From a pure conservation perspective, the potential risks of
+using a Low-definition model in a High-definition world are somewhat
+subtler. Under the \emph{Low-definition} model it is impossible for an
+MPA to have a negative conservation effect, whereas negative effects are
+possible under the \emph{High-definition} model, due primarily as
+modeled here to the combined effects of displacement of fishing effort
+and heterogeneous habitat. While we have no way of knowing how common
+the states leading to the net conservation losses predicted by the
+\emph{High-definition} model are in the real world, we do have some
+evidence that they can occur (Abbott and Haynie 2012).
+
+That being said, while there is a real risk of MPAs causing a net
+conservation loss, there are clearly more ways for MPAs to benefit
+conservation than to harm it. Why then does it matter if a
+\emph{Low-definition} model tends to overestimate the conservation
+potential of an MPA, if the objective of an MPA is not explicitly to
+also benefit food security? If the goal is to rebuild a severely
+overfished species and a \emph{Low-definition} model overestimates the
+potential conservation gains of a given MPA size, while some rebuilding
+may occur we may fall short of the actual rebuilding goal. There is also
+opportunity cost; if a manager has finite capital, real or political, to
+implement a conservation action, and the potential conservation benefits
+of an MPA are overestimated relative to an alternative policy, a
+sub-optimal choice may be made by the manager.
+
+Our results show that the MPA effects predicted by \emph{Low-} and
+\emph{High-definition} models can be meaningfully different. The general
+framing of this paper has been to treat the \emph{High-definition} model
+as ``reality''. This is clearly not inherently correct; just because a
+model is more complex does not mean it is a better representation of
+reality. We treat the \emph{High-definition} model as ``real'' here as
+it is closer to the kinds of dynamics often considered to be best
+practices to include in stock assessments used in fisheries management
+(Punt 2023), and as the \emph{Low-definition} model is fit to the
+dynamics of the \emph{High-definition} model. It is entirely possible
+though that in some cases the equations used in the
+\emph{Low-definition} model may be a more parsimonious representation of
+reality than the \emph{High-definition} model.
+
+We acknowledge that the simulation exercise described here is complex
+and difficult to fully describe in the text of a scientific paper. To
+that end, all materials needed to fully reproduce all of these results
+are publicly available at
+\url{https://github.com/DanOvando/mpa-indicators-and-emulators}. We
+encourage readers seeking to better understand the nuances of the
+simulation settings and process to examine the code along with the text
+of this paper.
+
+These results assume all data from the \emph{High-definition} model used
+to fit the \emph{Low-definition} model are perfectly measured. We also
+assume that all parameters (e.g.~natural mortality, growth rates,
+habitat preferences), are time-invariant. These results also only
+consider the simplest of economic dynamics (constant effort with or
+without MPA-driven effort displacement). Other works have shown that
+more complex fleet dynamics can greatly affect the outcomes of spatial
+policies (Ovando et al. 2021; Cabral et al. 2019; Miller and Deacon
+2016). Violations of these assumptions used in this paper will further
+complicate the ability of a model to accurately predict the effects of
+an MPA on conservation and catch objectives.
+
+What we call a ``High'' resolution model should really just be
+``Higher''; relative to an end-to-end ecosystem model the
+\texttt{marlin} modeling framework used in the \emph{High-definition}
+model is still quite simple. A paper comparing the predictions of the
+\texttt{marlin} model to those of say ATLANTIS might easily show the
+same level of disagreement as shown here between the \emph{High-} and
+\emph{Low-definition} models. The purpose of this paper is not to
+establish something like \texttt{marlin} as the ``correct'' way to model
+MPAs; we instead demonstrate that the choice of model used to simulate
+MPA impacts can substantially affect both the magnitude and direction of
+predicted outcomes of closed areas.
+
+To add to the complexity, much of the MPA modeling literature has
+focused on simulating the impacts of ``coastal'' MPAs or more
+specifically MPAs focused on what is assumed to be relatively static
+habitats, often with relatively limited and diffusive movement. However,
+efforts are in development to expand the use of spatial management such
+as MPAs in more pelagic ecosystems, such as the international agreement
+on the conservation and sustainable use of marine biodiversity of areas
+beyond national jurisdiction (BBNJ,see Blasiak and Jouffray 2024). These
+systems are often organized around more spatio-temporally dynamic
+oceanographic features, and made up of often highly mobile species
+pursued by a complex mixture of fishing fleets representing both distant
+water and coastal operations. Research will be needed to consider how
+best to model the impacts of MPAs in the kinds of systems considered
+under the BBNJ agreement; Hampton et al. (2023) provides an example of
+the many complex variables that can affect the expected outcomes of
+spatial protection in pelagic systems. Further research is needed to
+better establish then what models are best suited for what questions in
+pelagic systems.
+
+What then are potential solutions to this challenge? One approach is to
+continue the kinds of sensitivity analyses presented here, where
+alternative models are compared and checked for vastly different
+predictions. This can at least provide some insight into which types of
+outcomes are sensitive to what kinds of model assumptions, and what
+levels of model complexity seem to at least provide consistent guidance
+around outcomes of interest. A preferable approach is to actually
+confront these models with data; over time as we collect more data from
+across systems with MPAs before and after their implementation we may be
+able to fit spatially-explicit population models (Punt 2019) to those
+data, allowing use to empirically measure the predictive skill of
+competing models. However, many cases are likely to simply not have the
+data or capacity to estimate these kinds of models. As an alternative,
+we can explore the use of more easily measured traits, such as
+attributes of the size or age structure of the population in space and
+time, as indicators of the potential reliability of model-based
+predictions (White et al. 2011). For example, we might ask, are there
+more easily measurable indices that can serve as indicators of whether
+the predictions of a given model appear to be consistent with the data
+that can be observed?
+
+Countries around the world are turning increasingly to spatial
+protection such as MPAs to achieve societal objectives, as embodied by
+the 30x30 movement to put 30\% of the ocean in some form of spatial
+protection by 2030. This means that more and more communities around the
+world are going to be tasked with deciding how to design MPA networks to
+achieve their objectives. This paper is not about the relative merits of
+MPAs as conservation and/or fisheries management tools; that is a much
+larger debate (Gaines et al. 2010; Hilborn et al. 2004). However, the
+lack of clear empirical guidance (e.g.~in the form of decades of robust
+empirical evidence measuring the effects of large MPA networks across
+multiple objectives), means that debate and design decisions around MPAs
+are often based on model outputs. These models could range from gut
+feelings, heuristics such as ``protect 30\%'' , two-patch biomass
+dynamics models, models with more resolved spatial and social-ecological
+dynamics such as \texttt{marlin}, and all the way up to end-to-end
+ecosystem models such as ATLANTIS. The results presented here show that
+the choice of model used by a community can dramatically affect the
+perceived potential and optimal design of MPA networks, potentially
+causing at best inefficient MPA designs and at worst unintended negative
+consequences for objectives such as conservation and food security.
+
+We have reached a point in quantitative ecology where our ability to
+model can far outpace our ability to monitor. The case of MPA science
+illustrates this challenge; while inside-vs-outside gradients can be
+measured relatively easily (Lester et al. 2009), broader
+population-level effects of MPAs on conservation and fishery outcomes
+can span vast areas and take years to decades to fully evolve,
+constraining our ability to empirically measure their outcomes (Ovando
+et al. 2021; Ferraro, Sanchirico, and Smith 2018; Nickols et al. 2019).
+We must often depend on models for MPA planning without being able to
+confront them with data directly. We show here that predicted effects of
+MPAs on conservation and food security can be highly sensitive to the
+choice of model used. While we do not yet have an answer for what model
+is suitable for what question, we suggest that practitioners using
+models to inform MPA science and management directly consider this
+challenge and provide justification for why they believe their choice of
+modeling framework is appropriate to the question at hand. While
+computational efficiency clearly plays a role, we suggest that authors
+should not make this the sole basis for their choice. MPAs can play an
+important role in the conservation and management of marine
+social-ecological systems, but we should acknowledge that our ability to
+accurately predict these effects depends largely on the suitability of
+modeling assumptions that may be difficult or impossible to directly
+test.
+
+\subsection{References}\label{references}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-abbott2012}
+Abbott, Joshua K., and Alan C. Haynie. 2012. {``What Are We Protecting?
+Fisher Behavior and the Unintended Consequences of Spatial Closures as a
+Fishery Management Tool.''} \emph{Ecological Applications} 22 (3):
+762--77. \url{https://doi.org/10.1890/11-1319.1}.
+
+\bibitem[\citeproctext]{ref-audzijonyte2019}
+Audzijonyte, Asta, Heidi Pethybridge, Javier Porobic, Rebecca Gorton,
+Isaac Kaplan, and Elizabeth A. Fulton. 2019. {``Atlantis: A Spatially
+Explicit End-to-End Marine Ecosystem Model with Dynamically Integrated
+Physics, Ecology and Socio-Economic Modules.''} \emph{Methods in Ecology
+and Evolution} 10 (10): 1814--19.
+\url{https://doi.org/10.1111/2041-210X.13272}.
+
+\bibitem[\citeproctext]{ref-blasiak2024}
+Blasiak, Robert, and Jean-Baptiste Jouffray. 2024. {``When Will the BBNJ
+Agreement Deliver Results?''} \emph{Npj Ocean Sustainability} 3 (1):
+1--3. \url{https://doi.org/10.1038/s44183-024-00058-6}.
+
+\bibitem[\citeproctext]{ref-cabral2020}
+Cabral, Reniel B., Darcy Bradley, Juan Mayorga, Whitney Goodell, Alan M.
+Friedlander, Enric Sala, Christopher Costello, and Steven D. Gaines.
+2020. {``A Global Network of Marine Protected Areas for Food.''}
+\emph{Proceedings of the National Academy of Sciences} 117 (45):
+28134--39. \url{https://doi.org/10.1073/pnas.2000174117}.
+
+\bibitem[\citeproctext]{ref-cabral2019}
+Cabral, Reniel B., Benjamin S. Halpern, Sarah E. Lester, Crow White,
+Steven D. Gaines, and Christopher Costello. 2019. {``Designing MPAs for
+Food Security in Open-Access Fisheries.''} \emph{Scientific Reports} 9
+(1): 8033. \url{https://doi.org/10.1038/s41598-019-44406-w}.
+
+\bibitem[\citeproctext]{ref-cbd2022}
+CBD. 2022. {``Decision Adopted by the Conference of the Parties to the
+Convention on Biological Diversity.''}
+
+\bibitem[\citeproctext]{ref-christensen2004}
+Christensen, Villy, and Carl J Walters. 2004. {``Ecopath with Ecosim:
+Methods, Capabilities and Limitations.''} \emph{Ecological Modelling}
+172 (2{\textendash}4): 109--39.
+\url{https://doi.org/10.1016/j.ecolmodel.2003.09.003}.
+
+\bibitem[\citeproctext]{ref-costello2016}
+Costello, Christopher, Daniel Ovando, Tyler Clavelle, C. Kent Strauss,
+Ray Hilborn, Michael C. Melnychuk, Trevor A. Branch, et al. 2016.
+{``Global Fishery Prospects Under Contrasting Management Regimes.''}
+\emph{Proceedings of the National Academy of Sciences} 113 (18):
+5125--29. \url{https://doi.org/10.1073/pnas.1520420113}.
+
+\bibitem[\citeproctext]{ref-ferraro2018}
+Ferraro, Paul J., James N. Sanchirico, and Martin D. Smith. 2018.
+{``Causal Inference in Coupled Human and Natural Systems.''}
+\emph{Proceedings of the National Academy of Sciences}, August,
+201805563. \url{https://doi.org/10.1073/pnas.1805563115}.
+
+\bibitem[\citeproctext]{ref-fulton2015}
+Fulton, Elizabeth A., Nicholas J. Bax, Rodrigo H. Bustamante, Jeffrey M.
+Dambacher, Catherine Dichmont, Piers K. Dunstan, Keith R. Hayes, et al.
+2015. {``Modelling Marine Protected Areas: Insights and Hurdles.''}
+\emph{Phil. Trans. R. Soc. B} 370 (1681): 20140278.
+\url{https://doi.org/10.1098/rstb.2014.0278}.
+
+\bibitem[\citeproctext]{ref-cmdstanr2023}
+Gabry, Jonah, Rok Češnovar, Andrew Johnson, and Steve Bronder. 2024.
+\emph{Cmdstanr: R Interface to 'CmdStan'}.
+\url{https://mc-stan.org/cmdstanr/}.
+
+\bibitem[\citeproctext]{ref-gaines2010}
+Gaines, Steven D., Crow White, Mark H. Carr, and Stephen R. Palumbi.
+2010. {``Designing Marine Reserve Networks for Both Conservation and
+Fisheries Management.''} \emph{Proceedings of the National Academy of
+Sciences} 107 (43): 18286--93.
+\url{https://doi.org/10.1073/pnas.0906473107}.
+
+\bibitem[\citeproctext]{ref-gerber2003}
+Gerber, Leah R., Louis W. Botsford, Alan Hastings, Hugh P. Possingham,
+Steven D. Gaines, Stephen R. Palumbi, and Sandy Andelman. 2003.
+{``Population Models for Marine Reserve Design: A Retrospective and
+Prospective Synthesis.''} \emph{Ecological Applications} 13 (sp1):
+47--64.
+\url{https://doi.org/10.1890/1051-0761(2003)013\%5B0047:PMFMRD\%5D2.0.CO;2}.
+
+\bibitem[\citeproctext]{ref-gerber2005}
+Gerber, Leah R, Selina S Heppell, Ford Ballantyne, and Enric Sala. 2005.
+{``The Role of Dispersal and Demography in Determining the Efficacy of
+Marine Reserves.''} \emph{Canadian Journal of Fisheries and Aquatic
+Sciences} 62 (4): 863--71. \url{https://doi.org/10.1139/f05-046}.
+
+\bibitem[\citeproctext]{ref-grorud-colvert2021}
+Grorud-Colvert, Kirsten, Jenna Sullivan-Stack, Callum Roberts, Vanessa
+Constant, Barbara Horta e Costa, Elizabeth P. Pike, Naomi Kingston, et
+al. 2021. {``The MPA Guide: A Framework to Achieve Global Goals for the
+Ocean.''} \emph{Science} 373 (6560): eabf0861.
+\url{https://doi.org/10.1126/science.abf0861}.
+
+\bibitem[\citeproctext]{ref-hampton2023}
+Hampton, John, Patrick Lehodey, Inna Senina, Simon Nicol, Joe Scutt
+Phillips, and Kaon Tiamere. 2023. {``Limited Conservation Efficacy of
+Large-Scale Marine Protected Areas for Pacific Skipjack and Bigeye
+Tunas.''} \emph{Frontiers in Marine Science} 9.
+\url{https://www.frontiersin.org/articles/10.3389/fmars.2022.1060943}.
+
+\bibitem[\citeproctext]{ref-hastings1999}
+Hastings, Alan, and Louis W. Botsford. 1999. {``Equivalence in Yield
+from Marine Reserves and Traditional Fisheries Management.''}
+\emph{Science} 284 (5419): 1537--38.
+\url{https://doi.org/10.1126/science.284.5419.1537}.
+
+\bibitem[\citeproctext]{ref-hilborn1997}
+Hilborn, Ray, and Marc Mangel. 1997. \emph{The Ecological Detective:
+Confronting Models with Data (MPB-28)}. Princeton University Press.
+\url{https://doi.org/10.1515/9781400847310}.
+
+\bibitem[\citeproctext]{ref-hilborn2004a}
+Hilborn, Ray, Kevin Stokes, Jean-Jacques Maguire, Tony Smith, Louis W
+Botsford, Marc Mangel, José Orensanz, et al. 2004. {``When Can Marine
+Reserves Improve Fisheries Management?''} \emph{Ocean \& Coastal
+Management} 47 (3--4): 197--205.
+\url{https://doi.org/10.1016/j.ocecoaman.2004.04.001}.
+
+\bibitem[\citeproctext]{ref-johannes1978}
+Johannes, R E. 1978. {``Traditional Marine Conservation Methods in
+Oceania and Their Demise.''} \emph{Annual Review of Ecology and
+Systematics} 9 (1): 349--64.
+\url{https://doi.org/10.1146/annurev.es.09.110178.002025}.
+
+\bibitem[\citeproctext]{ref-kapur2021}
+Kapur, M. S., M. C. Siple, M. Olmos, K. M. Privitera-Johnson, G. Adams,
+J. Best, C. Castillo-Jordán, et al. 2021. {``Equilibrium Reference Point
+Calculations for the Next Generation of Spatial Assessments.''}
+\emph{Fisheries Research} 244 (December): 106132.
+\url{https://doi.org/10.1016/j.fishres.2021.106132}.
+
+\bibitem[\citeproctext]{ref-kokkalis2024}
+Kokkalis, A., C. W. Berg, M. S. Kapur, H. Winker, N. S. Jacobsen, M. H.
+Taylor, M. Ichinokawa, et al. 2024. {``Good Practices for Surplus
+Production Models.''} \emph{Fisheries Research} 275 (July): 107010.
+\url{https://doi.org/10.1016/j.fishres.2024.107010}.
+
+\bibitem[\citeproctext]{ref-lester2009}
+Lester, S. E., B. S. Halpern, K. Grorud-Colvert, J. Lubchenco, B. I.
+Ruttenberg, S. D. Gaines, S. Airamé, and R. R. Warner. 2009.
+{``Biological Effects Within No-Take Marine Reserves: A Global
+Synthesis.''} \emph{Marine Ecology Progress Series} 384: 3346.
+
+\bibitem[\citeproctext]{ref-lorenzen2022}
+Lorenzen, Kai. 2022. {``Size- and Age-Dependent Natural Mortality in
+Fish Populations: Biology, Models, Implications, and a Generalized
+Length-Inverse Mortality Paradigm.''} \emph{Fisheries Research} 255
+(November): 106454. \url{https://doi.org/10.1016/j.fishres.2022.106454}.
+
+\bibitem[\citeproctext]{ref-miller2016a}
+Miller, Steve J., and Robert T. Deacon. 2016. {``Protecting Marine
+Ecosystems: Regulation Versus Market Incentives.''} \emph{Marine
+Resource Economics} 32 (1): 83--107.
+\url{https://doi.org/10.1086/689214}.
+
+\bibitem[\citeproctext]{ref-murdoch2002}
+Murdoch, W. W., B. E. Kendall, R. M. Nisbet, C. J. Briggs, E. McCauley,
+and R. Bolser. 2002. {``Single-Species Models for Many-Species Food
+Webs.''} \emph{Nature} 417 (6888): 541--43.
+\url{https://doi.org/10.1038/417541a}.
+
+\bibitem[\citeproctext]{ref-nickols2019}
+Nickols, Kerry J., J. Wilson White, Dan Malone, Mark H. Carr, Richard M.
+Starr, Marissa L. Baskett, Alan Hastings, and Louis W. Botsford. 2019.
+{``Setting Ecological Expectations for Adaptive Management of Marine
+Protected Areas.''} \emph{Journal of Applied Ecology} 56 (10): 2376--85.
+https://doi.org/\url{https://doi.org/10.1111/1365-2664.13463}.
+
+\bibitem[\citeproctext]{ref-oleary2016}
+O'Leary, Bethan C., Marit Winther-Janson, John M. Bainbridge, Jemma
+Aitken, Julie P. Hawkins, and Callum M. Roberts. 2016. {``Effective
+Coverage Targets for Ocean Protection.''} \emph{Conservation Letters} 9
+(6): 398--404. https://doi.org/\url{https://doi.org/10.1111/conl.12247}.
+
+\bibitem[\citeproctext]{ref-ovando2023a}
+Ovando, Daniel, Darcy Bradley, Echelle Burns, Lennon Thomas, and James
+Thorson. 2023. {``Simulating Benefits, Costs and Trade-Offs of Spatial
+Management in Marine Social-Ecological Systems.''} \emph{Fish and
+Fisheries} n/a (n/a). \url{https://doi.org/10.1111/faf.12804}.
+
+\bibitem[\citeproctext]{ref-ovando2021}
+Ovando, Daniel, Jennifer E. Caselle, Christopher Costello, Olivier
+Deschenes, Steven D. Gaines, Ray Hilborn, and Owen Liu. 2021.
+{``Assessing the Population{-}Level Conservation Effects of Marine
+Protected Areas.''} \emph{Conservation Biology} 35 (6): 1861--70.
+\url{https://doi.org/10.1111/cobi.13782}.
+
+\bibitem[\citeproctext]{ref-ovando2023}
+Ovando, Daniel, Owen Liu, Renato Molina, Ana Parma, and Cody Szuwalski.
+2023. {``Global Effects of Marine Protected Areas on Food Security Are
+Unknown.''} \emph{Nature} 621 (7979): E34--36.
+\url{https://doi.org/10.1038/s41586-023-06493-8}.
+
+\bibitem[\citeproctext]{ref-pella1969}
+Pella, Jerome J., and Patrick K. Tomlinson. 1969. {``A Generalized Stock
+Production Model.''} \emph{Inter-American Tropical Tuna Commission
+Bulletin} 13 (3): 416--97. \url{http://aquaticcommons.org/3536/}.
+
+\bibitem[\citeproctext]{ref-pelletier2005}
+Pelletier, Dominique, and Stéphanie Mahévas. 2005. {``Spatially Explicit
+Fisheries Simulation Models for Policy Evaluation.''} \emph{Fish and
+Fisheries} 6 (4): 307--49.
+\url{https://doi.org/10.1111/j.1467-2979.2005.00199.x}.
+
+\bibitem[\citeproctext]{ref-punt2019}
+Punt, André E. 2019. {``Spatial Stock Assessment Methods: A Viewpoint on
+Current Issues and Assumptions.''} \emph{Fisheries Research} 213 (May):
+132--43. \url{https://doi.org/10.1016/j.fishres.2019.01.014}.
+
+\bibitem[\citeproctext]{ref-punt2023}
+---------. 2023. {``Those Who Fail to Learn from History Are Condemned
+to Repeat It: A Perspective on Current Stock Assessment Good Practices
+and the Consequences of Not Following Them.''} \emph{Fisheries Research}
+261 (May): 106642. \url{https://doi.org/10.1016/j.fishres.2023.106642}.
+
+\bibitem[\citeproctext]{ref-sala2021}
+Sala, Enric, Juan Mayorga, Darcy Bradley, Reniel B. Cabral, Trisha B.
+Atwood, Arnaud Auber, William Cheung, et al. 2021. {``Protecting the
+Global Ocean for Biodiversity, Food and Climate.''} \emph{Nature},
+March, 1--6. \url{https://doi.org/10.1038/s41586-021-03371-z}.
+
+\bibitem[\citeproctext]{ref-sutherland2023}
+Sutherland, Chris, Darragh Hare, Paul J. Johnson, Daniel W. Linden,
+Robert A. Montgomery, and Egil Droge. 2023. {``Practical Advice on
+Variable Selection and Reporting Using Akaike Information Criterion.''}
+\emph{Proceedings of the Royal Society B: Biological Sciences} 290
+(2007): 20231261. \url{https://doi.org/10.1098/rspb.2023.1261}.
+
+\bibitem[\citeproctext]{ref-thorson2020}
+Thorson, James T. 2020. {``Predicting Recruitment Density Dependence and
+Intrinsic Growth Rate for All Fishes Worldwide Using a Data-Integrated
+Life-History Model.''} \emph{Fish and Fisheries} 21 (2): 237--51.
+\url{https://doi.org/10.1111/faf.12427}.
+
+\bibitem[\citeproctext]{ref-thorson2021a}
+Thorson, James T., Steven J. Barbeaux, Daniel R. Goethel, Kelly A.
+Kearney, Edward A. Laman, Julie K. Nielsen, Matthew R. Siskey, Kevin
+Siwicke, and Grant G. Thompson. 2021. {``Estimating Fine-Scale Movement
+Rates and Habitat Preferences Using Multiple Data Sources.''} \emph{Fish
+and Fisheries} 22 (6): 1359--76.
+\url{https://doi.org/10.1111/faf.12592}.
+
+\bibitem[\citeproctext]{ref-thorson2017a}
+Thorson, James T., and Lewis A. K. Barnett. 2017. {``Comparing Estimates
+of Abundance Trends and Distribution Shifts Using Single- and
+Multispecies Models of Fishes and Biogenic Habitat.''} \emph{ICES
+Journal of Marine Science} 74 (5): 1311--21.
+\url{https://doi.org/10.1093/icesjms/fsw193}.
+
+\bibitem[\citeproctext]{ref-white2011}
+White, J. Wilson, Louis W. Botsford, Marissa L. Baskett, Lewis AK
+Barnett, R. Jeffrey Barr, and Alan Hastings. 2011. {``Linking Models
+with Monitoring Data for Assessing Performance of No-Take Marine
+Reserves.''} \emph{Frontiers in Ecology and the Environment} 9 (7):
+390--99. \url{https://doi.org/10.1890/100138}.
+
+\end{CSLReferences}
+
+
+
+\end{document}
