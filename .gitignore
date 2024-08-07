@@ -4,6 +4,7 @@
 !/**/
 # and then this 'unignores' anything without an extension
 !*.*
+*.zip
 *.DS_Store
 *.Rproj
 data/*
