@@ -1,29 +1,36 @@
 process_sims <- function(difficulty_level = "complex",
                          results_dir,
-                         drop_patches = TRUE) {
-  experiment_results <-
-    read_rds(file = file.path(
+                         drop_patches = TRUE,
+                         project = "emulators",
+                         load_results = TRUE,
+                         experiment_results = NULL,
+                         placement_experiments = NULL,
+                         state_experiments = NULL) {
+  if (load_results) {
+    experiment_results <-
+      read_rds(file = file.path(
+        results_dir,
+        paste0(difficulty_level, "_experiment_results.rds")
+      ))
+    
+    placement_experiments <-
+      read_rds(file = file.path(
+        results_dir,
+        paste0(difficulty_level, "_placement_experiments.rds")
+      ))
+    
+    state_experiments <-
+      read_rds(file = file.path(
+        results_dir,
+        paste0(difficulty_level, "_state_experiments.rds")
+      ))
+  } # close load results
+  if (project == "emulators") {
+    emulated_experiment_results <-  read_rds(file = file.path(
       results_dir,
-      paste0(difficulty_level, "_experiment_results.rds")
+      paste0(difficulty_level, "_emulated_experiment_results.rds")
     ))
-  
-  placement_experiments <-
-    read_rds(file = file.path(
-      results_dir,
-      paste0(difficulty_level, "_placement_experiments.rds")
-    ))
-  
-  state_experiments <-
-    read_rds(file = file.path(
-      results_dir,
-      paste0(difficulty_level, "_state_experiments.rds")
-    ))
-  
-  emulated_experiment_results <-  read_rds(file = file.path(
-    results_dir,
-    paste0(difficulty_level, "_emulated_experiment_results.rds")
-  ))
-  
+  }
   
   results <- placement_experiments %>%
     mutate(temp = experiment_results,
@@ -99,8 +106,8 @@ process_sims <- function(difficulty_level = "complex",
     #   filter(step == max(step)) |>
     #   select(x, y, mpa) |>
     #   unique()
-    # 
-
+    #
+    
     control_fauna <- control$fauna[[1]] |>
       # select(-mpa) |>
       # left_join(mpas, by = c("x", "y")) |>
@@ -148,64 +155,6 @@ process_sims <- function(difficulty_level = "complex",
   }
   
   
-  calculate_gradients <- function(x, prop_mpa) {
-    fauna <-  x$fauna[[1]]
-    
-    fleets <-  x$fleets[[1]]
-    
-    
-    if (prop_mpa > 0 & prop_mpa < 1) {
-      biomass_gradient <- fauna |>
-        group_by(critter, step) |>
-        nest() |>
-        mutate(biomass_gradient = map_dbl(data, ~ as.numeric(
-          lm(
-            log(b + 1e-6) ~ distance_to_mpa_edge + ssb0,
-            data = .x |> filter(!mpa)
-          )$coefficients["distance_to_mpa_edge"]
-        ))) |>
-        select(-data) |>
-        mutate(fleet = "nature")
-      
-      cpue_gradient <- fleets |>
-        group_by(fleet, critter, step) |>
-        nest() |>
-        mutate(cpue_gradient = map_dbl(data, ~ as.numeric(
-          lm(
-            log(cpue + 1e-6) ~ distance_to_mpa_edge + ssb0,
-            data = .x |> filter(!mpa)
-          )$coefficients["distance_to_mpa_edge"]
-        ))) |>
-        select(-data)
-      
-      effort_gradient <- fleets |>
-        group_by(fleet, critter, step) |>
-        nest() |>
-        mutate(effort_gradient = map_dbl(data, ~ as.numeric(
-          lm(
-            log(effort + 1e-6) ~ distance_to_mpa_edge,
-            data = .x |> filter(!mpa)
-          )$coefficients["distance_to_mpa_edge"]
-        ))) |>
-        select(-data)
-      
-      fleet_gradients <- cpue_gradient |>
-        left_join(effort_gradient, by = c("step", "fleet", "critter"))
-      
-      out <- fleet_gradients |>
-        bind_rows(biomass_gradient) |>
-        ungroup()
-    } else {
-      out <- data.frame(step = NA,
-                        critter = NA,
-                        fleet = NA)
-    }
-    
-    
-    return(out)
-    
-  }
-  
   tmp <- tmp |>
     ungroup() |>
     # slice(1) |>
@@ -216,7 +165,7 @@ process_sims <- function(difficulty_level = "complex",
   if (!drop_patches) {
     tmp <- tmp |>
       mutate(
-        gradients = map2(treatment, prop_mpa, calculate_gradients, .progress = "calculating MPA gradients")
+        gradients = map2(treatment, prop_mpa, calculate_indicators, .progress = "calculating MPA gradients")
         
       )
   } else {
@@ -245,7 +194,7 @@ process_sims <- function(difficulty_level = "complex",
     unnest(cols = data) |>
     mutate(state_id = as.character(state_id)) |>
     select(-habitat, -critter)
-  
+
   mpa_outcomes <- tmp |>
     select(-treatment, -control, -gradients) |>
     unnest(cols = outcomes) |>
@@ -253,7 +202,7 @@ process_sims <- function(difficulty_level = "complex",
     left_join(species_variables,
               by = c("state_id", "critter" = "scientific_name")) |>
     left_join(placement_experiments, by = c("placement_id", "prop_mpa"))
-
+  
   
   if (!drop_patches) {
     mpa_gradients <- tmp |>

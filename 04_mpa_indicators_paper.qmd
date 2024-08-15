@@ -1,0 +1,264 @@
+---
+title: "How Reliable are Common Empirical Indicators at Measuring MPA Performance?"
+author:
+  - name: Daniel Ovando
+    affiliation:
+      - name: Inter-American Tropical Tuna Commission
+        department: Ecosystem & Bycatch Group
+        id: 1
+        address: 8901 La Jolla Shores Drive
+        city: La Jolla
+        state: CA
+        postal-code: 92037
+    email: dovando@iattc.org
+    attributes:
+      equal-contributor: true
+      corresponding: true
+format:
+  html: 
+    toc: true
+  pdf:
+    toc: true
+  nature-pdf:
+    keep-tex: true
+    classoption: [lineno, referee]
+    toc: true
+    equal-margins: true
+bibliography: references.bib
+abstract: |
+ Something
+keywords: [MPA, Simulation Modeling, Model Selection, Conservation Planning, Food Security]
+execute: 
+  echo: false
+  warning: false
+---
+
+```{r}
+#|label: setup
+#|include: false
+
+foos <- list.files(here::here("R"))
+
+purrr::walk(foos, ~ source(here::here("R", .x)))
+
+prep_run(run_name = "indicators_v0.1") # loads packages and creates and returns some global variables for the analysis
+
+# clean up figures generated in the report to ensure that all figures come from a fresh state
+paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
+
+unlink(paper_figs)
+
+difficulties <- c("simple","medium","complex")
+
+min_depletion <- 0.00001
+
+tune_grids <- FALSE
+```
+
+```{r}
+#| label: load-results
+#| include: false
+
+
+results <- list.files(results_dir)
+
+results <- results[str_detect(results,"(processed_sims.rds$)|(emulated_experiment_results.rds)|(placement_experiments.rds)|(state_experiments.rds)")]
+
+
+
+purrr::walk(results, ~ assign(str_remove_all(.x,"\\.rds$"), read_rds(here(results_dir,.x)), envir = .GlobalEnv))
+
+critter_namer <- function(x){
+  
+  y <- forcats::fct_recode(x,shark = "carcharhinus amblyrhynchos",grouper = "epinephelus fuscoguttatus",snapper = "lutjanus malabaricus", "deep-snapper" = "pristipomoides filamentosus")
+  
+}
+
+# process marlin simulations
+
+## get MPA sizes
+
+simple <- simple_state_experiments |> 
+  select(state_id, depletion) |> 
+  unnest(cols = depletion) |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_state_experiments |> 
+  select(state_id, depletion) |> 
+  unnest(cols = depletion) |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_state_experiments |> 
+  select(state_id, depletion) |> 
+  unnest(cols = depletion) |> 
+  mutate(difficulty = "complex")
+
+  state_depletions <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}"))
+  
+  valid_state_depletions <- state_depletions |> 
+    filter(depletion >= min_depletion)
+
+
+simple <- simple_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "complex")
+
+# results of all marlin simulations
+highres <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
+  mutate(id = glue("{difficulty}-{id}")) |> 
+  mutate(prop_mpa = as_factor(prop_mpa))
+
+
+simple <- simple_emulated_experiment_results |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_emulated_experiment_results |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_emulated_experiment_results |> 
+  mutate(difficulty = "complex")
+
+# results of all PT simulations
+lowres <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
+  unnest(cols = mpa_experiment) |> 
+  filter(year == max(year)) |> 
+  mutate(prop_mpa = as_factor(prop_mpa))
+
+
+tidy_lowres <- lowres |>
+  mutate(percent_biomass = b_mpa / b_bau - 1,
+         percent_catch = yield_mpa / yield_bau - 1) |>
+  select(state_id, prop_mpa, critter, starts_with("percent")) |>
+  pivot_longer(
+    starts_with("percent"),
+    names_to = "name",
+    values_to = "lowres_percent_mpa_effect",
+    names_prefix = "percent_"
+  ) 
+
+highres_vs_lowres <- highres |>
+  left_join(tidy_lowres, by = c("state_id", "name", "critter", "prop_mpa")) |> 
+  filter(!is.na(lowres_percent_mpa_effect)) |> 
+  left_join(state_depletions |> select(state_id, critter, depletion), by = c("state_id","critter")) |> 
+  filter(depletion > min_depletion) |> 
+  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)),
+         critter = critter_namer(critter))
+
+rm(list = c("simple", "medium", "complex"))
+
+
+```
+
+Two key questions
+
+1.  Are MPA outcomes variable enough to provide a need for indicators
+
+2.  Which indicators can reliably track that viability if so?
+
+## Methods
+
+### Empirical Indicators
+
+A range of indicators...[@harford2021]
+
+"It uses the means of biomass (for targeted and nontargeted fish species)... inside and outside of SMRs across the 2019-20 sampling period as a measure of effect size – that is, an MPA effect."
+
+@caselle2022
+
+#### Response Ratios
+
+Response ratios
+
+$$
+log(B) \sim N(MPA,\sigma_{obs})
+$$
+
+This is analogous to
+
+$$
+log \left(\frac{B_{protected}}{B_{reference}}  \right) = log(B_{protected}) - log(B_{reference})
+$$
+
+@lester2009
+
+#### Mean Length
+
+$$
+log(L) \sim N(MPA,\sigma)
+$$
+
+@lester2009
+
+### Slope over Time
+
+Differences in trends of the response ratio post-implementation @caselle2022
+
+$$
+log(B_{t,s}) \sim N(Y_t + T_s + Y_tT_s,\sigma)
+$$
+
+#### Gradients
+
+$\delta$
+
+```{r}
+alpha = 1
+
+beta <- 1
+
+delta <- -2
+
+int <- 0
+
+x <- seq(-100,100)
+
+y <- alpha / (1 + beta *(exp(delta * x))) + int
+
+plot(x,y)
+```
+
+@methratta2020
+
+@halpern2009
+
+@medoff2022
+
+"The expectation that spillover from marine reserves will produce abundance gradients with distance from the reserve, with a shape that depends on species mobility and catch rates, was first described over a decade ago (Rakitin & Kramer 1996) and later refined and modelled (Kaunda-Arara & Rose 2004; Goni et al. 2006)." [@halpern2009]
+
+Sigh. You need to come up with a new metric here that accounts for non-extinction outside.
+
+Come back to this.
+
+Basically, add in intercept, and then the spillover distance is the minimum distance at which the value of the non-intercept part of the curve is zero.
+
+@halpern2009 defined two metrics for estimating spillover distance; the distance at which biomass density was 5% of the maximum observed biomass density inside or outside of the MPA, and the distance at which biomass density was 5% of the range, where range is calculated as the average of the two points furthest from the reserve border and the two points furthest inside the reserve, after fitting a smoother to the density as a function of distance relationship
+
+However, this method makes the assumption that biomass density goes to 0 at some distance from the reserve.
+
+OK, so you're going to do a modified halpern as a starting place
+
+Estimate the same thing but with an intercept, such that the logistic thing is additive to a baseline level, and then calculate the distance at which the additive component of the MPA becomes zero. When there is no effect, or when the MPA has massive but diffuse effects, this distance will be 0, etc.
+
+Or, a simpler and more generalizable approach would be to split outside distance into "near" vs "far", and then see if a given outcome is higher near relative to far. Makes life a lot simpler of not having to consider non-linear functions etc. The downside is it makes it tough to say what is "near" what is "far". Simplest approach would be to say the bottom 25%th percentile of distance is near, the top is far, and go with that.
+
+The nice thing about all this is that it's about seeing if something is or isn't useful, so if that ends up being useful, then great!
+
+### Discussion
+
+@halpern2004
+
+@franceschini2024

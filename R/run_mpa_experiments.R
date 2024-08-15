@@ -15,7 +15,8 @@ run_mpa_experiment <-
            patch_area,
            years = 50,
            future_habitat = list(),
-           drop_patches = TRUE) {
+           drop_patches = TRUE, 
+           keep_age = FALSE) {
     
     options(dplyr.summarise.inform = FALSE)
     
@@ -164,15 +165,19 @@ run_mpa_experiment <-
       mpa_locs <- -999
     }
     
-    ssb0s <- map_df(fauna, "ssb0_p", .id = "critter")
-    
-    ssb0s$ssb0 <- rowSums(ssb0s)
-    
+    ssb0s <- map(fauna, ~tibble(ssb0_p = as.numeric(.x$ssb0_p), patch = 1:length(.x$ssb0_p))) |> 
+      list_rbind(names_to = "critter") |> 
+      group_by(patch) |> 
+      mutate(ssb0_p_total = sum(ssb0_p)) |> 
+      ungroup()
+
     mpas <- expand_grid(x = 1:resolution[1], y = 1:resolution[2]) %>%
       mutate(patch = 1:nrow(.)) %>%
-      mutate(mpa = patch %in% mpa_locs) %>%
-      bind_cols(ssb0s)
-
+      mutate(mpa = patch %in% mpa_locs) 
+      
+    mpas_and_ssb0s <- ssb0s |> 
+      left_join(mpas, by = "patch")
+      
     # run MPA simulation
     starting_step = marlin::clean_steps(last(names(starting_conditions)))
   
@@ -192,18 +197,18 @@ run_mpa_experiment <-
     
     steps <- marlin::clean_steps(names(mpa_sim))
     
-    out <- marlin::process_marlin(mpa_sim, steps_to_keep = last(steps), keep_age = FALSE)
+    out <- marlin::process_marlin(mpa_sim, steps_to_keep = last(steps), keep_age = keep_age)
     
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>
       select(-patch)
-    
+
     out$fauna <- out$fauna |>
       left_join(mpa_distances, by = c("x","y")) |> 
-      left_join(mpas |> select(-patch,-mpa), by = c("x","y"))
+      left_join(mpas_and_ssb0s |> select(-patch,-mpa), by = c("x","y", "critter"))
     
     out$fleets <- out$fleets |>
       left_join(mpa_distances, by = c("x","y")) |> 
-      left_join(mpas |> select(-patch,-mpa), by = c("x","y"))
+      left_join(mpas_and_ssb0s |> select(-patch,-mpa), by = c("x","y", "critter"))
     
     if (drop_patches){
   

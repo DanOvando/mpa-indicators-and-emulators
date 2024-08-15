@@ -8,6 +8,7 @@ create_fleets <-
            port_locations = NULL,
            tune_type = "explt",
            effort_cost_exponent = 1,
+           effort_int = 0,
            resolution) {
     
 
@@ -100,7 +101,7 @@ create_fleets <-
             spatial_catchability = d_spatial_q
           )
         ),
-        base_effort = prod(resolution),
+        base_effort = prod(resolution) + effort_int,
         cost_per_unit_effort = 10,
         cost_per_distance = 2000,
         effort_cost_exponent = effort_cost_exponent,
@@ -194,7 +195,7 @@ create_fleets <-
               spatial_catchability = d_spatial_q
             )
           ),
-          base_effort = prod(resolution),
+          base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 1000,
           cost_per_distance = 2000,
           effort_cost_exponent = effort_cost_exponent,
@@ -253,7 +254,7 @@ create_fleets <-
               spatial_catchability = d_spatial_q
             )
           ),
-          base_effort = prod(resolution),
+          base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 5,
           cost_per_distance = 1000,
           effort_cost_exponent = effort_cost_exponent,
@@ -299,7 +300,7 @@ create_fleets <-
               p_explt = 1,
               sel_unit = "length",
               spatial_catchability = a_spatial_q)),
-          base_effort = prod(resolution),
+          base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 10,
           cost_per_distance = 2000,
           effort_cost_exponent = effort_cost_exponent,
