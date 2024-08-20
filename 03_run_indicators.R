@@ -7,7 +7,7 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 4,
+  n_states = 50,
   run_name = "indicators_v0.1",
   drop_patches = FALSE,
   experiment_workers = 7,
@@ -28,7 +28,7 @@ resolution <- c(rx, ry)
 
 difficulties <- c("complex", "medium", "simple")
 
-difficulties <- c("complex")
+# difficulties <- c("medium")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -279,7 +279,7 @@ for (difficulty in difficulties) {
   
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "area", "avoid_fishing"),
-    prop_mpa = seq(0, 1, by = 0.05),
+    prop_mpa = seq(0, 0.75, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
       length(state_experiments$fauna[[1]]),
@@ -308,6 +308,9 @@ for (difficulty in difficulties) {
   #
   experiment_results <-
     vector(mode = "list", length = 2) # for memory-concious mode, only save reference and the current MPA size
+  
+  processed_sims <-
+    vector(mode = "list", length = nrow(placement_experiments) - 1) # for memory-concious mode, only save reference and the current MPA size
   
   pb <- progress_bar$new(
     format = "  Running MPA Experiments [:bar] :percent eta: :eta",
@@ -351,18 +354,17 @@ for (difficulty in difficulties) {
     # Sys.time() - a
 
     # to save memory, iteratively comparing a given MPA size to MPA size = 0
-    if (placement_experiments$prop_mpa[p] > 0) {
-      stop()
+    if (placement_experiments$prop_mpa[p] > 0)   {
+
       experiment_results[[2]] <- tmp$results
       
-      
-      test <- process_sims(
+      processed_sims[[p-1]] <- process_sims(
         difficulty_level = difficulty,
         results_dir = results_dir,
         drop_patches = drop_patches,
         project = project,
         experiment_results = experiment_results,
-        placement_experiments = placement_experiments[c(1, p), ],
+        placement_experiments = placement_experiments[c(zerofinder,p), ],
         state_experiments = state_experiments,
         load_results = save_experiments
       )
@@ -370,11 +372,12 @@ for (difficulty in difficulties) {
       
     } else {
       # store baseline case with no MPA
+      
+      zerofinder <- p # mark where the last zero MPA size was
+      
       experiment_results[[1]] <- tmp$results
       
     }
-    
-    
     
     pb$tick()
 
@@ -391,18 +394,48 @@ for (difficulty in difficulties) {
     experiment_results <- NULL
   }
   
-  processed_sims <- process_sims(
-    difficulty_level = difficulty,
-    results_dir = results_dir,
-    drop_patches = drop_patches,
-    project = project,
-    experiment_results = experiment_results,
-    load_results = save_experiments
-  )
+  # processed_sims <- process_sims(
+  #   difficulty_level = difficulty,
+  #   results_dir = results_dir,
+  #   drop_patches = drop_patches,
+  #   project = project,
+  #   experiment_results = experiment_results,
+  #   load_results = save_experiments
+  # )
+
   
-  write_rds(processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
+  components <- names(processed_sims[[1]])
   
-  tmp <- processed_sims$mpa_outcomes |>
+  components <- components[!components %in% c("fauna_results", "difficulty")]
+  
+
+ # combine each component of the placement experiemnts into one dataframe per metric, in some way that may not be pretty but works
+   
+ flat_processed_sims <- vector(mode = "list", length = length(components)) |> 
+   set_names(components)
+ 
+ 
+
+ for (i in components){
+   
+   tmp <-  map(processed_sims,i) |> 
+     list_rbind()
+     
+   flat_processed_sims[[i]] <- tmp
+   
+ }
+ 
+ flat_processed_sims$species_variables <- processed_sims[[1]]$species_variables
+ 
+ flat_processed_sims$state_variables <- processed_sims[[1]]$state_variables
+ 
+ flat_processed_sims$difficulty <- difficulty
+ 
+  rm(processed_sims)
+
+  write_rds(flat_processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
+  
+  tmp <- flat_processed_sims$mpa_outcomes |>
     select(percent_mpa_effect,
            fleet,
            state_id,
@@ -410,7 +443,7 @@ for (difficulty in difficulties) {
            critter,
            prop_mpa,
            name) |>
-    left_join(processed_sims$species_variables,
+    left_join(flat_processed_sims$species_variables,
               by = c("state_id", "critter" = "scientific_name")) |>
     left_join(placement_experiments, by = c("placement_id", "prop_mpa")) # |>
   # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))

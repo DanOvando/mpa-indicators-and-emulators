@@ -197,6 +197,8 @@ run_mpa_experiment <-
     
     steps <- marlin::clean_steps(names(mpa_sim))
     
+    ## XXX add in before here later if needed for BACI ##
+    
     out <- marlin::process_marlin(mpa_sim, steps_to_keep = last(steps), keep_age = keep_age)
     
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>

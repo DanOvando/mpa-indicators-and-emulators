@@ -48,12 +48,17 @@ paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_d
 
 unlink(paper_figs)
 
-difficulties <- c("simple","medium","complex")
-
 min_depletion <- 0.00001
 
 tune_grids <- FALSE
 ```
+
+
+Need to fix some processing here, the whole "fleets" thing where there are rows for nature and then for individual fleets is messing some stuff up. 
+
+Need to separate out the fleets part, then join the nature part
+
+the solution is to aggreate indicators across fleets, so that you just look at average effort and cpue in total rather than by fleet you dummy
 
 ```{r}
 #| label: load-results
@@ -78,28 +83,28 @@ critter_namer <- function(x){
 
 ## get MPA sizes
 
-simple <- simple_state_experiments |> 
-  select(state_id, depletion) |> 
-  unnest(cols = depletion) |> 
+simple <- simple_state_experiments |>
+  select(state_id, depletion) |>
+  unnest(cols = depletion) |>
   mutate(difficulty = "simple")
 
-medium <- medium_state_experiments |> 
-  select(state_id, depletion) |> 
-  unnest(cols = depletion) |> 
+medium <- medium_state_experiments |>
+  select(state_id, depletion) |>
+  unnest(cols = depletion) |>
   mutate(difficulty = "medium")
 
-complex <- complex_state_experiments |> 
-  select(state_id, depletion) |> 
-  unnest(cols = depletion) |> 
+complex <- complex_state_experiments |>
+  select(state_id, depletion) |>
+  unnest(cols = depletion) |>
   mutate(difficulty = "complex")
 
-  state_depletions <- simple |> 
-  bind_rows(medium) |> 
-  bind_rows(complex) |> 
+state_depletions <- simple |>
+  bind_rows(medium) |>
+  bind_rows(complex) |>
   mutate(state_id = glue("{difficulty}_{state_id}"))
   
-  valid_state_depletions <- state_depletions |> 
-    filter(depletion >= min_depletion)
+valid_state_depletions <- state_depletions |>
+  filter(depletion >= min_depletion)
 
 
 simple <- simple_processed_sims$mpa_outcomes |> 
@@ -112,62 +117,28 @@ complex <- complex_processed_sims$mpa_outcomes |>
   mutate(difficulty = "complex")
 
 # results of all marlin simulations
-highres <- simple |> 
+inds_and_outs <- simple |> 
   bind_rows(medium) |> 
   bind_rows(complex) |> 
   mutate(state_id = glue("{difficulty}_{state_id}")) |> 
   mutate(id = glue("{difficulty}-{id}")) |> 
-  mutate(prop_mpa = as_factor(prop_mpa))
-
-
-simple <- simple_emulated_experiment_results |> 
-  mutate(difficulty = "simple")
-
-medium <- medium_emulated_experiment_results |> 
-  mutate(difficulty = "medium")
-
-complex <- complex_emulated_experiment_results |> 
-  mutate(difficulty = "complex")
-
-# results of all PT simulations
-lowres <- simple |> 
-  bind_rows(medium) |> 
-  bind_rows(complex) |> 
-  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
-  unnest(cols = mpa_experiment) |> 
-  filter(year == max(year)) |> 
-  mutate(prop_mpa = as_factor(prop_mpa))
-
-
-tidy_lowres <- lowres |>
-  mutate(percent_biomass = b_mpa / b_bau - 1,
-         percent_catch = yield_mpa / yield_bau - 1) |>
-  select(state_id, prop_mpa, critter, starts_with("percent")) |>
-  pivot_longer(
-    starts_with("percent"),
-    names_to = "name",
-    values_to = "lowres_percent_mpa_effect",
-    names_prefix = "percent_"
-  ) 
-
-highres_vs_lowres <- highres |>
-  left_join(tidy_lowres, by = c("state_id", "name", "critter", "prop_mpa")) |> 
-  filter(!is.na(lowres_percent_mpa_effect)) |> 
-  left_join(state_depletions |> select(state_id, critter, depletion), by = c("state_id","critter")) |> 
-  filter(depletion > min_depletion) |> 
-  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)),
-         critter = critter_namer(critter))
+  mutate(prop_mpa = as_factor(prop_mpa)) |> 
+  mutate(difficulty = fct_relevel(difficulty,"simple", "medium"))
 
 rm(list = c("simple", "medium", "complex"))
 
 
 ```
 
+## Introduction
+
 Two key questions
 
 1.  Are MPA outcomes variable enough to provide a need for indicators
 
 2.  Which indicators can reliably track that viability if so?
+
+Things change for lots of reasons in ecological systems. These changes are often correlated in space and time... blah
 
 ## Methods
 
@@ -257,7 +228,258 @@ Or, a simpler and more generalizable approach would be to split outside distance
 
 The nice thing about all this is that it's about seeing if something is or isn't useful, so if that ends up being useful, then great!
 
+### 
+
+## Results
+
+### How Variable are MPA Effects?
+
+```{r}
+
+  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
+
+fleet_outcomes <- inds_and_outs |>
+  select(
+    percent_mpa_effect,
+    fleet,
+    state_id,
+    placement_id,
+    critter,
+    prop_mpa,
+    name,
+    f_v_m,
+    difficulty
+  ) |>
+  filter(fleet != "nature") |>
+  pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
+
+nature_outcomes <- inds_and_outs |>
+  filter(fleet == "nature") |>
+  select(ends_with("id"),
+         critter,
+         prop_mpa,
+         name,
+         percent_mpa_effect,
+         difficulty) |>
+  pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
+
+mpa_outcomes <- fleet_outcomes |>
+  left_join(nature_outcomes,
+            by = join_by(state_id, placement_id, critter, prop_mpa, difficulty)) |>
+  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
+
+  
+  quad_labels <- data.frame(
+    x = c(50, 50, -24, -24),
+    y = c(50, -50, 50, -50),
+    label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
+  )
+  thirty_protected_plot <- mpa_outcomes |>
+    # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
+    ggplot(aes(biomass, catch)) +
+    geom_vline(xintercept = 0, color = "black") +
+    geom_hline(yintercept = 0, color = "black") +
+    geom_jitter(aes(color = f_v_m), alpha = 0.25, size = 3) +
+    # geom_text(
+    #   data = quad_labels,
+    #   aes(x, y, label = label),
+    #   size = 6,
+    #   color = "red"
+    # ) +
+    scale_color_viridis_c(
+      "BAU Fishing Mortality",
+      breaks = c(0, .5),
+      labels = c("Low", "High"),
+      limits = c(0, .5),
+      option = "plasma",
+      guide = guide_colorbar(
+        frame.colour = "black",
+        ticks.colour = "black",
+        barwidth =  unit(11, "lines")
+      )
+    )  +
+    scale_x_continuous(name = "X Change in Species Biomass",
+                       oob = squish,
+                       limits = c(NA, 1)) +
+    scale_y_continuous(name = "X Change in Species Catch",
+                       oob = squish,
+                       limits = c(NA, 1)) +
+    theme(legend.position = "bottom") +
+    labs(caption = "20-40% of area in MPA") + 
+    facet_wrap(~difficulty)
+  
+  
+  # thirty_protected_plot <- ggMarginal(thirty_protected_plot,
+  #                                     type = "histogram",
+  #                                     fill = "steelblue")
+  
+  thirty_protected_plot
+```
+
+### Indicator Performance
+
+The idea: let's break this into outcomes (population change, inside change, outside change, food change, quadrant) and have a subsection for each of those. For each section, you'll identify a top performer, and then have a table or figure summarizing for each thing the best indicator and its relative performance. 
+
+So how are you going to judge performance? I guess error and bias for the quantitative sections, and then classification accuracy for the quadrant? RMSE and MAE, accuracy
+
+```{r}
+
+
+# View(head(inds_and_outs))
+
+indicators <- inds_and_outs |>
+  select(critter,
+         prop_mpa,
+         state_id,
+         placement_id,
+         difficulty,
+         prop_mpa,
+         starts_with("ind")) |>
+  pivot_longer(starts_with("ind_"),
+               names_to = "indicator",
+               values_to = "indicator_value") |>
+  filter(!is.na(indicator_value))
+
+outcomes <- inds_and_outs |> 
+  select(state_id, placement_id,critter,fleet,prop_mpa, difficulty, percent_mpa_effect, name)
+
+quadrant_outcomes <- fleet_outcomes |>
+  select(state_id, prop_mpa, placement_id, critter, fleet, difficulty, catch) |>
+  left_join(nature_outcomes |> select(state_id, prop_mpa, placement_id, critter, biomass, difficulty),by = join_by(state_id, prop_mpa, placement_id, critter, difficulty)) |>
+  pivot_longer(c(catch,biomass)) |>
+  mutate(tag = paste(
+    name,
+    case_when(value > 0.05 ~ "positive", value < -0.05 ~ "negative", .default = "unaffected"),
+    sep = ":"
+  )) |>
+  select(-value) |>
+  pivot_wider(names_from = name, values_from = tag) |>
+  mutate(quadrant = paste(catch, biomass, sep = " & ")) |>
+  left_join(
+    inds_and_outs |>
+  select(critter,
+         prop_mpa,
+         state_id,
+         placement_id,
+         difficulty,
+         prop_mpa,
+         starts_with("ind")),
+    by = c(
+      "critter",
+      "state_id",
+      "placement_id",
+      "prop_mpa",
+      "difficulty"
+    ),
+    relationship = "many-to-many"
+  )
+
+
+quadrant_outcomes |> 
+  ggplot(aes(quadrant)) + 
+  geom_bar() + 
+  coord_flip()
+
+comparison <- outcomes |> 
+  left_join(indicators, by = c("critter", "state_id", "placement_id", "prop_mpa", "difficulty"), relationship = "many-to-many") |> 
+  mutate(percent_mpa = as.numeric(as.character(prop_mpa)))
+
+head(comparison)
+
+
+known_habitat_plot <- comparison |> 
+  filter(percent_mpa <= 0.1) |> 
+  filter(name %in% c("biomass", "catch", "revenue"),
+         !str_detect(indicator,"_raw")) |> 
+  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
+  ggplot(aes(indicator_value, percent_mpa_effect)) + 
+  geom_point(alpha = 0.2) + 
+  geom_smooth(method = "lm") +
+  facet_grid(name ~ indicator, scales = "free") + 
+  scale_y_continuous(limits = c(NA,2), oob = squish) + 
+  scale_fill_viridis_b() + 
+  labs(title = "Habitat known")
+
+known_habitat_plot
+
+unknown_habitat_plot <- comparison |> 
+  # filter(prop_mpa < 0.4) |> 
+  filter(name %in% c("biomass", "catch", "revenue"),
+         str_detect(indicator,"_raw")) |> 
+  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
+  ggplot(aes(indicator_value, percent_mpa_effect)) + 
+  geom_point(alpha = 0.2) + 
+  geom_smooth(method = "lm") +
+  facet_grid(name ~ indicator, scales = "free") + 
+  scale_y_continuous(limits = c(NA,2), oob = squish) + 
+  scale_fill_viridis_b() + 
+  labs(title = "Habitat unknown")
+
+unknown_habitat_plot
+
+```
+
+```{r}
+
+measure_performance <- function(x){
+  
+  augx <- broom::augment(x)
+  
+  # plot(augx$.fitted, augx$percent_mpa_effect)
+  # browser()
+  out <- data.frame(rmse = yardstick::rmse_vec(augx$percent_mpa_effect, augx$.fitted),
+                    bias = mean(augx$percent_mpa_effect- augx$.fitted))
+  
+}
+
+indicator_performance <- comparison |>
+  filter(is.finite(percent_mpa_effect), is.finite(indicator_value)) |> 
+  filter(!is.na(indicator)) |> 
+  group_by(name, indicator, difficulty) |>
+  nest() |>
+  mutate(model = map(data, ~ lm(
+    percent_mpa_effect ~ indicator_value, data = .x
+  ))) |> 
+  mutate(model_summary = map(model, broom::glance)) |> 
+  mutate(model_performance = map(model, measure_performance)) |> 
+  unnest(cols = c(model_summary,model_performance))
+
+  
+indicator_performance |> 
+  mutate(raw = str_detect(indicator, "_raw")) |> 
+  ggplot(aes(adj.r.squared, fill = raw)) + 
+  geom_dotplot() + 
+  facet_grid(indicator~difficulty, scales = "free_y")
+
+
+indicator_performance |> 
+  mutate(raw = str_detect(indicator, "_raw")) |> 
+  ggplot(aes(rmse, fill = raw)) + 
+  geom_dotplot() + 
+  facet_grid(indicator~difficulty, scales = "free_y") + 
+  scale_x_continuous(limits = c(NA,2), oob = squish)
+
+
+
+indicator_performance |> 
+  mutate(raw = str_detect(indicator, "_raw")) |> 
+  ggplot(aes(bias, fill = raw)) + 
+  geom_dotplot() + 
+  facet_grid(indicator~difficulty, scales = "free_y") 
+
+
+
+
+
+```
+
 ### Discussion
+
+Note that this is all assuming equilibrium! 
+
+Just as a quota for one species can have unintended consequences on another, so can MPAs. 
+
+Let us be clear. THe simulation results presented here indicate that clearly MPAs are capable of benefiting biomass and catch. However, they are also capable of harming both.
 
 @halpern2004
 

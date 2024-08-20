@@ -1,4 +1,7 @@
 calculate_indicators <- function(x, prop_mpa) {
+  
+
+  
   fauna <-  x$fauna[[1]] |>
     group_by(step, critter, patch, x, y, patch_name) |>
     summarise(
@@ -12,16 +15,21 @@ calculate_indicators <- function(x, prop_mpa) {
     mutate(outside_distance = if_else(mpa,NA,distance_to_mpa_edge)) |> 
     mutate(outside_bin = percent_rank(outside_distance)) |> 
     mutate(mpa_proximity = case_when(outside_bin <= 0.2 ~ "near", outside_bin >= 0.8 ~ "far", .default = "nomans"),
-           mpa_proximity= fct_relevel(mpa_proximity,"far", "nomans"))  
+           mpa_proximity = forcats::fct(mpa_proximity, levels = c("near", "nomans", "far")),
+           mpa_proximity= fct_relevel(mpa_proximity,"far", "nomans")) |> 
+    group_by(critter) |> 
+    mutate(sbiomass = scale(biomass),
+           smean_length = scale(mean_length)) |> 
+    ungroup()
   
   fleets <-  x$fleets[[1]] |> 
     rename(tmpcatch = catch) |> 
     filter(!is.na(tmpcatch)) |> 
-    group_by(step, critter, patch, x, y, patch_name, fleet) |>
+    group_by(step, critter, patch, x, y, patch_name) |>
     summarise(
       catch = sum(tmpcatch),
       mean_length = weighted.mean(mean_length, w = tmpcatch),
-      effort = unique(effort),
+      effort = sum(effort),
       mpa = unique(mpa),
       distance_to_mpa_edge = unique(distance_to_mpa_edge),
       ssb0_p =  unique(ssb0_p)
@@ -31,45 +39,51 @@ calculate_indicators <- function(x, prop_mpa) {
     mutate(outside_distance = if_else(mpa,NA,distance_to_mpa_edge)) |> 
     mutate(outside_bin = percent_rank(outside_distance)) |> 
     mutate(mpa_proximity = case_when(outside_bin <= 0.2 ~ "near", outside_bin >= 0.8 ~ "far", .default = "nomans"),
-           mpa_proximity= fct_relevel(mpa_proximity,"far", "nomans"))
+           mpa_proximity = forcats::fct(mpa_proximity, levels = c("near", "nomans", "far")),
+            mpa_proximity= fct_relevel(mpa_proximity,"far", "nomans")) |> 
+    group_by(critter) |> 
+    mutate(seffort = scale(effort),
+           scpue = scale(cpue)) |> 
+    ungroup()
   
   
-  
-  # fauna |>
-  #   ggplot(aes(distance_to_mpa_edge, biomass, color = mpa_proximity)) +
-  #   geom_point() +
-  #   facet_wrap(~critter, scales = "free_y") +
-  #   scale_y_continuous(limits = c(0, NA))
 
   # fauna |>
-  #   ggplot(aes(distance_to_mpa_edge, mean_length)) +
+  #   ggplot(aes(distance_to_mpa_edge, sbiomass, color = mpa_proximity)) +
   #   geom_point() +
-  #   facet_wrap(~critter, scales = "free_y") +
-  #   scale_y_continuous(limits = c(0, NA))
+  #   facet_wrap(~critter, scales = "free_y") 
+
+  # fauna |>
+  #   ggplot(aes(distance_to_mpa_edge, smean_length)) +
+  #   geom_point() +
+  #   facet_wrap(~critter, scales = "free_y")
   # 
-  
-  # 
+
+  #
   # fleets |>
-  #   ggplot(aes(distance_to_mpa_edge, (effort), color = mpa_proximity)) +
+  #   ggplot(aes(distance_to_mpa_edge, (seffort), color = mpa_proximity)) +
   #   geom_point() +
-  #   facet_wrap(~fleet, scales = "free_y") +
-  #   scale_y_continuous(limits = c(0, NA))
-  # 
+  #   facet_wrap(~fleet, scales = "free_y") 
+  #
   # fleets |>
   #   ggplot(aes(distance_to_mpa_edge, (catch), color = mpa_proximity)) +
   #   geom_point() +
   #   facet_grid(critter~fleet, scales = "free_y") +
   #   scale_y_continuous(limits = c(0, NA))
-  
+
   # fleets |>
-  #   ggplot(aes(distance_to_mpa_edge, (cpue), color = mpa_proximity)) +
+  #   group_by(critter, fleet) |> 
+  #   mutate(out = scale(cpue)) |> 
+  #   ggplot(aes(distance_to_mpa_edge, out, color = mpa_proximity)) +
   #   geom_point() +
   #   facet_grid(critter~fleet, scales = "free_y") +
   #   scale_y_continuous(limits = c(0, NA))
-  # 
+  #
+  # browser()
 
+enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_proximity)) < 2)
 
-  if (prop_mpa > 0 & prop_mpa < 1) {
+  if (prop_mpa > 0 & prop_mpa < 1 & enough_distance) {
 
     survey_indicators <- fauna |>
       mutate(weight = abs(distance_to_mpa_edge)) |>
@@ -104,43 +118,39 @@ calculate_indicators <- function(x, prop_mpa) {
         )$coefficients["mpaTRUE"]
       ))) |>
       mutate(ind_biomass_gradient = map_dbl(data, ~ as.numeric(
-        lm(log(biomass + 1e-6) ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(sbiomass ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |> 
       mutate(ind_biomass_gradient_raw = map_dbl(data, ~ as.numeric(
-        lm(log(biomass + 1e-6) ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(sbiomass ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |> 
-      select(-data) |>
-      mutate(fleet = "nature")
+      select(-data) 
     
     
     fishery_indicators <- fleets |>
       filter(mpa_proximity != "nomans") |> 
-      group_by(fleet, critter, step) |>
+      group_by(critter, step) |>
       nest() |>
       mutate(ind_effort_gradient = map_dbl(
         data,
-        ~ as.numeric(lm(log(effort + 1e-6) ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
+        ~ as.numeric(lm(seffort ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
       )) |>
       mutate(ind_effort_gradient_raw = map_dbl(
         data,
-        ~ as.numeric(lm(log(effort + 1e-6) ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
+        ~ as.numeric(lm(seffort ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
       )) |>
       mutate(ind_cpue_gradient = map_dbl(
         data,
-        ~ as.numeric(lm(log(cpue + 1e-6) ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
+        ~ as.numeric(lm(scpue ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
       )) |>
       mutate(ind_cpue_gradient_raw = map_dbl(
         data,
-        ~ as.numeric(lm(log(cpue + 1e-6) ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
+        ~ as.numeric(lm(scpue ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"])
       )) |>
-      select(-data)
+      select(-data) 
     
- 
     out <- fishery_indicators |>
-      bind_rows(survey_indicators) |>
-      ungroup() |> 
-      pivot_longer(starts_with("ind_"), names_to = "indicator", values_to = "indicator_value") |> 
-      filter(!is.na(indicator_value))
+      left_join(survey_indicators,join_by(step, critter))
+     
   } else {
     out <- data.frame(step = NA,
                       critter = NA,

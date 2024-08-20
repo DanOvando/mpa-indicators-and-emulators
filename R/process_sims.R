@@ -60,7 +60,7 @@ process_sims <- function(difficulty_level = "complex",
     filter(prop_mpa == 0) |>
     group_by(id) |>
     nest(.key = "control")
-  
+
   # create results ----------------------------------------------------------
   
   # first, calculate no-MPA baseline for metrics in question
@@ -89,6 +89,9 @@ process_sims <- function(difficulty_level = "complex",
       pivot_longer(-c(critter, step)) |>
       mutate(fleet = "nature")
     
+    mpas <- treatment$fauna[[1]] |> 
+      select(x,y,mpa) |> 
+      unique()
     
     treatment_fleets <- treatment$fleets[[1]] |>
       group_by(fleet, critter, step) |>
@@ -107,10 +110,10 @@ process_sims <- function(difficulty_level = "complex",
     #   select(x, y, mpa) |>
     #   unique()
     #
-    
+
     control_fauna <- control$fauna[[1]] |>
-      # select(-mpa) |>
-      # left_join(mpas, by = c("x", "y")) |>
+      select(-mpa) |>
+      left_join(mpas, by = c("x", "y")) |>
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -163,13 +166,14 @@ process_sims <- function(difficulty_level = "complex",
     )
   
   if (!drop_patches) {
+
     tmp <- tmp |>
       mutate(
-        gradients = map2(treatment, prop_mpa, calculate_indicators, .progress = "calculating MPA gradients")
+        indicators = map2(treatment, prop_mpa, calculate_indicators, .progress = "calculating MPA indicators")
         
       )
   } else {
-    tmp$gradients <- vector(mode = "list", length = nrow(tmp))
+    tmp$indicators <- vector(mode = "list", length = nrow(tmp))
   }
   
   # then, calculate MPA outcomes
@@ -196,7 +200,7 @@ process_sims <- function(difficulty_level = "complex",
     select(-habitat, -critter)
 
   mpa_outcomes <- tmp |>
-    select(-treatment, -control, -gradients) |>
+    select(-treatment, -control, -indicators) |>
     unnest(cols = outcomes) |>
     ungroup() |>
     left_join(species_variables,
@@ -205,21 +209,21 @@ process_sims <- function(difficulty_level = "complex",
   
   
   if (!drop_patches) {
-    mpa_gradients <- tmp |>
+    mpa_indicators <- tmp |>
       select(-treatment, -control, -outcomes) |>
-      unnest(cols = gradients) |>
+      unnest(cols = indicators) |>
       ungroup()
-    
-    slopes <- mpa_gradients |>
-      group_by(fleet, prop_mpa) |>
-      summarise(
-        real_neg_slope = mean(cpue_gradient < -0.025, na.rm = TRUE),
-        real_pos_slope = mean(cpue_gradient > 0.025, na.rm = TRUE)
-      )
-    
+    # 
+    # slopes <- mpa_gradients |>
+    #   group_by(fleet, prop_mpa) |>
+    #   summarise(
+    #     real_neg_slope = mean(ind_cpue_gradient < -0.025, na.rm = TRUE),
+    #     real_pos_slope = mean(ind_cpue_gradient > 0.025, na.rm = TRUE)
+    #   )
+
     mpa_outcomes <- mpa_outcomes |>
-      left_join(mpa_gradients,
-                by = join_by(id, placement_id, state_id, prop_mpa, critter, step, fleet))
+      left_join(mpa_indicators,
+                by = join_by(id, placement_id, state_id, prop_mpa, critter, step))
   } # close drop patches
   
   out <- list(
