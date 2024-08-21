@@ -18,8 +18,8 @@ calculate_indicators <- function(x, prop_mpa) {
            mpa_proximity = forcats::fct(mpa_proximity, levels = c("near", "nomans", "far")),
            mpa_proximity= fct_relevel(mpa_proximity,"far", "nomans")) |> 
     group_by(critter) |> 
-    mutate(sbiomass = scale(biomass),
-           smean_length = scale(mean_length)) |> 
+    mutate(sbiomass = as.numeric(scale(biomass)),
+           smean_length = as.numeric(scale(mean_length))) |> 
     ungroup()
   
   fleets <-  x$fleets[[1]] |> 
@@ -42,8 +42,8 @@ calculate_indicators <- function(x, prop_mpa) {
            mpa_proximity = forcats::fct(mpa_proximity, levels = c("near", "nomans", "far")),
             mpa_proximity= fct_relevel(mpa_proximity,"far", "nomans")) |> 
     group_by(critter) |> 
-    mutate(seffort = scale(effort),
-           scpue = scale(cpue)) |> 
+    mutate(seffort = as.numeric(scale(effort)),
+           scpue = as.numeric(scale(cpue))) |> 
     ungroup()
   
   
@@ -148,8 +148,59 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
       )) |>
       select(-data) 
     
+    baci <- fauna |> 
+      mutate(weight = abs(distance_to_mpa_edge)) |>
+      filter(step == min(step) | step == max(step)) |>
+      mutate(after = case_when(step == max(step) ~ TRUE, .default = FALSE)) |> 
+      mutate(baci = after & mpa) |> 
+      group_by(critter) |> 
+      nest() |>
+      mutate(ind_biomass_baci_raw = map_dbl(data, ~ as.numeric(
+        lm(
+          sbiomass ~ mpa + after + baci,
+          data = .x,
+          weights = weight
+        )$coefficients["baciTRUE"]
+      ))) |> 
+      mutate(ind_biomass_baci = map_dbl(data, ~ as.numeric(
+        lm(
+          sbiomass ~ mpa + after + baci + ssb0_p,
+          data = .x,
+          weights = weight
+        )$coefficients["baciTRUE"]
+      ))) |> 
+      ungroup()
+    
+    bag <- fauna |> 
+      filter(mpa_proximity != "nomans") |> 
+      mutate(weight = abs(distance_to_mpa_edge)) |>
+      filter(step == min(step) | step == max(step)) |>
+      mutate(after = case_when(step == max(step) ~ TRUE, .default = FALSE)) |> 
+      mutate(gradient = mpa_proximity == "near") |> 
+      mutate(bag = after & gradient) |> 
+      group_by(critter) |> 
+      nest() |>
+      mutate(ind_biomass_bag_raw = map_dbl(data, ~ as.numeric(
+        lm(
+          sbiomass ~ gradient + after + bag,
+          data = .x,
+          weights = weight
+        )$coefficients["bagTRUE"]
+      ))) |> 
+      mutate(ind_biomass_bag = map_dbl(data, ~ as.numeric(
+        lm(
+          sbiomass ~ gradient + after + bag + ssb0_p,
+          data = .x,
+          weights = weight
+        )$coefficients["bagTRUE"]
+      ))) |> 
+      ungroup()
+    
     out <- fishery_indicators |>
-      left_join(survey_indicators,join_by(step, critter))
+      left_join(survey_indicators,join_by(step, critter)) |> 
+      left_join(baci, by = "critter") |> 
+      left_join(bag, by = "critter")
+    
      
   } else {
     out <- data.frame(step = NA,

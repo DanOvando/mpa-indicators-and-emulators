@@ -6,6 +6,7 @@ run_mpa_experiment <-
            prop_mpa = 0.3,
            fauna,
            fleets,
+           rec_dev_cov_and_cor = NULL,
            placement_error = 0,
            mpa_response = "stay",
            critters_considered = NA,
@@ -183,6 +184,34 @@ run_mpa_experiment <-
   
     processed_step <- marlin::process_step(last(names(starting_conditions)))
     
+    sigma_recs <- purrr::map_dbl(fauna, "sigma_rec") # gather recruitment standard deviations
+    
+    ac_recs <- purrr::map_dbl(fauna, "ac_rec") # gather autocorrelation in recruitment standard deviations
+    
+    n_critters <-  length(fauna)
+    if (!is.null(rec_dev_cov_and_cor)){
+    
+    critter_correlations <- rec_dev_cov_and_cor$cor
+    
+    covariance_rec <- critter_correlations * (sigma_recs %o% sigma_recs)
+
+    seasons <- fauna[[1]]$seasons
+    
+    rec_steps <- (years + 1) * seasons
+    # simulate autocorrlated recruitment deviates with cross-critter correlations
+    log_rec_devs <- matrix(NA, nrow = rec_steps, ncol = n_critters, dimnames = list(1:(rec_steps), names(fauna)))
+    
+    log_rec_devs[1,] <- mvtnorm::rmvnorm(1,rep(0, n_critters),sigma = covariance_rec)
+    
+    for (i in 2:rec_steps){
+      
+      log_rec_devs[i, ] <- ac_recs *  log_rec_devs[i - 1, ] + sqrt(1 - ac_recs ^ 2) * mvtnorm::rmvnorm(1, rep(0,n_critters), sigma = covariance_rec)
+      
+    }
+    } else {
+      log_rec_devs <- NULL
+    }
+
     mpa_sim <- simmar(
       fauna = fauna,
       fleets = fleets,
@@ -192,14 +221,19 @@ run_mpa_experiment <-
       habitat = future_habitat,
       starting_step = starting_step,
       keep_starting_step = FALSE,
-      initial_conditions = starting_conditions[[length(starting_conditions)]]
+      initial_conditions = starting_conditions[[length(starting_conditions)]],
+      log_rec_devs = log_rec_devs
     )
     
     steps <- marlin::clean_steps(names(mpa_sim))
     
     ## XXX add in before here later if needed for BACI ##
+
+    # keep step in year one of MPA, 15 years after MPA, and in final year of simulation
+    # steps_to_keep <- c(steps[1], steps[15 * seasons], last(steps))
+    steps_to_keep <- c(steps[1], last(steps))
     
-    out <- marlin::process_marlin(mpa_sim, steps_to_keep = last(steps), keep_age = keep_age)
+    out <- marlin::process_marlin(mpa_sim, steps_to_keep = steps_to_keep, keep_age = keep_age)
     
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>
       select(-patch)

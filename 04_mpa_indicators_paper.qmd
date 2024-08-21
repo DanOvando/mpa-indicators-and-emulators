@@ -481,6 +481,8 @@ Just as a quota for one species can have unintended consequences on another, so 
 
 Let us be clear. THe simulation results presented here indicate that clearly MPAs are capable of benefiting biomass and catch. However, they are also capable of harming both.
 
+We implement size limits all the time without needing complex causal inference. Part of the reason for that is that it's a more direct lever, but still. But, if the movement of the coming yeasr was "No Undersized by 2035", resulting in a massive global investment in the design and roll of out size limit programs, a deeper look at measuring the prformance of size limits might be warranted 
+
 @halpern2004
 
 @franceschini2024

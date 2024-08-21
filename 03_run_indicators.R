@@ -7,8 +7,8 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 50,
-  run_name = "indicators_v0.1",
+  n_states = 2,
+  run_name = "test",
   drop_patches = FALSE,
   experiment_workers = 7,
   rx = 20,
@@ -103,6 +103,7 @@ for (difficulty in difficulties) {
       steepness = runif(length(state_id), min = 0.6, max = 1),
       ssb0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
+      sigma_rec = sample(c(0, 0.2, 0.8), length(state_id), replace = TRUE),
       density_dependence = sample(
         c(
           "global_habitat",
@@ -139,7 +140,8 @@ for (difficulty in difficulties) {
           ontogenetic_shift = ontogenetic_shift,
           steepness = steepness,
           ssb0 = ssb0,
-          kiss = kiss
+          kiss = kiss,
+          sigma_rec = sigma_rec
         ),
         create_experiment_critters,
         resolution = resolution,
@@ -164,10 +166,10 @@ for (difficulty in difficulties) {
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
   #
   # stop()
-  
   state_experiments <- state_experiments %>%
     ungroup() %>%
-    mutate(use_ports = sample(c(TRUE, FALSE), nrow(.), replace = TRUE)) %>%
+    mutate(use_ports = sample(c(TRUE, FALSE), n(), replace = TRUE),
+           max_abs_cor_rec = sample(c(0,.66), n(), replace = TRUE)) %>%
     mutate(
       fleet = pmap(
         list(
@@ -181,15 +183,18 @@ for (difficulty in difficulties) {
         difficulty = difficulty,
         port_locations = port_locations,
         resolution = resolution
-      )
+      ),
+      rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
     )
   
+
   # add in starting conditions
-  init_condit <- function(fauna, fleets, years = 125) {
+  init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
     starting_trajectory <-
       simmar(fauna = fauna,
              fleets = fleets,
-             years = years)
+             years = years,
+             cor_rec = rec_dev_cov_and_cor$cor)
     
     # plot_marlin(check)
     
@@ -206,9 +211,10 @@ for (difficulty in difficulties) {
   }
   
   state_experiments <- state_experiments %>%
-    mutate(tmp = map2(
-      fauna,
-      fleet,
+    mutate(tmp = pmap(
+      list(fauna = fauna,
+      fleet = fleet,
+      rec_dev_cov_and_cor = rec_dev_cov_and_cor),
       init_condit,
       .progress = glue::glue("simulating initial {difficulty} conditions")
     ))
@@ -219,8 +225,9 @@ for (difficulty in difficulties) {
   state_experiments$proc_starting_conditions <-
     map(state_experiments$tmp, "proc_starting_conditions")
   
+  message("checking if data can be removed here")
   state_experiments <- state_experiments %>%
-    select(-tmp)
+    select(-tmp,-data)
   
   state_depletions <-
     map_df(state_experiments$starting_conditions,
@@ -334,7 +341,8 @@ for (difficulty in difficulties) {
             starting_conditions = starting_conditions,
             proc_starting_conditions = proc_starting_conditions,
             fauna = fauna,
-            fleets = fleet
+            fleets = fleet,
+            rec_dev_cov_and_cor = rec_dev_cov_and_cor
           ),
           run_mpa_experiment,
           placement_strategy = placement_experiments$placement_strategy[p],
@@ -436,6 +444,7 @@ for (difficulty in difficulties) {
   write_rds(flat_processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
   
   tmp <- flat_processed_sims$mpa_outcomes |>
+    filter(step == max(step)) |> 
     select(percent_mpa_effect,
            fleet,
            state_id,
@@ -493,10 +502,10 @@ for (difficulty in difficulties) {
     )  +
     scale_x_continuous(name = "X Change in Species Biomass",
                        oob = squish,
-                       limits = c(NA, 0.5)) +
+                       limits = c(NA, 1)) +
     scale_y_continuous(name = "X Change in Species Catch",
                        oob = squish,
-                       limits = c(NA, 0.5)) +
+                       limits = c(NA, 1)) +
     theme(legend.position = "bottom") +
     labs(caption = "20-40% of area in MPA")
   

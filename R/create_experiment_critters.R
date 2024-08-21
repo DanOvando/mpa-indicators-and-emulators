@@ -14,7 +14,9 @@ create_experiment_critters <-
            hyper = 1,
            resolution,
            density_dependence,
-           kiss = FALSE) {
+           kiss = FALSE,
+           sigma_rec = 0,
+           ac_rec = 0) {
     
     hab <- habitat %>%
       pivot_wider(names_from = y, values_from = habitat) %>%
@@ -95,7 +97,9 @@ create_experiment_critters <-
       steepness =  steepness,
       ssb0 = ssb0,
       spawning_seasons = spawning_seasons,
-      resolution = resolution
+      resolution = resolution,
+      sigma_rec = sigma_rec,
+      ac_rec = ac_rec
     )
     
     critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.8

@@ -88,7 +88,8 @@ process_sims <- function(difficulty_level = "complex",
       ungroup() |>
       pivot_longer(-c(critter, step)) |>
       mutate(fleet = "nature")
-    
+    # browser()
+    warning("process sims line 92 ah right the issue is this breaks when drop_patches = TRUE as in when running emulators, fix that")
     mpas <- treatment$fauna[[1]] |> 
       select(x,y,mpa) |> 
       unique()
@@ -228,7 +229,6 @@ process_sims <- function(difficulty_level = "complex",
   
   out <- list(
     mpa_outcomes = mpa_outcomes,
-    fauna_results = fauna_results,
     difficulty = difficulty_level,
     species_variables = species_variables,
     state_variables = state_variables

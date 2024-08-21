@@ -6,7 +6,10 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 142, run_name = "v1.0", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+# prep_run(n_states = 142, run_name = "v1.0", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 4, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+
+project <- "emulators"
 
 library(tictoc)
 
@@ -390,7 +393,7 @@ for (difficulty in difficulties) {
   )))
   rm(experiment_results)
   
-  processed_sims <- process_sims(difficulty_level = difficulty, results_dir = results_dir, drop_patches = drop_patches)
+  processed_sims <- process_sims(difficulty_level = difficulty, results_dir = results_dir, drop_patches = drop_patches, project = project)
   
   write_rds(processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
   
