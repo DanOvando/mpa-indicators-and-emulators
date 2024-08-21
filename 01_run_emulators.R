@@ -7,7 +7,7 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 # prep_run(n_states = 142, run_name = "v1.0", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
-prep_run(n_states = 4, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 2, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
 
 project <- "emulators"
 

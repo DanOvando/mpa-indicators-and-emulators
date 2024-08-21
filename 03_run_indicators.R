@@ -225,9 +225,8 @@ for (difficulty in difficulties) {
   state_experiments$proc_starting_conditions <-
     map(state_experiments$tmp, "proc_starting_conditions")
   
-  message("checking if data can be removed here")
   state_experiments <- state_experiments %>%
-    select(-tmp,-data)
+    select(-tmp)
   
   state_depletions <-
     map_df(state_experiments$starting_conditions,
@@ -359,12 +358,16 @@ for (difficulty in difficulties) {
     
     tmp$results <-
       purrr::set_names(tmp$results, state_experiments$state_id)
+    
+    needed <- tmp$results
+    rm(tmp)
+    gc()
     # Sys.time() - a
 
     # to save memory, iteratively comparing a given MPA size to MPA size = 0
     if (placement_experiments$prop_mpa[p] > 0)   {
 
-      experiment_results[[2]] <- tmp$results
+      experiment_results[[2]] <- needed
       
       processed_sims[[p-1]] <- process_sims(
         difficulty_level = difficulty,
@@ -383,7 +386,7 @@ for (difficulty in difficulties) {
       
       zerofinder <- p # mark where the last zero MPA size was
       
-      experiment_results[[1]] <- tmp$results
+      experiment_results[[1]] <- needed
       
     }
     

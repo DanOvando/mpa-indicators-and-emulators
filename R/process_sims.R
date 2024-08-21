@@ -89,10 +89,12 @@ process_sims <- function(difficulty_level = "complex",
       pivot_longer(-c(critter, step)) |>
       mutate(fleet = "nature")
     # browser()
-    warning("process sims line 92 ah right the issue is this breaks when drop_patches = TRUE as in when running emulators, fix that")
+
+    if (!drop_patches){
     mpas <- treatment$fauna[[1]] |> 
       select(x,y,mpa) |> 
       unique()
+    }
     
     treatment_fleets <- treatment$fleets[[1]] |>
       group_by(fleet, critter, step) |>
@@ -112,9 +114,16 @@ process_sims <- function(difficulty_level = "complex",
     #   unique()
     #
 
+    if (!drop_patches){
     control_fauna <- control$fauna[[1]] |>
       select(-mpa) |>
-      left_join(mpas, by = c("x", "y")) |>
+      left_join(mpas, by = c("x", "y"))
+     
+    } else {
+      control_fauna <- control$fauna[[1]]
+    }
+    
+    control_fauna <- control_fauna |> 
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -126,7 +135,6 @@ process_sims <- function(difficulty_level = "complex",
       ungroup() |>
       pivot_longer(-c(critter, step), values_to = "control_value") |>
       mutate(fleet = "nature")
-    
     
     control_fleets <- control$fleets[[1]] |>
       # select(-mpa) |>
