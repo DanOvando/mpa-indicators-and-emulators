@@ -399,6 +399,7 @@ for (difficulty in difficulties) {
   
   tmp <- processed_sims$mpa_outcomes |>
     select(percent_mpa_effect,
+           step,
            fleet,
            state_id,
            placement_id,
@@ -407,8 +408,8 @@ for (difficulty in difficulties) {
            name) |>
     left_join(processed_sims$species_variables,
               by = c("state_id", "critter" = "scientific_name")) |>
-    left_join(placement_experiments, by = c("placement_id", "prop_mpa")) # |>
-  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
+    left_join(placement_experiments, by = c("placement_id", "prop_mpa")) |> 
+    filter(step == max(step))
   
   fleet_outcomes <- tmp |>
     filter(fleet != "nature") |>
