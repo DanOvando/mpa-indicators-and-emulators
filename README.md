@@ -11,7 +11,7 @@ From there, specific papers can be knit using the appropriate .qmd files, pointi
 
 Title: Predicted Effects of Marine Protected Areas on Conservation and Catches are Highly Sensitive to Model Structure
 
-Manuscript File: [02_emulators_paper.qmd](https://github.com/DanOvando/mpa-indicators-and-emulators/blob/main/02_emulators_paper.qmd)
+Manuscript File: [02_mpa_emulators_paper.qmd](https://github.com/DanOvando/mpa-indicators-and-emulators/blob/main/02_mpa_emulators_paper.qmd)
 
 File Generating Results: [01_run_indicators_and_emulators.R](https://github.com/DanOvando/mpa-indicators-and-emulators/blob/main/01_run_indicators_and_emulators.R)
 
