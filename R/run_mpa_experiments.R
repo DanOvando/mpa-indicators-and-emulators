@@ -17,7 +17,8 @@ run_mpa_experiment <-
            years = 50,
            future_habitat = list(),
            drop_patches = TRUE, 
-           keep_age = FALSE) {
+           keep_age = FALSE,
+           steps_to_keep = "after") {
     
     options(dplyr.summarise.inform = FALSE)
     
@@ -231,9 +232,19 @@ run_mpa_experiment <-
 
     # keep step in year one of MPA, 15 years after MPA, and in final year of simulation
     # steps_to_keep <- c(steps[1], steps[15 * seasons], last(steps))
-    steps_to_keep <- c(steps[1], last(steps))
     
-    out <- marlin::process_marlin(mpa_sim, steps_to_keep = steps_to_keep, keep_age = keep_age)
+    if (steps_to_keep == "before_after"){
+      keepers <- c(steps[1], last(steps))
+      
+    } else if (steps_to_keep == "after"){
+      keepers <-  last(steps)
+      
+    } else if (steps_to_keep == "before_during_after"){
+      
+      keepers <- c(steps[1], 15,last(steps))
+      
+    }
+    out <- marlin::process_marlin(mpa_sim, steps_to_keep = keepers, keep_age = keep_age)
     
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>
       select(-patch)

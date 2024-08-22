@@ -41,7 +41,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "test") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_v0.2") # loads packages and creates and returns some global variables for the analysis
 
 # clean up figures generated in the report to ensure that all figures come from a fresh state
 paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])

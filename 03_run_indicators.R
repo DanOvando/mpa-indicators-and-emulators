@@ -7,10 +7,10 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 2,
-  run_name = "test",
+  n_states = 50,
+  run_name = "indicators_v0.2",
   drop_patches = FALSE,
-  experiment_workers = 7,
+  experiment_workers = 8,
   rx = 20,
   ry = 20,
   patch_area = 5
@@ -27,8 +27,6 @@ resolution <- c(rx, ry)
 # difficulties <- c("simple")
 
 difficulties <- c("complex", "medium", "simple")
-
-# difficulties <- c("medium")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -351,6 +349,7 @@ for (difficulty in difficulties) {
           resolution = resolution,
           patch_area = patch_area,
           drop_patches = drop_patches,
+          steps_to_keep = "before_after",
           keep_age = TRUE
         )
       )

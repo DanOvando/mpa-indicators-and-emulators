@@ -41,7 +41,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "test") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
 
 # clean up figures generated in the report to ensure that all figures come from a fresh state
 paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
@@ -151,6 +151,7 @@ tidy_lowres <- lowres |>
   ) 
 
 highres_vs_lowres <- highres |>
+  filter(step == max(step)) |> 
   left_join(tidy_lowres, by = c("state_id", "name", "critter", "prop_mpa")) |> 
   filter(!is.na(lowres_percent_mpa_effect)) |> 
   left_join(state_depletions |> select(state_id, critter, depletion), by = c("state_id","critter")) |> 

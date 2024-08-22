@@ -6,8 +6,8 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-# prep_run(n_states = 142, run_name = "v1.0", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
-prep_run(n_states = 2, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 142, run_name = "emulators_v1.0", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
+# prep_run(n_states = 2, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
 
 project <- "emulators"
 
@@ -370,7 +370,8 @@ for (difficulty in difficulties) {
           placement_error = placement_experiments$placement_error[p],
           resolution = resolution,
           patch_area = patch_area,
-          drop_patches = drop_patches
+          drop_patches = drop_patches,
+          steps_to_keep = "after"
         )
       )
     
