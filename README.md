@@ -7,6 +7,12 @@ The starting file to run is 01_run_indicators_and_emulators.R
 
 From there, specific papers can be knit using the appropriate .qmd files, pointing the file to the appropriate results folder generted by the prior step. 
 
+These analyses depend on the [`marlin`](https://github.com/DanOvando/marlin/) package, which can be installed with 
+
+```
+remotes::install_github("danovando/marlin")
+```
+
 ## MPA Emulators
 
 Title: Predicted Effects of Marine Protected Areas on Conservation and Catches are Highly Sensitive to Model Structure
