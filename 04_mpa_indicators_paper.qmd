@@ -41,7 +41,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "indicators_v0.2") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_v0.1") # loads packages and creates and returns some global variables for the analysis
 
 # clean up figures generated in the report to ensure that all figures come from a fresh state
 paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
@@ -124,7 +124,8 @@ inds_and_outs <- simple |>
   mutate(id = glue("{difficulty}-{id}")) |> 
   mutate(prop_mpa = as_factor(prop_mpa)) |> 
   mutate(difficulty = fct_relevel(difficulty,"simple", "medium")) |> 
-  filter(step == max(step))
+  filter(step == max(step)) |> 
+  left_join(state_depletions, by = c("critter", "state_id", "difficulty"))
 
 rm(list = c("simple", "medium", "complex"))
 
@@ -229,11 +230,61 @@ Or, a simpler and more generalizable approach would be to split outside distance
 
 The nice thing about all this is that it's about seeing if something is or isn't useful, so if that ends up being useful, then great!
 
-### 
+### sometingw
 
 ## Results
 
+```{r}
+
+i <- as.integer(sample(unique(complex_processed_sims$mpa_outcomes$state_id),1))
+i
+reality <- complex_processed_sims$mpa_outcomes |> 
+  mutate(state_id = as.integer(state_id)) |> 
+  filter(state_id == i, step == max(step)) |> 
+  mutate(critter = critter_namer(critter))
+
+reality |> 
+  filter(name %in% c("catch", "biomass")) |> 
+  ggplot(aes(prop_mpa, percent_mpa_effect,color = name )) + 
+  geom_point() + 
+  facet_grid(critter~placement_strategy)
+
+
+a = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "spawning_biomass"),
+    aes(
+      prop_mpa,
+      value / ssb0,
+      color = critter
+    )
+  ) +
+  scale_y_continuous(limits = c(0, NA), name = "~B/B0") +
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  scale_color_viridis_d(name = '') +
+  facet_wrap( ~ placement_strategy) + 
+  guides(color = guide_legend(nrow = 2))
+
+b = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "catch") |> mutate(fleet = paste0("High-definition Fleet ",fleet)),
+    aes(prop_mpa, value, color = fleet)
+  ) +
+  scale_y_continuous(limits = c(0, NA), name = "Catch") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  facet_grid(critter~placement_strategy,scales = "free") + 
+  scale_color_brewer(name = '',palette = "Accent") +
+  guides(color = guide_legend(nrow = 2)) + 
+  theme(strip.text.y = element_text(size = 6))
+
+fig <- (a | b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
+fig
+#figsaver(fig)
+```
+
+
 ### How Variable are MPA Effects?
+
 
 ```{r}
 
@@ -241,6 +292,8 @@ The nice thing about all this is that it's about seeing if something is or isn't
 
 fleet_outcomes <- inds_and_outs |>
   select(
+    depletion,
+    placement_strategy,
     percent_mpa_effect,
     fleet,
     state_id,
@@ -249,7 +302,8 @@ fleet_outcomes <- inds_and_outs |>
     prop_mpa,
     name,
     f_v_m,
-    difficulty
+    difficulty,
+    sigma_rec
   ) |>
   filter(fleet != "nature") |>
   pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
@@ -269,6 +323,9 @@ mpa_outcomes <- fleet_outcomes |>
             by = join_by(state_id, placement_id, critter, prop_mpa, difficulty)) |>
   mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
 
+mpa_outcomes |> 
+  group_by(difficulty) |> 
+  summarise(n_distinct(state_id))
   
   quad_labels <- data.frame(
     x = c(50, 50, -24, -24),
@@ -276,11 +333,12 @@ mpa_outcomes <- fleet_outcomes |>
     label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
   )
   thirty_protected_plot <- mpa_outcomes |>
+    # filter(numeric_prop_mpa <= 0.4) |>
     # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
     ggplot(aes(biomass, catch)) +
     geom_vline(xintercept = 0, color = "black") +
     geom_hline(yintercept = 0, color = "black") +
-    geom_jitter(aes(color = f_v_m), alpha = 0.25, size = 3) +
+    geom_point(aes(color = depletion), alpha = 0.25) +
     # geom_text(
     #   data = quad_labels,
     #   aes(x, y, label = label),
@@ -288,10 +346,10 @@ mpa_outcomes <- fleet_outcomes |>
     #   color = "red"
     # ) +
     scale_color_viridis_c(
-      "BAU Fishing Mortality",
-      breaks = c(0, .5),
+      "BAU B/B0",
+      breaks = c(0, 1),
       labels = c("Low", "High"),
-      limits = c(0, .5),
+      limits = c(0, 1),
       option = "plasma",
       guide = guide_colorbar(
         frame.colour = "black",
@@ -301,13 +359,13 @@ mpa_outcomes <- fleet_outcomes |>
     )  +
     scale_x_continuous(name = "X Change in Species Biomass",
                        oob = squish,
-                       limits = c(NA, 1)) +
+                       limits = c(NA, 2)) +
     scale_y_continuous(name = "X Change in Species Catch",
                        oob = squish,
-                       limits = c(NA, 1)) +
+                       limits = c(NA, 2)) +
     theme(legend.position = "bottom") +
     labs(caption = "20-40% of area in MPA") + 
-    facet_wrap(~difficulty)
+    facet_wrap(~fct_rev(difficulty))
   
   
   # thirty_protected_plot <- ggMarginal(thirty_protected_plot,
@@ -315,9 +373,22 @@ mpa_outcomes <- fleet_outcomes |>
   #                                     fill = "steelblue")
   
   thirty_protected_plot
+  rm(mpa_outcomes)
+  #ggplotly(thirty_protected_plot)
 ```
 
+
 ### Indicator Performance
+
+
+1. determine best individaul predictor and for each metric plot the relationship of the best predictor
+
+2. Somewhere rank all indicators just so they don't get lost in the discourse
+
+2. Performance of "ensemble" predictor 
+
+
+
 
 The idea: let's break this into outcomes (population change, inside change, outside change, food change, quadrant) and have a subsection for each of those. For each section, you'll identify a top performer, and then have a table or figure summarizing for each thing the best indicator and its relative performance. 
 
@@ -341,8 +412,17 @@ indicators <- inds_and_outs |>
                values_to = "indicator_value") |>
   filter(!is.na(indicator_value))
 
-outcomes <- inds_and_outs |> 
-  select(state_id, placement_id,critter,fleet,prop_mpa, difficulty, percent_mpa_effect, name)
+outcomes <- inds_and_outs |>
+  select(
+    state_id,
+    placement_id,
+    critter,
+    fleet,
+    prop_mpa,
+    difficulty,
+    percent_mpa_effect,
+    name
+  )
 
 quadrant_outcomes <- fleet_outcomes |>
   select(state_id, prop_mpa, placement_id, critter, fleet, difficulty, catch) |>
@@ -387,38 +467,26 @@ comparison <- outcomes |>
 
 head(comparison)
 
+# 
+# known_habitat_plot <- comparison |> 
+#   filter(percent_mpa <= 0.1) |> 
+#   filter(name %in% c("biomass", "catch", "revenue"),
+#          !str_detect(indicator,"_raw")) |> 
+#   mutate(indicator = str_remove_all(indicator, "ind_")) |> 
+#   ggplot(aes(indicator_value, percent_mpa_effect)) + 
+#   geom_point(alpha = 0.2) + 
+#   geom_smooth(method = "lm") +
+#   facet_grid(name ~ indicator, scales = "free") + 
+#   scale_fill_viridis_b() + 
+#   labs(title = "Habitat known")
 
-known_habitat_plot <- comparison |> 
-  filter(percent_mpa <= 0.1) |> 
-  filter(name %in% c("biomass", "catch", "revenue"),
-         !str_detect(indicator,"_raw")) |> 
-  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
-  ggplot(aes(indicator_value, percent_mpa_effect)) + 
-  geom_point(alpha = 0.2) + 
-  geom_smooth(method = "lm") +
-  facet_grid(name ~ indicator, scales = "free") + 
-  scale_y_continuous(limits = c(NA,2), oob = squish) + 
-  scale_fill_viridis_b() + 
-  labs(title = "Habitat known")
 
-known_habitat_plot
-
-unknown_habitat_plot <- comparison |> 
-  # filter(prop_mpa < 0.4) |> 
-  filter(name %in% c("biomass", "catch", "revenue"),
-         str_detect(indicator,"_raw")) |> 
-  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
-  ggplot(aes(indicator_value, percent_mpa_effect)) + 
-  geom_point(alpha = 0.2) + 
-  geom_smooth(method = "lm") +
-  facet_grid(name ~ indicator, scales = "free") + 
-  scale_y_continuous(limits = c(NA,2), oob = squish) + 
-  scale_fill_viridis_b() + 
-  labs(title = "Habitat unknown")
-
-unknown_habitat_plot
 
 ```
+
+
+
+
 
 ```{r}
 
@@ -443,35 +511,75 @@ indicator_performance <- comparison |>
   ))) |> 
   mutate(model_summary = map(model, broom::glance)) |> 
   mutate(model_performance = map(model, measure_performance)) |> 
-  unnest(cols = c(model_summary,model_performance))
+  unnest(cols = c(model_summary,model_performance)) |> 
+  select(-model,-data)
+
+indicator_performance |> 
+  filter(name %in% c("biomass", "mpa_biomass", "catch")) |> 
+  ggplot(aes(reorder(indicator, r.squared), r.squared)) + 
+  stat_gradientinterval() + 
+  coord_flip() + 
+  facet_wrap(~name)
+
+indicator_performance |> 
+  filter(name %in% c("biomass", "mpa_biomass", "catch")) |> 
+  ggplot(aes(reorder(indicator, -rmse), rmse)) + 
+  stat_gradientinterval() + 
+  coord_flip() + 
+  facet_wrap(~name)
+
 
   
-indicator_performance |> 
-  mutate(raw = str_detect(indicator, "_raw")) |> 
-  ggplot(aes(adj.r.squared, fill = raw)) + 
-  geom_dotplot() + 
-  facet_grid(indicator~difficulty, scales = "free_y")
+best_indicators <- indicator
+
+quadrant_outcomes$quadrant
+
+predictors <- quadrant_outcomes |> 
+  select(quadrant, ends_with("raw")) |> 
+  na.omit() |> 
+  mutate(quadrant = as.factor(quadrant))
+
+quadrant_model <- ranger(quadrant ~ ., predictors, classification = TRUE)
 
 
-indicator_performance |> 
-  mutate(raw = str_detect(indicator, "_raw")) |> 
-  ggplot(aes(rmse, fill = raw)) + 
-  geom_dotplot() + 
-  facet_grid(indicator~difficulty, scales = "free_y") + 
-  scale_x_continuous(limits = c(NA,2), oob = squish)
+confusion_matrix <- (quadrant_model$confusion.matrix) |> 
+  as.data.frame()
 
-
-
-indicator_performance |> 
-  mutate(raw = str_detect(indicator, "_raw")) |> 
-  ggplot(aes(bias, fill = raw)) + 
-  geom_dotplot() + 
-  facet_grid(indicator~difficulty, scales = "free_y") 
-
-
-
-
-
+confusion_matrix |> 
+  tibble() |> 
+  group_by(predicted) |> 
+ mutate(pn = Freq / sum(Freq),
+         label_pn = percent(pn, accuracy = 1))  |> 
+  ggplot(aes(predicted, true)) +
+  geom_tile(aes(fill = pn), color = "black") +
+  geom_abline(
+    color = "tomato",
+    slope = 1,
+    intercept = 0,
+    alpha = 0.5,
+    linetype = 2
+  ) +
+  geom_text(aes(label = label_pn), size = 2) +
+  scale_fill_gradient2(
+    low = "tomato",
+    mid = "white",
+    high = "steelblue2",
+    midpoint = 0.5,
+    name = "% Simulations",
+    labels = scales::percent,
+    limits = c(0, 1)
+  ) +
+  theme(axis.text.x = element_text(
+    angle = 45,
+    vjust = 1,
+    hjust = 1
+  )) +
+  scale_y_discrete(name = "High-definition Reality") +
+  scale_x_discrete(name = "Low-definition Prediction") + 
+  labs(title = "A") + 
+  guides(fill = "none")
+  
+  
 ```
 
 ### Discussion

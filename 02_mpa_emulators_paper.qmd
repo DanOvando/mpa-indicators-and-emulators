@@ -513,7 +513,7 @@ b = ggplot() +
   guides(color = guide_legend(nrow = 2)) + 
   theme(strip.text.y = element_text(size = 6))
 
-fig <- (a / b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
+fig <- (a | b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
 
 figsaver(fig)
 

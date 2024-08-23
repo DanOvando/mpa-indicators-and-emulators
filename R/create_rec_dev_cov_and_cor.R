@@ -11,19 +11,27 @@ create_rec_dev_cov_and_cor <- function(fauna,max_abs_cor = 1){
   
   core_matrix <- matrix(0, nrow = n_critters, ncol = n_critters)
   
-  critter_cores <-
-    runif(n_critter_cores, min = -max_abs_cor, max = max_abs_cor) # randomly generate correlations among species
-  # Fill in the upper triangle of the matrix
-  core_matrix[upper.tri(core_matrix)] <- critter_cores
-  
-  lower_triangle <- t(core_matrix)
-  
-  critter_correlations <- core_matrix + lower_triangle
-  
-  diag(critter_correlations) <- 1
+  is_positive_semidefinite <- FALSE
+  while (is_positive_semidefinite == FALSE) {
+    critter_cores <-
+      runif(n_critter_cores, min = -max_abs_cor, max = max_abs_cor) # randomly generate correlations among species
+    # Fill in the upper triangle of the matrix
+    core_matrix[upper.tri(core_matrix)] <- critter_cores
     
-  covariance_rec <- critter_correlations * (sigma_recs %o% sigma_recs)
-  
+    lower_triangle <- t(core_matrix)
+    
+    critter_correlations <- core_matrix + lower_triangle
+    
+    diag(critter_correlations) <- 1
+    
+    covariance_rec <- critter_correlations * (sigma_recs %o% sigma_recs)
+    
+    eigenvalues <- eigen(covariance_rec)$values
+    
+    is_positive_semidefinite <- all(eigenvalues >= 0)
+    
+    
+  }
   out <- list(cov = covariance_rec, cor = critter_correlations)
  return(out)
   

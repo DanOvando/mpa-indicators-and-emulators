@@ -7,14 +7,16 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 50,
-  run_name = "indicators_v0.2",
+  n_states = 42,
+  run_name = "indicators_v0.1",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
   ry = 20,
   patch_area = 5
 ) # loads packages and creates and returns some global variables for the analysis
+
+mpa_years <- 20
 
 save_experiments <- FALSE
 
@@ -48,7 +50,7 @@ baseline_state_experiments <-
   tibble(
     kiss = sample(c(FALSE, TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
-    habitat_patchiness = runif(n_states, 1e-3, .25),
+    habitat_patchiness = runif(n_states, 1e-3, .2),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
@@ -64,6 +66,7 @@ baseline_state_experiments <-
 port_locations <-
   tibble(x = c(1, resolution[1]), y = c(1, resolution[2])) # coordinates to test impact of highly disparate ports
 
+future::plan(future::multisession, workers = experiment_workers)
 
 
 for (difficulty in difficulties) {
@@ -71,16 +74,18 @@ for (difficulty in difficulties) {
   set.seed(42)
   critters <-
     tibble(scientific_name = difficulty_species[[difficulty]])
+  message("creating habitats")
   
   state_experiments <- baseline_state_experiments %>%
     mutate(
-      habitats = pmap(
+      habitats = future_pmap(
         list(kp = habitat_patchiness, max_abs_cor = max_abs_cor),
         sim_habitat,
         critters = critters$scientific_name,
         resolution = resolution,
         patch_area = patch_area,
-        .progress = "Simulating habitats"
+        .progress = TRUE,
+        .options = furrr_options(seed = TRUE)
       )
     ) %>%
     mutate(critter_correlations = map(habitats, ~ process_correlations(.x$critter_correlations))) |>
@@ -95,7 +100,7 @@ for (difficulty in difficulties) {
       seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-      f_v_m = runif(length(state_id), 0.01, 0.33),
+      f_v_m = runif(length(state_id), 0.01, 0.24),
       adult_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
       recruit_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
       steepness = runif(length(state_id), min = 0.6, max = 1),
@@ -120,10 +125,14 @@ for (difficulty in difficulties) {
     mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
     mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
   
+  message("finished habitats")
+  
+  
+  message("creating critters")
   state_experiments <- state_experiments %>%
     rename(scientific_name = critter) |>
     mutate(
-      critter = pmap(
+      critter = future_pmap(
         list(
           sciname = scientific_name,
           habitat = habitat,
@@ -144,9 +153,11 @@ for (difficulty in difficulties) {
         create_experiment_critters,
         resolution = resolution,
         seasons = seasons,
-        .progress = "creating critters"
+        .progress = TRUE,
+        .options = furrr_options(seed = TRUE)
       )
     )
+  message("finished critters")
   
   
   # aggregate into lists of fauna
@@ -164,12 +175,14 @@ for (difficulty in difficulties) {
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
   #
   # stop()
+  
+    message("making fleets")
   state_experiments <- state_experiments %>%
     ungroup() %>%
     mutate(use_ports = sample(c(TRUE, FALSE), n(), replace = TRUE),
            max_abs_cor_rec = sample(c(0,.66), n(), replace = TRUE)) %>%
     mutate(
-      fleet = pmap(
+      fleet = future_pmap(
         list(
           fauna = fauna,
           state = data,
@@ -180,10 +193,13 @@ for (difficulty in difficulties) {
         create_fleets,
         difficulty = difficulty,
         port_locations = port_locations,
-        resolution = resolution
+        resolution = resolution,
+        .progress = TRUE,
+        .options = furrr_options(seed = TRUE)
       ),
       rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
     )
+  message("finished making fleets")
   
 
   # add in starting conditions
@@ -208,14 +224,17 @@ for (difficulty in difficulties) {
     
   }
   
+  message(glue::glue("simulating initial {difficulty} conditions"))
   state_experiments <- state_experiments %>%
-    mutate(tmp = pmap(
+    mutate(tmp = future_pmap(
       list(fauna = fauna,
       fleet = fleet,
       rec_dev_cov_and_cor = rec_dev_cov_and_cor),
       init_condit,
-      .progress = glue::glue("simulating initial {difficulty} conditions")
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
     ))
+  message(glue::glue("finished simulating initial {difficulty} conditions"))
   
   state_experiments$starting_conditions <-
     map(state_experiments$tmp, "starting_conditions")
@@ -281,6 +300,13 @@ for (difficulty in difficulties) {
   }
   
   
+  # generate recruitment deviates to be shared across all MPA sizes
+  
+state_experiments <- state_experiments |> 
+  mutate(log_rec_devs = map2(fauna, rec_dev_cov_and_cor, generate_rec_devs, years = mpa_years))
+  
+# generate placement experiments
+
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "area", "avoid_fishing"),
     prop_mpa = seq(0, 0.75, by = 0.05),
@@ -305,7 +331,7 @@ for (difficulty in difficulties) {
   write_rds(state_experiments |> select(-contains("starting_conditions")),
             file = file.path(results_dir, glue("{difficulty}_state_experiments.rds")))
   
-  future::plan(future::multisession, workers = experiment_workers)
+  # future::plan(future::multisession, workers = experiment_workers)
   
   # experiment_results <-
   #   vector(mode = "list", length = nrow(placement_experiments))
@@ -333,13 +359,13 @@ for (difficulty in difficulties) {
     tmp <- state_experiments |>
       ungroup() %>%
       mutate(
-        results = pmap(
+        results = future_pmap(
           list(
             starting_conditions = starting_conditions,
             proc_starting_conditions = proc_starting_conditions,
             fauna = fauna,
             fleets = fleet,
-            rec_dev_cov_and_cor = rec_dev_cov_and_cor
+            log_rec_devs = log_rec_devs
           ),
           run_mpa_experiment,
           placement_strategy = placement_experiments$placement_strategy[p],
@@ -350,7 +376,9 @@ for (difficulty in difficulties) {
           patch_area = patch_area,
           drop_patches = drop_patches,
           steps_to_keep = "before_after",
-          keep_age = TRUE
+          years = mpa_years,
+          keep_age = TRUE,
+          .options = furrr_options(seed = TRUE)
         )
       )
     
@@ -393,7 +421,6 @@ for (difficulty in difficulties) {
 
   } # close p loop
   
-  future::plan(future::sequential)
   
   if (save_experiments) {
     write_rds(experiment_results, file = file.path(
@@ -530,3 +557,5 @@ for (difficulty in difficulties) {
   
   rm(list = c("state_experiments"))
 } # close difficulty loop
+future::plan(future::sequential)
+

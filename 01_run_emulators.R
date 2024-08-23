@@ -88,7 +88,7 @@ for (difficulty in difficulties) {
       seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-      f_v_m = runif(length(state_id), 0.01, 0.33),
+      f_v_m = runif(length(state_id), 0.01, 0.28),
       adult_diffusion = runif(length(state_id), min = 0, max = 1.25 * patch_area),
       steepness = runif(length(state_id), min = 0.6, max = 1),
       ssb0 = rlnorm(length(state_id), log(100 * patches), 0.6),
@@ -356,7 +356,7 @@ for (difficulty in difficulties) {
     tmp <- state_experiments |>
       ungroup() %>%
       mutate(
-        results = pmap(
+        results = future_pmap(
           list(
             starting_conditions = starting_conditions,
             proc_starting_conditions = proc_starting_conditions,
@@ -371,7 +371,8 @@ for (difficulty in difficulties) {
           resolution = resolution,
           patch_area = patch_area,
           drop_patches = drop_patches,
-          steps_to_keep = "after"
+          steps_to_keep = "after",
+          .options = furrr_options(seed = TRUE)
         )
       )
     

@@ -169,7 +169,8 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
           weights = weight
         )$coefficients["baciTRUE"]
       ))) |> 
-      ungroup()
+      ungroup() |> 
+      select(-data)
     
     bag <- fauna |> 
       filter(mpa_proximity != "nomans") |> 
@@ -194,18 +195,21 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
           weights = weight
         )$coefficients["bagTRUE"]
       ))) |> 
-      ungroup()
-    
+      ungroup() |> 
+      select(-data)
+
     out <- fishery_indicators |>
       left_join(survey_indicators,join_by(step, critter)) |> 
       left_join(baci, by = "critter") |> 
       left_join(bag, by = "critter")
-    
-     
+
   } else {
     out <- data.frame(step = NA,
-                      critter = NA,
-                      fleet = NA)
+                      critter = NA)
+    
+    # out <- data.frame(step = NA,
+    #                   critter = NA,
+    #                   fleet = NA)
   }
   
   
