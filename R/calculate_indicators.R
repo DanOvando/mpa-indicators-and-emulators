@@ -91,14 +91,14 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
       nest() |>
       mutate(ind_biomass_rr = map_dbl(data, ~ as.numeric(
         lm(
-          log(biomass + 1e-6) ~ mpa + ssb0_p,
+          log(biomass) ~ mpa + ssb0_p,
           data = .x,
           weights = weight
         )$coefficients["mpaTRUE"]
       ))) |>
       mutate(ind_biomass_rr_raw = map_dbl(data, ~ as.numeric(
         lm(
-          log(biomass + 1e-6) ~ mpa,
+          log(biomass) ~ mpa,
           data = .x,
           weights = weight
         )$coefficients["mpaTRUE"]
