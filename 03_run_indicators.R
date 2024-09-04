@@ -7,8 +7,8 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 42,
-  run_name = "indicators_v0.1",
+  n_states = 84,
+  run_name = "indicators_v0.11",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
@@ -16,19 +16,20 @@ prep_run(
   patch_area = 5
 ) # loads packages and creates and returns some global variables for the analysis
 
-mpa_years <- 20
 
 save_experiments <- FALSE
 
-project <- "indicators"
 
 library(tictoc)
 
+project <- "indicators"
+
 resolution <- c(rx, ry)
 
-# difficulties <- c("simple")
+mpa_years <- 20
 
 difficulties <- c("complex", "medium", "simple")
+# difficulties <- c("epo")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -43,8 +44,23 @@ difficulty_species <- list(
     "pristipomoides filamentosus",
     "epinephelus fuscoguttatus",
     "carcharhinus amblyrhynchos"
-  )
+  ),
+  epo = c("thunnus albacares",
+          "katsuwonus pelamis",
+          "thunnus obesus",
+          "carcharhinus falciformis",
+          "isurus oxyrinchus",
+          "sphyrna zygaena",
+          "carcharhinus longimanus")
 )
+
+# if ("epo" %in% difficulties){
+#   
+#   sdmsish <- read_rds(here("data","epo_sdmsish.rds"))
+#   
+#   popsizeish <- read_rds(here("data","epo_popsizeish.rds"))
+#   
+# }
 
 baseline_state_experiments <-
   tibble(
@@ -75,7 +91,7 @@ for (difficulty in difficulties) {
   critters <-
     tibble(scientific_name = difficulty_species[[difficulty]])
   message("creating habitats")
-  
+
   state_experiments <- baseline_state_experiments %>%
     mutate(
       habitats = future_pmap(
@@ -104,7 +120,7 @@ for (difficulty in difficulties) {
       adult_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
       recruit_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
       steepness = runif(length(state_id), min = 0.6, max = 1),
-      ssb0 = rlnorm(length(state_id), log(100 * patches), 0.6),
+      b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
       sigma_rec = sample(c(0, 0.2, 0.8), length(state_id), replace = TRUE),
       density_dependence = sample(
@@ -146,7 +162,7 @@ for (difficulty in difficulties) {
           hyper = hyperallometry,
           ontogenetic_shift = ontogenetic_shift,
           steepness = steepness,
-          ssb0 = ssb0,
+          b0 = b0,
           kiss = kiss,
           sigma_rec = sigma_rec
         ),
@@ -173,7 +189,8 @@ for (difficulty in difficulties) {
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
   
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
-  #
+  
+  # state_experiments$fauna[[1]][[4]]$b0
   # stop()
   
     message("making fleets")
@@ -267,6 +284,7 @@ for (difficulty in difficulties) {
   
   
   for (i in 1:nrow(state_experiments)) {
+
     tmp <- state_experiments$proc_starting_conditions[[i]]$fauna |>
       filter(step == max(step)) |>
       group_by(critter) |>

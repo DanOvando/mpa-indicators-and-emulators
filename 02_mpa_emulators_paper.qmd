@@ -243,7 +243,7 @@ For each scenario set we simulated `r n_distinct(state_depletions$state_id) / 3`
 | Adult diffusion               | The diffusion rate of "adult" (non-larval) fish                                                                                   |
 | Larval diffusion              | The diffusion rate of the larval fish                                                                                             |
 | Steepness                     | Beverton-Holt steepness value                                                                                                     |
-| ssb0                          | The unfished spawning biomass for a given species                                                                                 |
+| b0                          | The unfished biomass for a given species                                                                                 |
 | Hyperallometry                | Degree of hyperallometry in fecundity at age relationship                                                                         |
 | Density dependence            | The timing of density dependence, one of "global_habitat", "local_habitat", "pre_dispersal", "post_dispersal".                    |
 | Ontogenetic shift             | Whether recruitment habitat is the inverse of adult habitat                                                                       |
@@ -888,7 +888,7 @@ explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
 
 pdp_fit  <- model_profile(
   explain_fit,
-  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "range_cor"),
+  variables = c("depletion", "steepness", "b0", "adult_diffusion", "range_cor"),
   type = "partial",
   N = 500
 )
@@ -986,7 +986,7 @@ explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
 
 pdp_fit  <- model_profile(
   explain_fit,
-  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "range_cor"),
+  variables = c("depletion", "steepness", "b0", "adult_diffusion", "range_cor"),
   type = "partial",
   N = 500
 )

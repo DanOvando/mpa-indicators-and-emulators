@@ -6,8 +6,8 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 4, run_name = "emulators_v1.0", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
-# prep_run(n_states = 2, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+# prep_run(n_states = 142, run_name = "emulators_v1.0", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 4, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
 
 project <- "emulators"
 
@@ -91,7 +91,7 @@ for (difficulty in difficulties) {
       f_v_m = runif(length(state_id), 0.01, 0.28),
       adult_diffusion = runif(length(state_id), min = 0, max = 1.25 * patch_area),
       steepness = runif(length(state_id), min = 0.6, max = 1),
-      ssb0 = rlnorm(length(state_id), log(100 * patches), 0.6),
+      b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       recruit_diffusion = runif(length(state_id), min = 0, max =  1.25 * patch_area),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
       density_dependence = sample(
@@ -129,7 +129,7 @@ for (difficulty in difficulties) {
           hyper = hyperallometry,
           ontogenetic_shift = ontogenetic_shift,
           steepness = steepness,
-          ssb0 = ssb0,
+          b0 = b0,
           kiss = kiss
         ),
         create_experiment_critters,

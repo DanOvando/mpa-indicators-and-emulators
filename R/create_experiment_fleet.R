@@ -92,6 +92,6 @@ create_experiment_fleet <-
         ports = ports
       )
     )
-    
+
     fleets <- tune_fleets(fauna, fleets, tune_type = tune_type)
   }

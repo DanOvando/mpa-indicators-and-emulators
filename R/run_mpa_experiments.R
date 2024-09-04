@@ -18,7 +18,8 @@ run_mpa_experiment <-
            future_habitat = list(),
            drop_patches = TRUE, 
            keep_age = FALSE,
-           steps_to_keep = "after") {
+           steps_to_keep = "after",
+           mpa_offset = 2) {
     
     options(dplyr.summarise.inform = FALSE)
     
@@ -190,7 +191,7 @@ run_mpa_experiment <-
       fleets = fleets,
       years = years,
       manager = list(mpas = list(locations = mpas,
-                                 mpa_year = processed_step$year + 1)),
+                                 mpa_year = processed_step$year + mpa_offset)),
       habitat = future_habitat,
       starting_step = starting_step,
       keep_starting_step = FALSE,
@@ -215,10 +216,14 @@ run_mpa_experiment <-
       
       keepers <- c(steps[1], 15,last(steps))
       
+    } else if (steps_to_keep == "all"){
+      keepers <- steps
+      
     }
+    
 
     out <- marlin::process_marlin(mpa_sim, steps_to_keep = keepers, keep_age = keep_age)
-    
+  
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>
       select(-patch)
 
@@ -229,7 +234,7 @@ run_mpa_experiment <-
     out$fleets <- out$fleets |>
       left_join(mpa_distances, by = c("x","y")) |> 
       left_join(mpas_and_ssb0s |> select(-patch,-mpa), by = c("x","y", "critter"))
-    
+
     if (drop_patches){
   
       # hacky step to get rid of patches when you don't need them to save memory

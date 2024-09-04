@@ -126,8 +126,7 @@ sim_habitat <-
     
     final_species_cores <- cor(check_species_cores[, -1])
     
-    out <- list(critter_distributions = species_distributions, critter_correlations = final_species_cores,
-                wtf = critter_correlations)
+    out <- list(critter_distributions = species_distributions, critter_correlations = final_species_cores)
     
   }
 

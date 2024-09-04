@@ -51,39 +51,57 @@ calculate_indicators <- function(x, prop_mpa) {
   # fauna |>
   #   ggplot(aes(distance_to_mpa_edge, sbiomass, color = mpa_proximity)) +
   #   geom_point() +
-  #   facet_wrap(~critter, scales = "free_y") 
+  #   facet_wrap(~critter, scales = "free_y")
 
   # fauna |>
   #   ggplot(aes(distance_to_mpa_edge, smean_length)) +
   #   geom_point() +
   #   facet_wrap(~critter, scales = "free_y")
-  # 
+
 
   #
   # fleets |>
-  #   ggplot(aes(distance_to_mpa_edge, (seffort), color = mpa_proximity)) +
+  #   ggplot(aes(distance_to_mpa_edge, (effort), color = mpa_proximity)) +
   #   geom_point() +
-  #   facet_wrap(~fleet, scales = "free_y") 
-  #
+  #   facet_wrap(~step, scales = "free_y")
+  # #
   # fleets |>
   #   ggplot(aes(distance_to_mpa_edge, (catch), color = mpa_proximity)) +
   #   geom_point() +
-  #   facet_grid(critter~fleet, scales = "free_y") +
+  #   facet_wrap(~critter, scales = "free_y") +
   #   scale_y_continuous(limits = c(0, NA))
 
   # fleets |>
-  #   group_by(critter, fleet) |> 
-  #   mutate(out = scale(cpue)) |> 
+  #   group_by(critter) |>
+  #   mutate(out = scale(cpue)) |>
   #   ggplot(aes(distance_to_mpa_edge, out, color = mpa_proximity)) +
   #   geom_point() +
-  #   facet_grid(critter~fleet, scales = "free_y") +
+  #   facet_wrap(~critter, scales = "free_y") +
   #   scale_y_continuous(limits = c(0, NA))
-  #
+
   # browser()
 
-enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_proximity)) < 2)
+  # no_fauna <- fauna |> 
+  #   filter()
+    
+enough_distance <- !any(c(n_distinct(fauna$mpa_proximity[!fauna$mpa]),n_distinct(fleets$mpa_proximity[!fleets$mpa])) < 2)
 
-  if (prop_mpa > 0 & prop_mpa < 1 & enough_distance) {
+safelm <- purrr::safely(lm)
+
+coalmine <- fleets |>
+  filter(mpa_proximity != "nomans") |> 
+  group_by(critter, step) |>
+  nest() |>
+  mutate(canary = map(
+    data,
+    ~ (safelm(seffort ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa)))
+  )) |> 
+  mutate(canary = map(canary, "error")) |> 
+  mutate(canary = map_lgl(canary, is.null))
+
+canary_alive <- all(coalmine$canary)
+
+  if (prop_mpa > 0 & prop_mpa < 1 & enough_distance & canary_alive) {
 
     survey_indicators <- fauna |>
       mutate(weight = abs(distance_to_mpa_edge)) |>
@@ -125,7 +143,7 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
       ))) |> 
       select(-data) 
     
-    
+
     fishery_indicators <- fleets |>
       filter(mpa_proximity != "nomans") |> 
       group_by(critter, step) |>
@@ -157,21 +175,21 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
       nest() |>
       mutate(ind_biomass_baci_raw = map_dbl(data, ~ as.numeric(
         lm(
-          sbiomass ~ mpa + after + baci,
+          log(biomass) ~ mpa + after + baci,
           data = .x,
           weights = weight
         )$coefficients["baciTRUE"]
       ))) |> 
       mutate(ind_biomass_baci = map_dbl(data, ~ as.numeric(
         lm(
-          sbiomass ~ mpa + after + baci + ssb0_p,
+          log(biomass) ~ mpa + after + baci + ssb0_p,
           data = .x,
           weights = weight
         )$coefficients["baciTRUE"]
       ))) |> 
       ungroup() |> 
       select(-data)
-    
+
     bag <- fauna |> 
       filter(mpa_proximity != "nomans") |> 
       mutate(weight = abs(distance_to_mpa_edge)) |>
@@ -183,17 +201,38 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
       nest() |>
       mutate(ind_biomass_bag_raw = map_dbl(data, ~ as.numeric(
         lm(
-          sbiomass ~ gradient + after + bag,
+          log(biomass) ~ gradient + after + bag,
           data = .x,
           weights = weight
         )$coefficients["bagTRUE"]
       ))) |> 
       mutate(ind_biomass_bag = map_dbl(data, ~ as.numeric(
         lm(
-          sbiomass ~ gradient + after + bag + ssb0_p,
+          log(biomass) ~ gradient + after + bag + ssb0_p,
           data = .x,
           weights = weight
         )$coefficients["bagTRUE"]
+      ))) |> 
+      ungroup() |> 
+      select(-data)
+    
+    catch_ba <- fleets |> 
+      filter(step == min(step) | step == max(step), !mpa) |>
+      mutate(after = case_when(step == max(step) ~ TRUE, .default = FALSE)) |> 
+      mutate(baci = after & mpa) |> 
+      group_by(critter) |> 
+      nest() |>
+      mutate(ind_catch_ba_raw = map_dbl(data, ~ as.numeric(
+        lm(
+          log(catch) ~ after,
+          data = .x,
+        )$coefficients["afterTRUE"]
+      ))) |> 
+      mutate(ind_catch_ba = map_dbl(data, ~ as.numeric(
+        lm(
+          log(catch) ~ after + ssb0_p,
+          data = .x,
+        )$coefficients["afterTRUE"]
       ))) |> 
       ungroup() |> 
       select(-data)
@@ -201,7 +240,8 @@ enough_distance <- !any(c(n_distinct(fauna$mpa_proximity),n_distinct(fleets$mpa_
     out <- fishery_indicators |>
       left_join(survey_indicators,join_by(step, critter)) |> 
       left_join(baci, by = "critter") |> 
-      left_join(bag, by = "critter")
+      left_join(bag, by = "critter") |> 
+      left_join(catch_ba, by = "critter")
 
   } else {
     out <- data.frame(step = NA,

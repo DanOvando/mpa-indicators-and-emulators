@@ -1,5 +1,5 @@
 ---
-title: "How Reliable are Common Empirical Indicators at Measuring MPA Performance?"
+title: "Variability and Detectability of the Effects of Marine Protected Areas on Conservation and Food Security"
 author:
   - name: Daniel Ovando
     affiliation:
@@ -17,6 +17,8 @@ author:
 format:
   html: 
     toc: true
+    self-contained-math: true
+    embed-resources: true
   pdf:
     toc: true
   nature-pdf:
@@ -41,24 +43,25 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "indicators_v0.1") # loads packages and creates and returns some global variables for the analysis
+library(gt)
+
+prep_run(run_name = "indicators_v0.11") # loads packages and creates and returns some global variables for the analysis®
+
+project <- "indicators"
+
+resolution <- c(rx, ry)
+
+mpa_years <- 24
 
 # clean up figures generated in the report to ensure that all figures come from a fresh state
 paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
 
 unlink(paper_figs)
 
-min_depletion <- 0.00001
+min_depletion <- 0.025
 
 tune_grids <- FALSE
 ```
-
-
-Need to fix some processing here, the whole "fleets" thing where there are rows for nature and then for individual fleets is messing some stuff up. 
-
-Need to separate out the fleets part, then join the nature part
-
-the solution is to aggreate indicators across fleets, so that you just look at average effort and cpue in total rather than by fleet you dummy
 
 ```{r}
 #| label: load-results
@@ -129,167 +132,6 @@ inds_and_outs <- simple |>
 
 rm(list = c("simple", "medium", "complex"))
 
-
-```
-
-## Introduction
-
-Two key questions
-
-1.  Are MPA outcomes variable enough to provide a need for indicators
-
-2.  Which indicators can reliably track that viability if so?
-
-Things change for lots of reasons in ecological systems. These changes are often correlated in space and time... blah
-
-## Methods
-
-### Empirical Indicators
-
-A range of indicators...[@harford2021]
-
-"It uses the means of biomass (for targeted and nontargeted fish species)... inside and outside of SMRs across the 2019-20 sampling period as a measure of effect size – that is, an MPA effect."
-
-@caselle2022
-
-#### Response Ratios
-
-Response ratios
-
-$$
-log(B) \sim N(MPA,\sigma_{obs})
-$$
-
-This is analogous to
-
-$$
-log \left(\frac{B_{protected}}{B_{reference}}  \right) = log(B_{protected}) - log(B_{reference})
-$$
-
-@lester2009
-
-#### Mean Length
-
-$$
-log(L) \sim N(MPA,\sigma)
-$$
-
-@lester2009
-
-### Slope over Time
-
-Differences in trends of the response ratio post-implementation @caselle2022
-
-$$
-log(B_{t,s}) \sim N(Y_t + T_s + Y_tT_s,\sigma)
-$$
-
-#### Gradients
-
-$\delta$
-
-```{r}
-alpha = 1
-
-beta <- 1
-
-delta <- -2
-
-int <- 0
-
-x <- seq(-100,100)
-
-y <- alpha / (1 + beta *(exp(delta * x))) + int
-
-plot(x,y)
-```
-
-@methratta2020
-
-@halpern2009
-
-@medoff2022
-
-"The expectation that spillover from marine reserves will produce abundance gradients with distance from the reserve, with a shape that depends on species mobility and catch rates, was first described over a decade ago (Rakitin & Kramer 1996) and later refined and modelled (Kaunda-Arara & Rose 2004; Goni et al. 2006)." [@halpern2009]
-
-Sigh. You need to come up with a new metric here that accounts for non-extinction outside.
-
-Come back to this.
-
-Basically, add in intercept, and then the spillover distance is the minimum distance at which the value of the non-intercept part of the curve is zero.
-
-@halpern2009 defined two metrics for estimating spillover distance; the distance at which biomass density was 5% of the maximum observed biomass density inside or outside of the MPA, and the distance at which biomass density was 5% of the range, where range is calculated as the average of the two points furthest from the reserve border and the two points furthest inside the reserve, after fitting a smoother to the density as a function of distance relationship
-
-However, this method makes the assumption that biomass density goes to 0 at some distance from the reserve.
-
-OK, so you're going to do a modified halpern as a starting place
-
-Estimate the same thing but with an intercept, such that the logistic thing is additive to a baseline level, and then calculate the distance at which the additive component of the MPA becomes zero. When there is no effect, or when the MPA has massive but diffuse effects, this distance will be 0, etc.
-
-Or, a simpler and more generalizable approach would be to split outside distance into "near" vs "far", and then see if a given outcome is higher near relative to far. Makes life a lot simpler of not having to consider non-linear functions etc. The downside is it makes it tough to say what is "near" what is "far". Simplest approach would be to say the bottom 25%th percentile of distance is near, the top is far, and go with that.
-
-The nice thing about all this is that it's about seeing if something is or isn't useful, so if that ends up being useful, then great!
-
-### sometingw
-
-## Results
-
-```{r}
-
-i <- as.integer(sample(unique(complex_processed_sims$mpa_outcomes$state_id),1))
-i
-reality <- complex_processed_sims$mpa_outcomes |> 
-  mutate(state_id = as.integer(state_id)) |> 
-  filter(state_id == i, step == max(step)) |> 
-  mutate(critter = critter_namer(critter))
-
-reality |> 
-  filter(name %in% c("catch", "biomass")) |> 
-  ggplot(aes(prop_mpa, percent_mpa_effect,color = name )) + 
-  geom_point() + 
-  facet_grid(critter~placement_strategy)
-
-
-a = ggplot() +
-  geom_line(
-    data = reality |> filter(name == "spawning_biomass"),
-    aes(
-      prop_mpa,
-      value / ssb0,
-      color = critter
-    )
-  ) +
-  scale_y_continuous(limits = c(0, NA), name = "~B/B0") +
-  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
-  scale_color_viridis_d(name = '') +
-  facet_wrap( ~ placement_strategy) + 
-  guides(color = guide_legend(nrow = 2))
-
-b = ggplot() +
-  geom_line(
-    data = reality |> filter(name == "catch") |> mutate(fleet = paste0("High-definition Fleet ",fleet)),
-    aes(prop_mpa, value, color = fleet)
-  ) +
-  scale_y_continuous(limits = c(0, NA), name = "Catch") + 
-  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
-  facet_grid(critter~placement_strategy,scales = "free") + 
-  scale_color_brewer(name = '',palette = "Accent") +
-  guides(color = guide_legend(nrow = 2)) + 
-  theme(strip.text.y = element_text(size = 6))
-
-fig <- (a | b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
-fig
-#figsaver(fig)
-```
-
-
-### How Variable are MPA Effects?
-
-
-```{r}
-
-  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
-
 fleet_outcomes <- inds_and_outs |>
   select(
     depletion,
@@ -323,81 +165,6 @@ mpa_outcomes <- fleet_outcomes |>
             by = join_by(state_id, placement_id, critter, prop_mpa, difficulty)) |>
   mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
 
-mpa_outcomes |> 
-  group_by(difficulty) |> 
-  summarise(n_distinct(state_id))
-  
-  quad_labels <- data.frame(
-    x = c(50, 50, -24, -24),
-    y = c(50, -50, 50, -50),
-    label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
-  )
-  thirty_protected_plot <- mpa_outcomes |>
-    # filter(numeric_prop_mpa <= 0.4) |>
-    # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
-    ggplot(aes(biomass, catch)) +
-    geom_vline(xintercept = 0, color = "black") +
-    geom_hline(yintercept = 0, color = "black") +
-    geom_point(aes(color = depletion), alpha = 0.25) +
-    # geom_text(
-    #   data = quad_labels,
-    #   aes(x, y, label = label),
-    #   size = 6,
-    #   color = "red"
-    # ) +
-    scale_color_viridis_c(
-      "BAU B/B0",
-      breaks = c(0, 1),
-      labels = c("Low", "High"),
-      limits = c(0, 1),
-      option = "plasma",
-      guide = guide_colorbar(
-        frame.colour = "black",
-        ticks.colour = "black",
-        barwidth =  unit(11, "lines")
-      )
-    )  +
-    scale_x_continuous(name = "X Change in Species Biomass",
-                       oob = squish,
-                       limits = c(NA, 2)) +
-    scale_y_continuous(name = "X Change in Species Catch",
-                       oob = squish,
-                       limits = c(NA, 2)) +
-    theme(legend.position = "bottom") +
-    labs(caption = "20-40% of area in MPA") + 
-    facet_wrap(~fct_rev(difficulty))
-  
-  
-  # thirty_protected_plot <- ggMarginal(thirty_protected_plot,
-  #                                     type = "histogram",
-  #                                     fill = "steelblue")
-  
-  thirty_protected_plot
-  rm(mpa_outcomes)
-  #ggplotly(thirty_protected_plot)
-```
-
-
-### Indicator Performance
-
-
-1. determine best individaul predictor and for each metric plot the relationship of the best predictor
-
-2. Somewhere rank all indicators just so they don't get lost in the discourse
-
-2. Performance of "ensemble" predictor 
-
-
-
-
-The idea: let's break this into outcomes (population change, inside change, outside change, food change, quadrant) and have a subsection for each of those. For each section, you'll identify a top performer, and then have a table or figure summarizing for each thing the best indicator and its relative performance. 
-
-So how are you going to judge performance? I guess error and bias for the quantitative sections, and then classification accuracy for the quadrant? RMSE and MAE, accuracy
-
-```{r}
-
-
-# View(head(inds_and_outs))
 
 indicators <- inds_and_outs |>
   select(critter,
@@ -410,7 +177,8 @@ indicators <- inds_and_outs |>
   pivot_longer(starts_with("ind_"),
                names_to = "indicator",
                values_to = "indicator_value") |>
-  filter(!is.na(indicator_value))
+  filter(!is.na(indicator_value),
+         !str_detect(indicator, "_raw"))
 
 outcomes <- inds_and_outs |>
   select(
@@ -421,8 +189,8 @@ outcomes <- inds_and_outs |>
     prop_mpa,
     difficulty,
     percent_mpa_effect,
-    name
-  )
+    name) |> 
+  filter(name %in% c("biomass", "mpa_biomass", "catch"))
 
 quadrant_outcomes <- fleet_outcomes |>
   select(state_id, prop_mpa, placement_id, critter, fleet, difficulty, catch) |>
@@ -456,101 +224,1088 @@ quadrant_outcomes <- fleet_outcomes |>
   )
 
 
-quadrant_outcomes |> 
-  ggplot(aes(quadrant)) + 
-  geom_bar() + 
-  coord_flip()
-
 comparison <- outcomes |> 
   left_join(indicators, by = c("critter", "state_id", "placement_id", "prop_mpa", "difficulty"), relationship = "many-to-many") |> 
-  mutate(percent_mpa = as.numeric(as.character(prop_mpa)))
+  mutate(prop_mpa = as.numeric(as.character(prop_mpa)))
 
-head(comparison)
-
-# 
-# known_habitat_plot <- comparison |> 
-#   filter(percent_mpa <= 0.1) |> 
-#   filter(name %in% c("biomass", "catch", "revenue"),
-#          !str_detect(indicator,"_raw")) |> 
-#   mutate(indicator = str_remove_all(indicator, "ind_")) |> 
-#   ggplot(aes(indicator_value, percent_mpa_effect)) + 
-#   geom_point(alpha = 0.2) + 
-#   geom_smooth(method = "lm") +
-#   facet_grid(name ~ indicator, scales = "free") + 
-#   scale_fill_viridis_b() + 
-#   labs(title = "Habitat known")
-
+inds_and_outs |> 
+  group_by(critter) |> 
+  summarise(mssb = mean(b0))
 
 
 ```
 
+## Introduction
+
+This paper explores two general questions
+
+1.  Are MPA outcomes variable enough to justify efforts to measure their performance?
+
+2.  If so, which indicators are reliable measures of performance?
+
+MPAs are increasingly being looked to to achieve a range of objectives around the world [@grorud-colvert2021], 30x30, etc.
+
+A common thread across these objectives is that they are often hard to measure directly, either due to logistics or problems of causal inference. By logistics, mean the challenge of collecting representative and high quality data on lots of species and fleets over space and time. By causal inference, even if you do all that, if catch goes up or down without a counterfactual hard to know if caused by MPA or something else.
+
+As a result, empirical evidence for MPAs often depends on evaluating simplier indicators [@harford2021] that are interpreted as proxies for broader harder to measure objectives. For example "response ratios" measure attributes such as biomass densities inside MPAs relative to selected "reference" sites outside MPAs, which in turn are then interpreted as being indicative of MPA performance [@lester2009; @caselle2022].
+
+There is a large body of "indicator" based empirical evidence from MPAs, which can create an impression of clear empirical conclusions around MPAs. For example, a 2018 NPR piece stated that
+
+"The jury is in on marine reserves: They work. Research has repeatedly shown that fish numbers quickly climb following well-enforced fishing bans, creating tangible benefits for fishers who work the surrounding waters. In fact, many experts believe fishing will only be sustainable if marine reserves are expanded significantly." [@bland2018]
+
+However, interpreting empirical indicators as evidence for causal effects on broader processes can be challenging in social-ecological systems [@ferraro2018]. Even a perfectly measured indicator may not actually map onto the outcome in question. Violations of key assumptions in common empirical strategies (SUTVA, parallel trends, etc) can bias estimates.
+
+As we expand MPA usage around the world, important that we are able to accurately measure performance so that we can track progress towards outcomes objectives, not area covered objectives, and adapt and learn best practices in MPA design to achieve given outcomes.
+
+To that end, this paper asks two questions:
+
+1.  Are MPA outcomes variable enough to justify efforts to measure their performance?
+
+2.  If so, which indicators are reliable measures of performance?
+
+The first is important since if the effects of MPAs are sufficiently consistent and predictable, there isn't really a need for careful monitoring; if closing 30% of an area produces the same general magnitude of conservation and food security benefits 99% of the time, probably not worth spending time trying to track the 1% of surprises.
+
+But, if MPA effects are variable, then we want to be able to measure performance to inform management (e.g. is population increasing or decreasing because of MPA), and offset trade offs (e.g. losses in food or profit related to fishing).
+
+So far, our results show that 1. MPA outcomes can be highly variable, particulary for food security, and 2. empirical indicators commonly used to track performance of MPAs are actually poor predictors of real outcomes.
+
+We suggest some solutions.
+
+## Methods
+
+### Simulation Modeling
+
+We use the `marlin` operating model described in @ovando2023a to simulate lots of states of nature, ranging in complexity from single species and single fleet to multi species and multi fleet. Simulations vary in lots of ecological and economic traits.
+
+We apply a range of MPAs to each simulated state of nature, with MPA defined by size (percent of seascape in no-take MPA) and placement strategy (how to decide where that percent of seascape is placed).
+
+We then calculate the effect of the MPA on total biomass of each species, total biomass inside the MPAs of each species, and total catch of each species, quantified as the values of each of these metrics in the simulated state without the MPA, relative to the value of the metric in the simulated state with the MPAs, holding things like recruitment deviates constant.
+
+### Empirical Indicators
+
+We calculated a range of empirical indicators from the simulated MPA scenarios. All indicators were based on simulated data without any observation error, in order to isolate the fundamental performance of the indicator from questions around data quality and bias.
+
+#### Response Ratios
+
+Response ratios are calculated as the difference in mean log biomass density inside the MPA relative to outside, weighted by distance of sampled patches from the MPA border, such that the comparison is weighted towards locations furthest inside the MPA relative to sites furthest outside the MPA.
+
+$$
+log(B) \sim N(MPA,\sigma_{obs})
+$$
+
+This is analogous to
+
+$$
+log \left(\frac{B_{protected}}{B_{reference}}  \right) = log(B_{protected}) - log(B_{reference})
+$$
+
+@lester2009
+
+#### Mean Length
+
+We calculate a length-based response ratio as well, which operates the same as the biomass response ratio but measure mean length inside versus outside rather than biomass.
+
+$$
+log(L) \sim N(MPA,\sigma)
+$$
+
+@lester2009
+
+#### Gradients
+
+Response ratios require data from both outside and inside of an MPA. If an MPA is truly no-take, as simulated here, this presents a problem, as the only way to get data from inside would be a fishery-independent monitoring program, which many communities may not have funds to support, particularly at large spatial scales.
+
+Gradients are an alternative form of indicator that gets around this challenge by attempting to measure some form of "spillover" from MPAs and attributing that spillover as an index of MPA performance. For example, @halpern2009 examined how biomass densities (right?XX) changed with distance from MPA borders across a range of case studies. @medoff2022 measured CPUE of tropical tunas close to and far from the border of a large MPA. "Fishing-the-line" [@kellner2007], or increased fishing effort in the water around an MPA relative to far, has also been measured XX citations here, actually hard to find in lit? XX
+
+While appealing, gradients do present some empirical challenges. For example the "slope" coefficient of a model measuring CPUE as a function of distance will depend on the units of distance in the model, so outside of "is significantly different than zero", hard to know what is a big effect vs. a small effect. @halpern2009 solved this by assuming that biomass would go to zero in the absence of an MPA, but this is rarely (ever) the case.
+
+While lots of functional forms for measuring spillover gradients have been proposed, they all are based on the basic premise that there should be a difference in the metric in question near the MPA relative to far from the MPA. We use a generalized form of a gradient model then that breaks patches outside of the MPA into two categories of "near" (top 20th percentile of linear distance to an MPA) and "far" (bottom 20th percentile of patches by linear distance to an MPA), and then measure the difference in the outcome in question in the near relative to the far
+
+$$
+log(outcome) \sim N(NEAR,\sigma)
+$$
+
+@methratta2020
+
+@halpern2009
+
+@medoff2022
+
+"The expectation that spillover from marine reserves will produce abundance gradients with distance from the reserve, with a shape that depends on species mobility and catch rates, was first described over a decade ago (Rakitin & Kramer 1996) and later refined and modelled (Kaunda-Arara & Rose 2004; Goni et al. 2006)." [@halpern2009]
+
+@halpern2009 defined two metrics for estimating spillover distance; the distance at which biomass density was 5% of the maximum observed biomass density inside or outside of the MPA, and the distance at which biomass density was 5% of the range, where range is calculated as the average of the two points furthest from the reserve border and the two points furthest inside the reserve, after fitting a smoother to the density as a function of distance relationship
+
+However, this method makes the assumption that biomass density goes to 0 at some distance from the reserve.
+
+### BACI and BAG
+
+Indicator programs will often only have access to data post-MPA implementation, interpreting inside vs. outside or near vs. far as their control and impact groups, but lacking the before and after. This is a well known problem because without before and after data it is harder to control for pre-treatment differences in values, or to account for exogenous changes in the outcome in question (e.g. environmental shocks).
+
+BACI and BAG two common solutions to this, so we include those as well, of the general form, where $after \times MPA$ is assumed to be the effect of the MPA.
+
+$$
+log(outcome) \sim N(after + MPA + after \times MPA, \sigma)
+$$
+
+### A note on Significance
+
+Empirical indicators are often evaluated to some degree based on their statistical signficance (e.g. p \< 0.05). Notwithstanding broader questions as to the usefulness of frequentist statistical significance as a concept, we do not report significance values here as this is a simulation paper, and so statistical significance would have no real meaning since the sample size available to the test are arbitrarily chosen. See @white2014.
+
+## Results
+
+### Case Study
+
+This will probably get moved to an SI
+
+```{r}
+#|label: case-study
+#|cache: true
+
+
+set.seed(4242)
+difficulties <- c("complex")
+n_states <- 1
+difficulty_species <- list(
+  complex = c(
+    "lutjanus malabaricus",
+    "pristipomoides filamentosus",
+    "epinephelus fuscoguttatus",
+    "carcharhinus amblyrhynchos"
+  )
+)
+
+difficulty <- "complex"
+
+baseline_state_experiments <-
+  tibble(
+    kiss = sample(c(FALSE), n_states, replace = TRUE),
+    mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
+    habitat_patchiness = runif(n_states, 1e-3, .2),
+    max_abs_cor = runif(n_states, 1e-3, 1),
+    spatial_q = sample(
+      c(TRUE, FALSE),
+      n_states,
+      replace = TRUE,
+      prob = c(1, 3)
+    ),
+    spatial_allocation = sample(c("ppue", "rpue", "revenue"), n_states, replace = TRUE),
+    fleet_model = sample(c("open_access"), n_states, replace = TRUE)
+  ) %>%
+  mutate(state_id = 1:nrow(.))
+
+port_locations <-
+  tibble(x = c(1, resolution[1]), y = c(1, resolution[2])) # coordinates to test impact of highly disparate ports
+
+
+critters <-
+  tibble(scientific_name = difficulty_species[[difficulty]])
+message("creating habitats")
+
+state_experiments <- baseline_state_experiments %>%
+  mutate(
+    habitats = future_pmap(
+      list(kp = habitat_patchiness, max_abs_cor = max_abs_cor),
+      sim_habitat,
+      critters = critters$scientific_name,
+      resolution = resolution,
+      patch_area = patch_area,
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
+    )
+  ) %>%
+  mutate(critter_correlations = map(habitats, ~ process_correlations(.x$critter_correlations))) |>
+  unnest(cols = critter_correlations) |>
+  mutate(habitats = map(
+    habitats,
+    ~ .x$critter_distributions  |> select(-patch) |> group_by(critter) |> nest(.key = "habitat")
+  )) |>
+  unnest(cols = habitats) %>%
+  ungroup() |>
+  mutate(
+    seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
+    spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
+    spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
+    f_v_m = runif(length(state_id), 0.01, 0.24),
+    adult_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
+    recruit_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
+    steepness = runif(length(state_id), min = 0.6, max = 1),
+    b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
+    hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
+    sigma_rec = sample(c(0.666), length(state_id), replace = TRUE),
+    density_dependence = sample(
+      c(
+        "global_habitat",
+        "local_habitat",
+        "pre_dispersal",
+        "post_dispersal"
+      ),
+      length(state_id),
+      replace = TRUE
+    )
+  ) %>%
+  mutate(
+    spawning_season = ifelse(spawning_aggregation, NA, NA),
+    ontogenetic_shift = sample(c(TRUE, FALSE), length(state_id), replace = TRUE)
+  ) |>
+  mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
+  mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
+
+message("finished habitats")
+
+
+# state_experiments$b0 <- c(1000,1000,1000,1000)
+message("creating critters")
+
+state_experiments <- state_experiments %>%
+  rename(scientific_name = critter) |>
+  mutate(
+    critter = future_pmap(
+      list(
+        sciname = scientific_name,
+        habitat = habitat,
+        seasonal_movement = seasonal_movement,
+        spawning_aggregation = spawning_aggregation,
+        spawning_season = spawning_season,
+        f_v_m = f_v_m,
+        adult_diffusion = adult_diffusion,
+        recruit_diffusion = recruit_diffusion,
+        density_dependence = density_dependence,
+        hyper = hyperallometry,
+        ontogenetic_shift = ontogenetic_shift,
+        steepness = steepness,
+        b0 = b0,
+        kiss = kiss,
+        sigma_rec = sigma_rec
+      ),
+      create_experiment_critters,
+      resolution = resolution,
+      seasons = seasons,
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
+    )
+  )
+
+message("finished critters")
+
+
+# aggregate into lists of fauna
+state_experiments <- state_experiments %>%
+  group_by(state_id) %>%
+  nest() %>%
+  mutate(
+    fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
+    sels = map(fauna, ~ runif(length(.x), 0.1, 1.25)),
+    prices = map(fauna, ~ runif(length(.x), 1, 10))
+  )
+
+
+message("making fleets")
+state_experiments <- state_experiments %>%
+  ungroup() %>%
+  mutate(use_ports = sample(c(TRUE, FALSE), n(), replace = TRUE),
+         max_abs_cor_rec = sample(c(0,.66), n(), replace = TRUE)) %>%
+  mutate(
+    fleet = future_pmap(
+      list(
+        fauna = fauna,
+        state = data,
+        sels = sels,
+        prices = prices,
+        use_ports = use_ports
+      ),
+      create_fleets,
+      difficulty = difficulty,
+      port_locations = port_locations,
+      resolution = resolution,
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
+    ),
+    rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
+  )
+message("finished making fleets")
+
+
+# add in starting conditions
+init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
+  starting_trajectory <-
+    simmar(fauna = fauna,
+           fleets = fleets,
+           years = years,
+           cor_rec = rec_dev_cov_and_cor$cor)
+  
+  # plot_marlin(check)
+  
+  starting_conditions <-
+    starting_trajectory[(length(starting_trajectory) - seasons + 1):length(starting_trajectory)]
+  # starting_trajectory[1:length(starting_trajectory)]
+  
+  proc_starting_conditions <-
+    process_marlin(starting_conditions, keep_age = FALSE)
+  
+  out <- list(starting_conditions = starting_conditions,
+              proc_starting_conditions = proc_starting_conditions)
+  
+}
+
+message(glue::glue("simulating initial {difficulty} conditions"))
+state_experiments <- state_experiments %>%
+  mutate(tmp = future_pmap(
+    list(fauna = fauna,
+         fleet = fleet,
+         rec_dev_cov_and_cor = rec_dev_cov_and_cor),
+    init_condit,
+    .progress = TRUE,
+    .options = furrr_options(seed = TRUE)
+  ))
+message(glue::glue("finished simulating initial {difficulty} conditions"))
+
+state_experiments$starting_conditions <-
+  map(state_experiments$tmp, "starting_conditions")
+
+state_experiments$proc_starting_conditions <-
+  map(state_experiments$tmp, "proc_starting_conditions")
+
+state_experiments <- state_experiments %>%
+  select(-tmp)
+
+state_depletions <-
+  map_df(state_experiments$starting_conditions,
+         ~ map_df(.x, ~ map_df(.x, ~ sum(.x$ssb_p_a) / .x$ssb0)),
+         .id = "state_id") |>
+  pivot_longer(-state_id, names_to = "critter", values_to = "step_depletion") |>
+  group_by(state_id, critter) |>
+  summarise(depletion = mean(step_depletion)) |>
+  mutate(state_id = as.integer(state_id))
+
+state_experiments <- state_experiments |>
+  left_join(state_depletions |> group_by(state_id) |> nest(.key = "depletion"),
+            by = "state_id")
+
+
+state_experiments <- state_experiments |> 
+  mutate(log_rec_devs = map2(fauna, rec_dev_cov_and_cor, generate_rec_devs, years = mpa_years))
+
+# generate placement experiments
+
+placement_experiments <- expand_grid(
+  placement_strategy = c("target_fishing"),
+  prop_mpa = c(0,0.3),
+  critters_considered = seq(
+    length(state_experiments$fauna[[1]]),
+    length(state_experiments$fauna[[1]]),
+    by = 1
+  ),
+  placement_error = c(0)
+) %>%
+  group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(placement_id = 1:n(),
+         sigh = vector(mode = "list", length = n())) %>%
+  unnest(cols = data)
+
+for (p in 1:nrow(placement_experiments)){
+
+placement_experiments$sigh[[p]] <- state_experiments |>
+  ungroup() %>%
+  mutate(
+    results = future_pmap(
+      list(
+        starting_conditions = starting_conditions,
+        proc_starting_conditions = proc_starting_conditions,
+        fauna = fauna,
+        fleets = fleet,
+        log_rec_devs = log_rec_devs
+      ),
+      run_mpa_experiment,
+      placement_strategy = placement_experiments$placement_strategy[p],
+      prop_mpa = placement_experiments$prop_mpa[p],
+      critters_considered = placement_experiments$critters_considered[p],
+      placement_error = placement_experiments$placement_error[p],
+      resolution = resolution,
+      patch_area = patch_area,
+      drop_patches = FALSE,
+      steps_to_keep = "all",
+      years = mpa_years,
+      mpa_offset = 10,
+      keep_age = TRUE,
+      .options = furrr_options(seed = TRUE)
+    )
+  )
+
+}
+
+# quick and dirty comparision vs. benchmark
+fauna_results <- placement_experiments$sigh[[2]]$results[[1]]$results$fauna |> 
+  mutate(prop_mpa = placement_experiments$prop_mpa[2] ) |> 
+    mutate(critter = critter_namer(critter))
+
+
+fleet_results <-placement_experiments$sigh[[2]]$results[[1]]$results$fleet |> 
+    mutate(prop_mpa = placement_experiments$prop_mpa[2] ) |> 
+    mutate(critter = critter_namer(critter))
 
 
 
+
+benchmark_fauna_results <- placement_experiments$sigh[[1]]$results[[1]]$results$fauna |> 
+    mutate(prop_mpa = placement_experiments$prop_mpa[1] ) |> 
+    mutate(critter = critter_namer(critter))
+
+
+
+benchmark_fleet_results <-placement_experiments$sigh[[1]]$results[[1]]$results$fleet |> 
+    mutate(prop_mpa = placement_experiments$prop_mpa[1] ) |> 
+    mutate(critter = critter_namer(critter))
+
+
+
+
+mpa_step <- min(fauna_results$year) + 10 - 2
+
+```
+
+```{r}
+#| label: fig-case-study
+#| fig-cap: "Case study simulation. A) Distribution of biomass per species, with bluer colors indicating lower biomass. B) Distribution of fishing effort, with bluer colors indicating lower fishing effort. C) Evolution of biomass per species over time, with vertical line indicating year of 30% MPA implementation. D) Catch by species and fleet over time, with vertical line indicating year of 30% MPA implementation."
+
+# stop("AHHHHH, RUNAWAY SHARKS!")
+
+alpha <- fauna_results |> 
+  filter(step == max(step)) |> 
+  group_by(critter, x,y, mpa) |> 
+  summarise(b = sum(b)) |> 
+  group_by(critter) |> 
+  mutate(sb = b / max(b)) |> 
+  ggplot(aes(x,y,fill =sb, color = mpa)) + 
+  geom_tile(show.legend = FALSE) + 
+  facet_wrap(~critter) + 
+  scale_fill_viridis_c() + 
+  scale_x_continuous(name = "Longitude",expand = c(0,0)) + 
+  scale_y_continuous(name = "Latitude",expand = c(0,0)) +
+  labs(subtitle = "A) Biomass Distribution") +
+  theme(axis.text = element_blank())
+
+
+beta <- fleet_results |> 
+  filter(step == max(step)) |> 
+  group_by(fleet, x,y, mpa) |> 
+  summarise(effort = unique(effort)) |> 
+  group_by(fleet) |> 
+  mutate(se = effort / max(effort)) |> 
+  ggplot(aes(x,y,fill =se, color = mpa)) + 
+  geom_tile(show.legend = FALSE) + 
+  facet_wrap(~fleet) + 
+  scale_fill_viridis_c(option = "plasma") + 
+  scale_x_continuous(name = "Longitude",expand = c(0,0)) + 
+  scale_y_continuous(name = "Latitude",expand = c(0,0)) +
+  labs(subtitle = "B) Effort Distribution") +
+  theme(axis.text = element_blank())
+
+kappa <- fleet_results |> 
+  group_by(step, critter, fleet) |> 
+  summarise(catch = sum(catch, na.rm = TRUE)) |> 
+  ggplot(aes(step, catch, fill = critter)) +
+  geom_area() + 
+  geom_vline(xintercept = mpa_step) +
+  facet_wrap(~fleet, labeller = label_both) + 
+  scale_fill_brewer(name = "", palette = "Set1") +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(name = "Catch", limits = c(0,NA)) + 
+  scale_x_continuous(name = "Time Step") +
+  guides(fill = guide_legend(nrow = 1)) + 
+  labs(subtitle = "C) Catch by fleet over time")
+
+
+delta <- fauna_results |> 
+  group_by(step, critter) |> 
+  summarise(biomass = sum(b, na.rm = TRUE)) |> 
+  ggplot(aes(step, biomass, color = critter)) +
+  geom_line(show.legend = FALSE) + 
+  geom_vline(xintercept = mpa_step) +
+  scale_color_brewer(name = "", palette = "Set1") +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(name = "Biomass", limits = c(0, NA)) + 
+  scale_x_continuous(name = "Time Step") +
+  guides(color = guide_legend(nrow = 1)) + 
+  labs(subtitle = "C) Biomass per species over time")
+
+(alpha + beta) / (delta + kappa) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+
+```
+
+Example below shows how the MPA experiment works. Percent difference between the two lines is the MPA effect.
+
+```{r}
+#| label: fig-cs-2
+#| fig-cap: "Trends in biomass and catch by species and fleet over time with (solid line) and without (dashed line) MPA."
+
+
+fauna_experiment <- fauna_results |> 
+  bind_rows(benchmark_fauna_results)
+
+
+fleet_experiment <- fleet_results |> 
+  bind_rows(benchmark_fleet_results)
+
+alpha <- fauna_experiment |> 
+  mutate(experiment = if_else(prop_mpa == 0, "Without MPA", "With MPA")) |> 
+  group_by(critter, step, prop_mpa, experiment) |> 
+  summarise(biomass = sum(b, na.rm = TRUE)) |> 
+  ggplot(aes(step, biomass, color = critter, linetype = experiment)) + 
+  geom_line() + 
+  scale_linetype(name = "World...") + 
+  guides(color = guide_legend(nrow = 2))
+
+
+beta <- fleet_experiment |> 
+  mutate(experiment = if_else(prop_mpa == 0, "Without MPA", "With MPA")) |> 
+  group_by(critter, step, prop_mpa, experiment, fleet) |> 
+  summarise(catch = sum(catch, na.rm = TRUE)) |> 
+  ggplot(aes(step, catch, color = critter, linetype = experiment)) + 
+  geom_line() + 
+  scale_linetype(name = "World...") + 
+  facet_wrap(~fleet) + 
+    guides(color = guide_legend(nrow = 2))
+
+
+(alpha | beta) + plot_layout(guides = "collect") & theme(legend.position = "bottom") 
+
+```
+
+Example of data to inform indicators
+
+```{r}
+#| label: fig-cs-3
+#| fig-cap: "Values of indicators (biomass, mean length, effort) inside and outside of MPAs as example of indicator data. Each point is a different patch."
+
+
+alpha <- fauna_results |> 
+  filter(step == max(step)) |> 
+  group_by(critter, x,y,mpa) |> 
+  summarise(b = sum(b), distance_to_mpa_edge = unique(distance_to_mpa_edge)) |> 
+  group_by(critter) |> 
+  mutate(sb = as.numeric(scale(b))) |> 
+  ggplot(aes(distance_to_mpa_edge, b, color = mpa)) + 
+  geom_vline(xintercept =0) +
+  geom_point() + 
+  facet_wrap(~critter, scales = "free_y") + 
+   scale_y_continuous(name = "Biomass") + 
+  scale_x_continuous(name = "Linear distance to nearest MPA edge")
+
+
+
+beta <- fleet_results |> 
+  filter(step == max(step)) |> 
+   group_by(fleet, x,y,mpa) |> 
+  summarise(effort = unique(effort), distance_to_mpa_edge = unique(distance_to_mpa_edge)) |> 
+  group_by(fleet) |> 
+  mutate(se = as.numeric(scale(effort))) |> 
+  ggplot(aes(distance_to_mpa_edge, effort, color = mpa)) + 
+  geom_vline(xintercept =0) +
+  geom_point() + 
+  facet_wrap(~fleet, labeller = label_both) + 
+  scale_y_continuous(name = "Effort") + 
+  scale_x_continuous(name = "Linear distance to nearest MPA edge")
+
+kappa <- fauna_results |> 
+  filter(step == max(step)) |> 
+   group_by(critter, x,y,mpa) |> 
+  summarise(mean_length = weighted.mean(mean_length, n), distance_to_mpa_edge = unique(distance_to_mpa_edge)) |> 
+  group_by(critter) |> 
+  ggplot(aes(distance_to_mpa_edge, mean_length, color = mpa)) + 
+  geom_vline(xintercept =0) +
+  geom_point() + 
+  facet_wrap(~critter, scales = "free_y") + 
+   scale_y_continuous(name = "Mean length") + 
+  scale_x_continuous(name = "Linear distance to nearest MPA edge")
+
+
+
+
+(alpha / kappa /beta) + plot_layout(guides = "collect")
+```
+
+Another case study figure. The above hold MPA constant, this shows change as a function of MPA size. Will decide which is more helpful.
+
+```{r}
+#|label: fig-mpa-cs
+#| fig-cap: "Example trajectories of bioimass / unfished biomass and catch by species and fleet as a function of MPA size and placement strategy."
+
+
+i <- as.integer(sample(unique(complex_processed_sims$mpa_outcomes$state_id),1))
+
+reality <- complex_processed_sims$mpa_outcomes |> 
+  mutate(state_id = as.integer(state_id)) |> 
+  filter(state_id == i, step == max(step)) |> 
+  mutate(critter = critter_namer(critter))
+
+# reality |> 
+#   filter(name %in% c("catch", "biomass")) |> 
+#   ggplot(aes(prop_mpa, percent_mpa_effect,color = name )) + 
+#   geom_point() + 
+#   facet_grid(critter~placement_strategy)
+
+
+a = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "biomass"),
+    aes(
+      prop_mpa,
+      value / b0,
+      color = critter
+    )
+  ) +
+  scale_y_continuous(limits = c(0, NA), name = "~B/B0") +
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  scale_color_viridis_d(name = '') +
+  facet_wrap( ~ placement_strategy) + 
+  guides(color = guide_legend(nrow = 2))
+
+b = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "catch") |> mutate(fleet = paste0("High-definition Fleet ",fleet)),
+    aes(prop_mpa, value, color = fleet)
+  ) +
+  scale_y_continuous(limits = c(0, NA), name = "Catch") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  facet_grid(critter~placement_strategy,scales = "free") + 
+  scale_color_brewer(name = '',palette = "Accent") +
+  guides(color = guide_legend(nrow = 2)) + 
+  theme(strip.text.y = element_text(size = 6))
+
+fig <- (a | b)  + plot_layout(guides = "collect") & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7))
+
+
+fig
+#figsaver(fig)
+```
+
+### How Variable are MPA Effects?
+
+This section of results explore how variable the simulated effects of MPAs are.
+
+Key results are that positive biomass more possible than negative but both possible, negative and positive catch effects both possible, and magnitude of effects in all directions increases with complexity
+
+```{r}
+#| label: fig-outcomes
+#| fig-cap: "Distribution of MPA effects on biomass (x-axis) and catch (y-axis) as a function of simulation complexity (columns) and MPA size (rows). Color indicates simulated depletion (biomass relative to unfished biomass) in the absence of the MPA."
+  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
+
+
+  
+  # quad_labels <- data.frame(
+  #   x = c(50, 50, -24, -24),
+  #   y = c(50, -50, 50, -50),
+  #   label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
+  # )
+
+  thirty_protected_plot <- mpa_outcomes |>
+    mutate(mpa_bin = cut(numeric_prop_mpa, 3)) |> 
+    # filter(numeric_prop_mpa <= 0.4) |>
+    # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
+    ggplot(aes(biomass, catch)) +
+    geom_vline(xintercept = 0, color = "black") +
+    geom_hline(yintercept = 0, color = "black") +
+    geom_point(aes(color = pmin(1,depletion)), alpha = 0.25) +
+    # geom_text(
+    #   data = quad_labels,
+    #   aes(x, y, label = label),
+    #   size = 6,
+    #   color = "red"
+    # ) +
+    scale_color_viridis_c(
+      "BAU B/B0",
+      limits = c(0, 1),
+      option = "plasma",
+      guide = guide_colorbar(
+        frame.colour = "black",
+        ticks.colour = "black",
+        barwidth =  unit(11, "lines")
+      )
+    )  +
+    scale_x_continuous(name = "X Change in Species Biomass",
+                       oob = squish,
+                       limits = c(NA, 2), 
+                       labels = scales::percent) +
+    scale_y_continuous(name = "X Change in Species Catch",
+                       oob = squish,
+                       limits = c(NA, 2), 
+                       labels = scales::percent) +
+    theme(legend.position = "bottom") +
+    labs(caption = "20-40% of area in MPA") + 
+    facet_grid(mpa_bin~fct_rev(difficulty))
+  
+  
+  # thirty_protected_plot <- ggMarginal(thirty_protected_plot,
+  #                                     type = "histogram",
+  #                                     fill = "steelblue")
+  
+  thirty_protected_plot
+  rm(mpa_outcomes)
+  #ggplotly(thirty_protected_plot)
+```
+
+Can also examine how frequency of simulated quadrant outcomes changes as a function of MPA size, being clear throughout that cannot assign probability of any one of these states of nature so can't say this means that this distribution is representative of the real world per say.
+
+```{r}
+#| label: fig-quadrant-freq
+#| fig-cap: Frequency of different outcomes as a function of MPA size (panels)
+
+quadrant_outcomes |> 
+  mutate(prop_mpa = as.numeric(as.character(prop_mpa))) |> 
+  mutate(size_bin = cut(prop_mpa,4)) |> 
+  group_by(quadrant,size_bin) |> 
+  count() |> 
+  group_by(size_bin) |> 
+  mutate(pn = n /sum(n)) |> 
+  ggplot(aes(reorder(quadrant, pn), pn)) + 
+  geom_col(position = "dodge") + 
+  coord_flip() + 
+  facet_wrap(~size_bin)
+  
+  
+
+```
+
+#### Drivers of Outcomes
+
+We ran a random forest predicting percent MPA effect and estimated the variable importance score of the simulated attributes. This allows us to examine which simulation attributes seem to be the most important in determining the percent MPA effect, being clear that importance does not equal effect size.
+
+```{r}
+drivers_and_outs <- inds_and_outs |> 
+  mutate(percent_mpa = as.numeric(as.character(prop_mpa))) |> 
+  filter(percent_mpa <= 0.4) |> 
+  select(-starts_with("ind_")) |> 
+  group_by(name) |> 
+  nest()
+
+
+get_vips <- function(drivers_and_out, trees = 200){
+
+drivers_and_out <- drivers_and_out |> 
+  select(percent_mpa_effect, critter, kiss:depletion) |> 
+  mutate(rando = rnorm(n())) |> 
+  select(-f_v_m,-placement_error,-critters_considered,-kiss,-min_cor,-max_cor, -mean_abs_cor,-max_abs_cor)
+
+has_nas <- map_lgl(drivers_and_out, ~any(is.na(.x)))
+
+drivers_and_out <- drivers_and_out[,!has_nas]
+
+model_spec <-
+  rand_forest(trees = trees) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("regression") 
+
+model_recipe <- recipe(percent_mpa_effect ~ ., data = drivers_and_out) |> 
+  step_filter_missing(threshold = 0) |> 
+  step_mutate(percent_mpa_effect = percent_mpa_effect + 1) |> 
+  step_log(all_outcomes())
+
+model_workflow <-
+  workflow() %>%
+  add_model(model_spec) %>%
+  add_recipe(model_recipe)
+
+tuned_fit <- parsnip::fit(model_workflow, drivers_and_out)
+
+vips <- tuned_fit %>% 
+  extract_fit_parsnip() %>% 
+  vi()
+
+random_vip <- vips$Importance[vips$Variable == "rando"]
+
+vips <- vips |> 
+  filter(Importance > random_vip)
+
+return(vips)
+}
+
+drivers_and_outs <- drivers_and_outs |> 
+  mutate(vips = map(data,get_vips, .progress = "estimating vips"))
+```
+
+```{r}
+#| label: fig-vips
+#| fig-cap: A) Permutation-based variable importance score of included covariates on log percent MPA effects.
+
+
+drivers_and_outs |> 
+  filter(name %in% c("biomass", "catch", "mpa_biomass")) |> 
+  select(name, vips) |> 
+  unnest(cols = vips) |> 
+  ggplot(aes(reorder(Variable, Importance), Importance, color = name)) +
+  ggalt::geom_lollipop(show.legend = FALSE) + 
+  facet_wrap(~name) + 
+  coord_flip() + 
+  scale_color_brewer(palette = "Accent") + 
+  scale_x_discrete(name ="")
+```
+
+### Indicator Performance
 
 ```{r}
 
 measure_performance <- function(x){
   
   augx <- broom::augment(x)
-  
-  # plot(augx$.fitted, augx$percent_mpa_effect)
   # browser()
-  out <- data.frame(rmse = yardstick::rmse_vec(augx$percent_mpa_effect, augx$.fitted),
-                    bias = mean(augx$percent_mpa_effect- augx$.fitted))
+  # plot(exp(augx$.fitted),exp(augx$log_percent_mpa_effect))
+  out <- data.frame(rmse = yardstick::rmse_vec(augx$log_percent_mpa_effect, augx$.fitted),
+                    bias = mean(augx$log_percent_mpa_effect- augx$.fitted))
   
 }
 
 indicator_performance <- comparison |>
   filter(is.finite(percent_mpa_effect), is.finite(indicator_value)) |> 
   filter(!is.na(indicator)) |> 
-  group_by(name, indicator, difficulty) |>
+    mutate(percent_mpa_effect = percent_mpa_effect + 1,
+         log_percent_mpa_effect = log(percent_mpa_effect)) |> 
+  filter(difficulty == "complex") |> 
+  group_by(name, indicator) |>
   nest() |>
   mutate(model = map(data, ~ lm(
-    percent_mpa_effect ~ indicator_value, data = .x
+    log_percent_mpa_effect ~ indicator_value, data = .x
   ))) |> 
   mutate(model_summary = map(model, broom::glance)) |> 
   mutate(model_performance = map(model, measure_performance)) |> 
   unnest(cols = c(model_summary,model_performance)) |> 
-  select(-model,-data)
+  select(-model,-data) |> 
+  mutate(rmse = pmin(5,rmse))
 
-indicator_performance |> 
-  filter(name %in% c("biomass", "mpa_biomass", "catch")) |> 
-  ggplot(aes(reorder(indicator, r.squared), r.squared)) + 
-  stat_gradientinterval() + 
-  coord_flip() + 
-  facet_wrap(~name)
+best_indicators <- indicator_performance |> 
+  group_by(name) |> 
+  filter(rmse == min(rmse)) |> 
+  rename(best_indicator = indicator)
 
-indicator_performance |> 
-  filter(name %in% c("biomass", "mpa_biomass", "catch")) |> 
-  ggplot(aes(reorder(indicator, -rmse), rmse)) + 
-  stat_gradientinterval() + 
-  coord_flip() + 
-  facet_wrap(~name)
+best_performers <- comparison |> 
+  left_join(best_indicators, by ="name") |> 
+  filter(indicator == best_indicator) |> 
+  mutate(combo = paste(name, indicator, sep = " ~ ")) |> 
+  mutate(combo = str_remove_all(combo, "ind_"))
+  
 
+best_indicators_noncausal <- indicator_performance |> 
+  filter(str_detect(indicator,("_rr|_gradient"))) |> 
+  group_by(name) |> 
+  filter(rmse == min(rmse)) |> 
+  rename(best_indicator = indicator)
+
+best_performers_noncausal <- comparison |> 
+  filter(str_detect(indicator,("_rr|_gradient"))) |> 
+  left_join(best_indicators_noncausal, by ="name") |> 
+  filter(indicator == best_indicator) |> 
+  mutate(combo = paste(name, indicator, sep = " ~ ")) |> 
+    mutate(combo = str_remove_all(combo, "ind_"))
 
   
-best_indicators <- indicator
 
-quadrant_outcomes$quadrant
 
+```
+
+We mapped each indicator value onto each MPA outcome, and then fit a linear model to them and calculated which indicators were the "best performer", as measured by RMSE, in being able to predict the outcome.
+
+Plotting the best performing indicator (x-axis) against outcome (y-axis)
+
+With before and after data
+
+```{r}
+#| label: fig-perfomance-ba
+#| fig-cap: Indicator value (x-axis) and outcome value (y-axis) for the best performing indicator for the outcome in question (row label) broken out by simulation complexity (rows).
+
+best_performers |> 
+  # filter(between(prop_mpa, 0.1, 0.4)) |> 
+  group_by(indicator) |> 
+  mutate(indicator_value = indicator_value / sd(indicator_value)) |> 
+  ggplot(aes(indicator_value, percent_mpa_effect)) + 
+  geom_hex(bins = 10) + 
+  geom_hline(yintercept = 0, linetype = 2, color = "tomato") + 
+    geom_vline(xintercept = 0, linetype = 2, color = "tomato") +
+  facet_grid(difficulty~combo, scales = "free_x") + 
+  scale_y_continuous(limits = c(-1,4), oob = squish) + 
+  scale_fill_viridis_c() + 
+  theme(legend.position = "bottom")
+```
+
+with only after data
+
+```{r}
+#| label: fig-perfomance
+#| fig-cap: Indicator value (x-axis) and outcome value (y-axis) for the best performing indicator for the outcome in question (row label) broken out by simulation complexity (rows). Candidate indicators limited to only "after" MPA data.
+
+best_performers_noncausal |> 
+  group_by(indicator) |> 
+  mutate(indicator_value = indicator_value / sd(indicator_value)) |> 
+  ggplot(aes(indicator_value, percent_mpa_effect)) + 
+  geom_hex(bins = 10) + 
+  geom_hline(yintercept = 0, linetype = 2, color = "tomato") + 
+    geom_vline(xintercept = 0, linetype = 2, color = "tomato") +
+  facet_grid(difficulty~combo, scales = "free_x") + 
+  scale_y_continuous(limits = c(-1,4), oob = squish) + 
+  scale_fill_viridis_c() + 
+    theme(legend.position = "bottom")
+
+```
+
+Include a table of the performance of all the indicators.
+
+```{r}
+#| label: tbl-test
+
+indicator_performance |> 
+  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
+  select(name, indicator, adj.r.squared) |> 
+  mutate(adj.r.squared = round(adj.r.squared / 0.01) * 0.01) |> 
+  group_by(name) |> 
+  mutate(order = mean(adj.r.squared)) |> 
+  ungroup() |> 
+  mutate(indicator = fct_reorder(indicator,adj.r.squared)) |> 
+  arrange(rev(indicator)) |> 
+  select(-order) |> 
+  pivot_wider(names_from = name, values_from = adj.r.squared) |> 
+  ungroup() |> 
+  gt() |> 
+  tab_caption("hello, it's me. R2.")
+
+```
+
+We lastly tested the ability of a multi-indicator ensemble to predict the quadrant. Trained random forest to predict MPA outcome quadrant as a function of all indicators. Trained on 50% of simulated states of nature, tested on the remaining 50%
+
+```{r}
+#| label: fig-quadrant-prediction 
+#| fig-cap: Confusion matrix of indicaotr-based ensemble model of quadrant outcomes of MPA.
+  
 predictors <- quadrant_outcomes |> 
-  select(quadrant, ends_with("raw")) |> 
+  select(quadrant, ends_with("raw"), state_id) |> 
   na.omit() |> 
   mutate(quadrant = as.factor(quadrant))
 
-quadrant_model <- ranger(quadrant ~ ., predictors, classification = TRUE)
+# create initial split
+quadrant_split <- group_initial_split(predictors, group = state_id, prop = 0.5)
+
+# design cross validation splits
+
+training_split <- training(quadrant_split)
+
+testing_split <- testing(quadrant_split)
+
+# model_spec <-
+#   rand_forest(mtry = tune(),
+#               min_n = tune(),
+#               trees = tune()) %>%
+#   set_engine("ranger") %>%
+#   set_mode("classification")
+
+model_spec <-
+  rand_forest(mtry = tune(),
+              min_n = tune(),
+              trees = 100) %>%
+  set_engine("ranger") %>%
+  set_mode("classification")
+
+model_recipe <- recipe(quadrant ~ ., data = training_split) |> 
+  step_rm(state_id) |> 
+  step_smote(over_ratio = 0.5)
+
+model_workflow <- 
+  workflow() %>% 
+  add_model(model_spec) %>% 
+  add_recipe(model_recipe)
+
+if (tune_grids | !file.exists(file.path(results_dir,"tuned_quant_grid.rds"))){
+  future::plan(future::multisession, workers = 8)
+  
+  tuned_quant_grid <-
+    model_workflow %>%
+    tune_grid(
+      resamples = group_vfold_cv(training_split, group = state_id, v = 2),
+      grid = 10,
+      control = control_grid(save_pred = FALSE)
+    )
+  
+  future::plan(future::sequential)
 
 
-confusion_matrix <- (quadrant_model$confusion.matrix) |> 
-  as.data.frame()
+write_rds(tuned_quant_grid, file.path(results_dir,"tuned_quant_grid.rds"))
+} else {
+  
+  tuned_quant_grid <- read_rds(file.path(results_dir,"tuned_quant_grid.rds"))
+  
+}
 
-confusion_matrix |> 
-  tibble() |> 
-  group_by(predicted) |> 
- mutate(pn = Freq / sum(Freq),
-         label_pn = percent(pn, accuracy = 1))  |> 
-  ggplot(aes(predicted, true)) +
+best_params <- tune::select_best(tuned_quant_grid, metric = "accuracy")
+
+model_spec <-
+  rand_forest(mtry = tune(),
+              min_n = tune(),
+              trees = 100) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("classification")
+
+model_recipe <- recipe(quadrant ~ ., data = training_split) |> 
+  step_rm(state_id) |> 
+  step_smote(over_ratio = 0.5)
+
+model_workflow <- 
+  workflow() %>% 
+  add_model(model_spec) %>% 
+  add_recipe(model_recipe)
+
+tuned_model_workflow <- model_workflow |> 
+  finalize_workflow(best_params)
+
+tuned_fit <- parsnip::fit(tuned_model_workflow, training_split)
+
+quadrant_vip_plot <- tuned_fit %>% 
+  extract_fit_parsnip() %>% 
+  vip(num_features = 40) + 
+  scale_y_continuous(name = "Permutation-Based Variable Importance") + 
+  labs(title = "A)")
+
+
+# explain_fit <- DALEXtra::explain_tidymodels(
+#   tuned_fit,
+#   data = training_split,
+#   y = tmp$delta,
+#   label = "rf",
+#   colorize = TRUE,
+#   verbose = FALSE
+# )
+
+
+# pdp_fit  <- model_profile(
+#   explain_fit,
+#   type = "partial",
+#   N = 500
+# )
+
+
+# pd_plot <- plot(
+#   pdp_fit,
+#   geom = "points"
+# ) +
+#   theme_minimal() +
+#   labs(title = "B)", subtitle = '', y = "Predicted Delta")
+
+# fig <- catch_vip_plot| pd_plot
+
+
+predicted_quadrant <- predict(tuned_fit, testing_split)
+
+
+testing_split$predicted_quadrant <- predicted_quadrant$.pred_class
+
+confusion_matrix <- testing_split |>
+  group_by(quadrant, predicted_quadrant) |>
+  count() |>
+  ungroup() |> 
+  complete(predicted_quadrant, quadrant, fill = list(n = 0)) |> 
+  group_by(predicted_quadrant) |>
+  mutate(pn = n / sum(n), label_pn = percent(pn, accuracy = 1))
+
+
+confusion_matrix|> 
+  ggplot(aes(predicted_quadrant, quadrant)) +
   geom_tile(aes(fill = pn), color = "black") +
   geom_abline(
     color = "tomato",
@@ -559,23 +1314,15 @@ confusion_matrix |>
     alpha = 0.5,
     linetype = 2
   ) +
-  geom_text(aes(label = label_pn), size = 2) +
-  scale_fill_gradient2(
-    low = "tomato",
-    mid = "white",
-    high = "steelblue2",
-    midpoint = 0.5,
-    name = "% Simulations",
-    labels = scales::percent,
-    limits = c(0, 1)
-  ) +
+  geom_text(aes(label = n), size = 2, color = "tomato") +
+  scale_fill_viridis_c(limits = c(0,1)) +
   theme(axis.text.x = element_text(
     angle = 45,
     vjust = 1,
     hjust = 1
   )) +
-  scale_y_discrete(name = "High-definition Reality") +
-  scale_x_discrete(name = "Low-definition Prediction") + 
+  scale_y_discrete(name = "Simulated Reality") +
+  scale_x_discrete(name = "Ensemble Model Prediction") + 
   labs(title = "A") + 
   guides(fill = "none")
   
@@ -584,14 +1331,60 @@ confusion_matrix |>
 
 ### Discussion
 
-Note that this is all assuming equilibrium! 
+xx push back on mark costello no redustribution claim @costello2024
 
-Just as a quota for one species can have unintended consequences on another, so can MPAs. 
+Coming years will see large increases in design and evaluation of MPAs. Urgent need to design monitoring programs that are able to track performance of relevant metrics so that we can learn appropiately, etc.
 
-Let us be clear. THe simulation results presented here indicate that clearly MPAs are capable of benefiting biomass and catch. However, they are also capable of harming both.
+Results show that MPA performance is variable enough to warrant investment in monitoring. Unintended consequences are possible, more ways for positive conservation effects, but effect sizes are highly variable holding MPA size constant, so important to measure how effective if MPAs are being used to guide management.
 
-We implement size limits all the time without needing complex causal inference. Part of the reason for that is that it's a more direct lever, but still. But, if the movement of the coming yeasr was "No Undersized by 2035", resulting in a massive global investment in the design and roll of out size limit programs, a deeper look at measuring the prformance of size limits might be warranted 
+What drives negative conservation effects when they do happen? One or more of heterogeneous and negatively correlated habitat, effort displacement, open access dynamics, and the "avoid fishing" placement strategy. The last is interesting, as it under the most control of MPA planners, and is certainly an outcome that can happen (place the MPAs in marginal fishing grounds that are less likely to cause conflict). Examples?
+
+Heavy fishing correlated with positive catch outcomes, particularly in simple scenarios, but not deterministic. Plenty of cases, particularly under the more complex scenario, where catch goes down even when overfishing present.
+
+Depletion was generally most important important predictor of MPA effects, followed by measures of the correlation across species, adult movement, and sensitivity of the species to fishing (steepness). This is interesting for a few reasons, namely that suggests that models that don't take into account the ways that fleets interact with multiple species across hetergenous habitats can miss the mark (ovando et al. 2024 in review). Also interesting that factors such as recruit diffusion had very little importance?
+
+Bioimass BACI / response ratio best predictors of MPA biomass, and both performed reasonably well, though not perfect. Plenty of simulations, particularly in more complex world, where MPA had a positive effect inside the reserve but BACI showed no effect. But, outcomes were correlated and very high BACI / response ratio values tended to correspond to high effect sizes, even in cases where the core assumptions of BACI / response ratio are violated. Compare effect sizes to ratio values reported in lester et al.
+
+Population effect messier. Little directional disagreement (very high indicator, negative population effects, and negative effects associated with lower indicator values. But, wide variability, with very high indicator values corresponing with a very wide range of outcomes, ranging from 0 to 400%. So, to some extent, doesn't tell you much more than "had a positive effect", up until massive values. Massive values might be an artifact of confined nature of simulation space though.
+
+The story with catch is much worse. None of the evaluated indicators had any meaningful ability on their own to predict catch outcomes. While @medoff2022 did not claim a catch increase in their paper, media coverage of said paper attributed higher CPUE near vs. far as a fishery benefit, whereas these results show that there is no relationship between the two, and indeed some bimodality where high values could either correspond to a massive benefit or a near 100% loss in the fishery (though that would presumably be noticed in the real world).
+
+Ensemble shows possible to make some predictions in quadrants, but highly uncertain. Goes back to basics of "simualted MPAs generally improved biomass, but how much was highly variable, and no indicator mapped onto catch".
+
+Very important to note. This all assumes perfectly measured information. Clearly, uncertain and/or biased sampling will make any relationships between indicators and outcomes more uncertain. Further research needed to consider reliability of indicators taking into account reasonable observation error.
+
+So what does this suggest for MPA monitoring going forward? Conditional on quality of monitoring program always. Reality is often complicated, conceptual model important in thinking through how real is real enough. Results suggest that response ratio works best for MPA biomass, not bad for population biomass but very imprecise, and absolutely terribly for catch. No tested indicator was a reliable indicator of fishery outcomes. So, current indicators may be suitable for "are we succeeding inside the borders", could be used with caution for population level effects (no guarantee, see @ovando2021), and should not be used as evidence for fishery outcomes.
+
+What does the future suggest? Better integration with spatial stock assessment literature, linking process-based models to indicators rather than pure statistical outcomes (e.g. leveraging basic life history in terms of time to effects etc) @punt201 @nickols2019. Also, lots of advances in spatial-temporal modeling @thorson2024a. At the same time, collaborations with field biologists and the like critical to getting the conceptual model right. Need better integration with social science to figure out how do we effectively monitor socio-economic impacts.
+
+Snappy concluding thing.
+
+### Discussion phrases parking lot
+
+high percent variability in catch at low exploitation since catch is close to zero
+
+Indicators worked best for MPA conservation, then biomass. Biomass was uncertain, but positive was that generally speaking "high" indicator values corresponded to "high" conservation outcomes. But, those are really extreme values, map onto @lester2009. For smaller values, very uncertain, range from negative to positive.
+
+For catch, no indicator performed well.
+
+Note that this is all assuming equilibrium! NPV is important too, communities aren't happy if they go through 50 years of loss for benefits in the 51st year @ovando2016
+
+Just as a quota for one species can have unintended consequences on another, so can MPAs.
+
+Let us be clear. The simulation results presented here indicate that clearly MPAs are capable of benefiting biomass and catch. However, they are also capable of harming both.
+
+We implement size limits all the time without needing complex causal inference. Part of the reason for that is that it's a more direct lever, but still. But, if the movement of the coming yeasr was "No Undersized by 2035", resulting in a massive global investment in the design and roll of out size limit programs, a deeper look at measuring the performance of size limits might be warranted.
 
 @halpern2004
 
 @franceschini2024
+
+@kay2012
+
+@kellner2007
+
+@ohayon2021
+
+\newpage
+
+## References
