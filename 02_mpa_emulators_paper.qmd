@@ -52,7 +52,7 @@ difficulties <- c("simple","medium","complex")
 
 min_depletion <- 0.00001
 
-tune_grids <- FALSE
+tune_grids <- TRUE
 ```
 
 ```{r}
@@ -430,8 +430,8 @@ reality <- simple_processed_sims$mpa_outcomes |>
 
 a = ggplot() +
   geom_line(
-    data = reality |> filter(name == "spawning_biomass"),
-    aes(prop_mpa, value / ssb0, color = "High-definition Model")
+    data = reality |> filter(name == "biomass"),
+    aes(prop_mpa, value / b0, color = "High-definition Model")
   ) +
   geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Low-definition Model")) +
   scale_y_continuous(limits = c(0, 1), name = "~B/B0") + 
@@ -486,10 +486,10 @@ reality <- complex_processed_sims$mpa_outcomes |>
 
 a = ggplot() +
   geom_line(
-    data = reality |> filter(name == "spawning_biomass"),
+    data = reality |> filter(name == "biomass"),
     aes(
       prop_mpa,
-      value / ssb0,
+      value / b0,
       color = critter
     )
   ) +

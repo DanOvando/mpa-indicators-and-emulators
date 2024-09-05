@@ -1333,6 +1333,8 @@ confusion_matrix|>
 
 xx push back on mark costello no redustribution claim @costello2024
 
+emphasize scale of response ratio axes: a response ratio value of 100%, meaning that there being roughly 100% more biomass inside the reserve than outside could have anything from a negative effect to a 300% effect.
+
 Coming years will see large increases in design and evaluation of MPAs. Urgent need to design monitoring programs that are able to track performance of relevant metrics so that we can learn appropiately, etc.
 
 Results show that MPA performance is variable enough to warrant investment in monitoring. Unintended consequences are possible, more ways for positive conservation effects, but effect sizes are highly variable holding MPA size constant, so important to measure how effective if MPAs are being used to guide management.
