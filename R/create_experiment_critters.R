@@ -9,12 +9,15 @@ create_experiment_critters <-
            spawning_aggregation = FALSE,
            spawning_seasons = NA,
            steepness = 0.7,
-           ssb0 = 100,
+           ssb0 = NA,
+           b0 = 100,
            f_v_m,
            hyper = 1,
            resolution,
            density_dependence,
-           kiss = FALSE) {
+           kiss = FALSE,
+           sigma_rec = 0,
+           ac_rec = 0) {
     
     hab <- habitat %>%
       pivot_wider(names_from = y, values_from = habitat) %>%
@@ -88,14 +91,17 @@ create_experiment_critters <-
       adult_diffusion = adult_diffusion,
       recruit_diffusion = recruit_diffusion,
       density_dependence = density_dependence,
-      fec_form = ifelse(str_detect(sciname,"carcharhinus"),"pups","weight"),
+      fec_form = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),"pups","weight"),
       pups = 6,
       seasons = seasons,
       fec_expo = hyper,
       steepness =  steepness,
       ssb0 = ssb0,
+      b0 = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),b0 / 10,b0), # try and keep shark popsize on average smaller than others
       spawning_seasons = spawning_seasons,
-      resolution = resolution
+      resolution = resolution,
+      sigma_rec = sigma_rec,
+      ac_rec = ac_rec
     )
     
     critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.8

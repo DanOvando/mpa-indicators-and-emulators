@@ -41,7 +41,7 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "v1.0") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
 
 # clean up figures generated in the report to ensure that all figures come from a fresh state
 paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
@@ -52,7 +52,7 @@ difficulties <- c("simple","medium","complex")
 
 min_depletion <- 0.00001
 
-tune_grids <- FALSE
+tune_grids <- TRUE
 ```
 
 ```{r}
@@ -151,6 +151,7 @@ tidy_lowres <- lowres |>
   ) 
 
 highres_vs_lowres <- highres |>
+  filter(step == max(step)) |> 
   left_join(tidy_lowres, by = c("state_id", "name", "critter", "prop_mpa")) |> 
   filter(!is.na(lowres_percent_mpa_effect)) |> 
   left_join(state_depletions |> select(state_id, critter, depletion), by = c("state_id","critter")) |> 
@@ -242,7 +243,7 @@ For each scenario set we simulated `r n_distinct(state_depletions$state_id) / 3`
 | Adult diffusion               | The diffusion rate of "adult" (non-larval) fish                                                                                   |
 | Larval diffusion              | The diffusion rate of the larval fish                                                                                             |
 | Steepness                     | Beverton-Holt steepness value                                                                                                     |
-| ssb0                          | The unfished spawning biomass for a given species                                                                                 |
+| b0                          | The unfished biomass for a given species                                                                                 |
 | Hyperallometry                | Degree of hyperallometry in fecundity at age relationship                                                                         |
 | Density dependence            | The timing of density dependence, one of "global_habitat", "local_habitat", "pre_dispersal", "post_dispersal".                    |
 | Ontogenetic shift             | Whether recruitment habitat is the inverse of adult habitat                                                                       |
@@ -429,8 +430,8 @@ reality <- simple_processed_sims$mpa_outcomes |>
 
 a = ggplot() +
   geom_line(
-    data = reality |> filter(name == "spawning_biomass"),
-    aes(prop_mpa, value / ssb0, color = "High-definition Model")
+    data = reality |> filter(name == "biomass"),
+    aes(prop_mpa, value / b0, color = "High-definition Model")
   ) +
   geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Low-definition Model")) +
   scale_y_continuous(limits = c(0, 1), name = "~B/B0") + 
@@ -485,10 +486,10 @@ reality <- complex_processed_sims$mpa_outcomes |>
 
 a = ggplot() +
   geom_line(
-    data = reality |> filter(name == "spawning_biomass"),
+    data = reality |> filter(name == "biomass"),
     aes(
       prop_mpa,
-      value / ssb0,
+      value / b0,
       color = critter
     )
   ) +
@@ -512,7 +513,7 @@ b = ggplot() +
   guides(color = guide_legend(nrow = 2)) + 
   theme(strip.text.y = element_text(size = 6))
 
-fig <- (a / b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
+fig <- (a | b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
 
 figsaver(fig)
 
@@ -887,7 +888,7 @@ explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
 
 pdp_fit  <- model_profile(
   explain_fit,
-  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "range_cor"),
+  variables = c("depletion", "steepness", "b0", "adult_diffusion", "range_cor"),
   type = "partial",
   N = 500
 )
@@ -985,7 +986,7 @@ explain_fit <- DALEXtra::explain_tidymodels(tuned_fit,
 
 pdp_fit  <- model_profile(
   explain_fit,
-  variables = c("depletion", "steepness", "ssb0", "adult_diffusion", "range_cor"),
+  variables = c("depletion", "steepness", "b0", "adult_diffusion", "range_cor"),
   type = "partial",
   N = 500
 )

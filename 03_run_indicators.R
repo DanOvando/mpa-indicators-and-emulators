@@ -6,17 +6,30 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 142, run_name = "v1.0", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+prep_run(
+  n_states = 84,
+  run_name = "indicators_v0.11",
+  drop_patches = FALSE,
+  experiment_workers = 8,
+  rx = 20,
+  ry = 20,
+  patch_area = 5
+) # loads packages and creates and returns some global variables for the analysis
+
+
+save_experiments <- FALSE
+
 
 library(tictoc)
 
+project <- "indicators"
+
 resolution <- c(rx, ry)
 
-# difficulties <- c("simple")
+mpa_years <- 20
 
-difficulties <- c("complex","medium","simple")
-
-# difficulties <- c("complex")
+difficulties <- c("complex", "medium", "simple")
+# difficulties <- c("epo")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -31,14 +44,29 @@ difficulty_species <- list(
     "pristipomoides filamentosus",
     "epinephelus fuscoguttatus",
     "carcharhinus amblyrhynchos"
-  )
+  ),
+  epo = c("thunnus albacares",
+          "katsuwonus pelamis",
+          "thunnus obesus",
+          "carcharhinus falciformis",
+          "isurus oxyrinchus",
+          "sphyrna zygaena",
+          "carcharhinus longimanus")
 )
+
+# if ("epo" %in% difficulties){
+#   
+#   sdmsish <- read_rds(here("data","epo_sdmsish.rds"))
+#   
+#   popsizeish <- read_rds(here("data","epo_popsizeish.rds"))
+#   
+# }
 
 baseline_state_experiments <-
   tibble(
     kiss = sample(c(FALSE, TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
-    habitat_patchiness = runif(n_states, 1e-3, .25),
+    habitat_patchiness = runif(n_states, 1e-3, .2),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
@@ -47,13 +75,14 @@ baseline_state_experiments <-
       prob = c(1, 3)
     ),
     spatial_allocation = sample(c("ppue", "rpue", "revenue"), n_states, replace = TRUE),
-    fleet_model = sample(c("constant effort"), n_states, replace = TRUE)
+    fleet_model = sample(c("constant_effort", "open_access"), n_states, replace = TRUE)
   ) %>%
   mutate(state_id = 1:nrow(.))
 
 port_locations <-
   tibble(x = c(1, resolution[1]), y = c(1, resolution[2])) # coordinates to test impact of highly disparate ports
 
+future::plan(future::multisession, workers = experiment_workers)
 
 
 for (difficulty in difficulties) {
@@ -61,16 +90,18 @@ for (difficulty in difficulties) {
   set.seed(42)
   critters <-
     tibble(scientific_name = difficulty_species[[difficulty]])
-  
+  message("creating habitats")
+
   state_experiments <- baseline_state_experiments %>%
     mutate(
-      habitats = pmap(
+      habitats = future_pmap(
         list(kp = habitat_patchiness, max_abs_cor = max_abs_cor),
         sim_habitat,
         critters = critters$scientific_name,
         resolution = resolution,
         patch_area = patch_area,
-        .progress = "Simulating habitats"
+        .progress = TRUE,
+        .options = furrr_options(seed = TRUE)
       )
     ) %>%
     mutate(critter_correlations = map(habitats, ~ process_correlations(.x$critter_correlations))) |>
@@ -85,12 +116,13 @@ for (difficulty in difficulties) {
       seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-      f_v_m = runif(length(state_id), 0.01, 0.33),
-      adult_diffusion = runif(length(state_id), min = 0, max = 1.25 * patch_area),
+      f_v_m = runif(length(state_id), 0.01, 0.24),
+      adult_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
+      recruit_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
       steepness = runif(length(state_id), min = 0.6, max = 1),
-      ssb0 = rlnorm(length(state_id), log(100 * patches), 0.6),
-      recruit_diffusion = runif(length(state_id), min = 0, max =  1.25 * patch_area),
+      b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
+      sigma_rec = sample(c(0, 0.2, 0.8), length(state_id), replace = TRUE),
       density_dependence = sample(
         c(
           "global_habitat",
@@ -109,10 +141,14 @@ for (difficulty in difficulties) {
     mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
     mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
   
+  message("finished habitats")
+  
+  
+  message("creating critters")
   state_experiments <- state_experiments %>%
     rename(scientific_name = critter) |>
     mutate(
-      critter = pmap(
+      critter = future_pmap(
         list(
           sciname = scientific_name,
           habitat = habitat,
@@ -126,15 +162,18 @@ for (difficulty in difficulties) {
           hyper = hyperallometry,
           ontogenetic_shift = ontogenetic_shift,
           steepness = steepness,
-          ssb0 = ssb0,
-          kiss = kiss
+          b0 = b0,
+          kiss = kiss,
+          sigma_rec = sigma_rec
         ),
         create_experiment_critters,
         resolution = resolution,
         seasons = seasons,
-        .progress = "creating critters"
+        .progress = TRUE,
+        .options = furrr_options(seed = TRUE)
       )
     )
+  message("finished critters")
   
   
   # aggregate into lists of fauna
@@ -150,14 +189,17 @@ for (difficulty in difficulties) {
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
   
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
-  #
+  
+  # state_experiments$fauna[[1]][[4]]$b0
   # stop()
   
+    message("making fleets")
   state_experiments <- state_experiments %>%
     ungroup() %>%
-    mutate(use_ports = sample(c(TRUE,FALSE), nrow(.), replace = TRUE)) %>%
+    mutate(use_ports = sample(c(TRUE, FALSE), n(), replace = TRUE),
+           max_abs_cor_rec = sample(c(0,.66), n(), replace = TRUE)) %>%
     mutate(
-      fleet = pmap(
+      fleet = future_pmap(
         list(
           fauna = fauna,
           state = data,
@@ -168,16 +210,22 @@ for (difficulty in difficulties) {
         create_fleets,
         difficulty = difficulty,
         port_locations = port_locations,
-        resolution = resolution
-      )
+        resolution = resolution,
+        .progress = TRUE,
+        .options = furrr_options(seed = TRUE)
+      ),
+      rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
     )
+  message("finished making fleets")
   
+
   # add in starting conditions
-  init_condit <- function(fauna, fleets, years = 125) {
+  init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
     starting_trajectory <-
       simmar(fauna = fauna,
              fleets = fleets,
-             years = years)
+             years = years,
+             cor_rec = rec_dev_cov_and_cor$cor)
     
     # plot_marlin(check)
     
@@ -193,13 +241,17 @@ for (difficulty in difficulties) {
     
   }
   
+  message(glue::glue("simulating initial {difficulty} conditions"))
   state_experiments <- state_experiments %>%
-    mutate(tmp = map2(
-      fauna,
-      fleet,
+    mutate(tmp = future_pmap(
+      list(fauna = fauna,
+      fleet = fleet,
+      rec_dev_cov_and_cor = rec_dev_cov_and_cor),
       init_condit,
-      .progress = glue::glue("simulating initial {difficulty} conditions")
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
     ))
+  message(glue::glue("finished simulating initial {difficulty} conditions"))
   
   state_experiments$starting_conditions <-
     map(state_experiments$tmp, "starting_conditions")
@@ -226,19 +278,20 @@ for (difficulty in difficulties) {
   init_dep_plot <-  state_depletions %>%
     ggplot(aes(depletion)) +
     geom_histogram() +
-    facet_wrap(~ critter)
+    facet_wrap( ~ critter)
   
   ggsave(file.path(fig_dir, glue::glue("{difficulty}_init_dep.pdf")), init_dep_plot)
   
   
   for (i in 1:nrow(state_experiments)) {
+
     tmp <- state_experiments$proc_starting_conditions[[i]]$fauna |>
       filter(step == max(step)) |>
       group_by(critter) |>
       mutate(n = n / max(n)) |>
       ggplot(aes(x, y, fill = n)) +
       geom_tile() +
-      facet_wrap(~ critter) +
+      facet_wrap( ~ critter) +
       scale_fill_viridis_c(limits = c(0, 1))
     
     tmp2 <- state_experiments$proc_starting_conditions[[i]]$fleet |>
@@ -263,49 +316,18 @@ for (difficulty in difficulties) {
     
     
   }
-  # fit two-patch biomass dynamics (twopbd) emulations
-  emulated_state_experiments <- state_experiments |>
-    mutate(twopbd_params = map2(
-      fauna,
-      fleet,
-      safely(fit_twopbd),
-      .progress = glue("fitting {difficulty} emulators")
-    )) |>
-    mutate(fit_worked = map_lgl(twopbd_params, ~ is.null(.x$error))) |>
-    filter(fit_worked) |>
-    mutate(twopbd_params = map(twopbd_params, "result")) |>
-    select(state_id, fleet, twopbd_params) |>
-    unnest(cols = twopbd_params)
   
-  emulated_experiment_results <-
-    expand_grid(
-      state_id = unique(emulated_state_experiments$state_id),
-      prop_mpa = seq(0.05, 0.95, by = 0.05)
-    ) |>
-    left_join(emulated_state_experiments,
-              relationship = "many-to-many",
-              by = "state_id") |>
-    left_join(state_depletions, by = c("state_id", "critter")) |>
-    mutate(mpa_experiment = pmap(
-      list(
-        params = twopbd_params,
-        fleet = fleet,
-        depletion = depletion,
-        local_dd = local_dd,
-        p_mpa = prop_mpa
-      ),
-      run_twopbd_mpas,
-      .progress = glue::glue("running {difficulty} emulator experiments")
-    ))
   
-  write_rds(emulated_experiment_results, file = file.path(
-    results_dir,
-    glue("{difficulty}_emulated_experiment_results.rds")
-  ))
+  # generate recruitment deviates to be shared across all MPA sizes
   
+state_experiments <- state_experiments |> 
+  mutate(log_rec_devs = map2(fauna, rec_dev_cov_and_cor, generate_rec_devs, years = mpa_years))
+  
+# generate placement experiments
+
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "area", "avoid_fishing"),
-    prop_mpa = seq(0, 1, by = 0.05),
+    prop_mpa = seq(0, 0.75, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
       length(state_experiments$fauna[[1]]),
@@ -324,17 +346,19 @@ for (difficulty in difficulties) {
     glue("{difficulty}_placement_experiments.rds")
   ))
   
-  write_rds(state_experiments |> select(-contains("starting_conditions")), file = file.path(results_dir, glue("{difficulty}_state_experiments.rds")))
+  write_rds(state_experiments |> select(-contains("starting_conditions")),
+            file = file.path(results_dir, glue("{difficulty}_state_experiments.rds")))
   
-  write_rds(emulated_state_experiments, file = file.path(
-    results_dir,
-    glue("{difficulty}_emulated_state_experiments.rds")
-  ))
+  # future::plan(future::multisession, workers = experiment_workers)
   
-  future::plan(future::multisession, workers = experiment_workers)
-  
+  # experiment_results <-
+  #   vector(mode = "list", length = nrow(placement_experiments))
+  #
   experiment_results <-
-    vector(mode = "list", length = nrow(placement_experiments))
+    vector(mode = "list", length = 2) # for memory-concious mode, only save reference and the current MPA size
+  
+  processed_sims <-
+    vector(mode = "list", length = nrow(placement_experiments) - 1) # for memory-concious mode, only save reference and the current MPA size
   
   pb <- progress_bar$new(
     format = "  Running MPA Experiments [:bar] :percent eta: :eta",
@@ -353,12 +377,13 @@ for (difficulty in difficulties) {
     tmp <- state_experiments |>
       ungroup() %>%
       mutate(
-        results = pmap(
+        results = future_pmap(
           list(
             starting_conditions = starting_conditions,
             proc_starting_conditions = proc_starting_conditions,
             fauna = fauna,
-            fleets = fleet
+            fleets = fleet,
+            log_rec_devs = log_rec_devs
           ),
           run_mpa_experiment,
           placement_strategy = placement_experiments$placement_strategy[p],
@@ -367,34 +392,106 @@ for (difficulty in difficulties) {
           placement_error = placement_experiments$placement_error[p],
           resolution = resolution,
           patch_area = patch_area,
-          drop_patches = drop_patches
+          drop_patches = drop_patches,
+          steps_to_keep = "before_after",
+          years = mpa_years,
+          keep_age = TRUE,
+          .options = furrr_options(seed = TRUE)
         )
       )
     
     
     tmp$results <-
       purrr::set_names(tmp$results, state_experiments$state_id)
-    # Sys.time() - a
     
-    experiment_results[[p]] <- tmp$results 
+    needed <- tmp$results
+    rm(tmp)
+    gc()
+    # Sys.time() - a
+
+    # to save memory, iteratively comparing a given MPA size to MPA size = 0
+    if (placement_experiments$prop_mpa[p] > 0)   {
+
+      experiment_results[[2]] <- needed
+      
+      processed_sims[[p-1]] <- process_sims(
+        difficulty_level = difficulty,
+        results_dir = results_dir,
+        drop_patches = drop_patches,
+        project = project,
+        experiment_results = experiment_results,
+        placement_experiments = placement_experiments[c(zerofinder,p), ],
+        state_experiments = state_experiments,
+        load_results = save_experiments
+      )
+      
+      
+    } else {
+      # store baseline case with no MPA
+      
+      zerofinder <- p # mark where the last zero MPA size was
+      
+      experiment_results[[1]] <- needed
+      
+    }
     
     pb$tick()
-    
-    
+
   } # close p loop
   
-  future::plan(future::sequential)
   
-  write_rds(experiment_results, file = file.path(results_dir, glue(
-    "{difficulty}_experiment_results.rds"
-  )))
-  rm(experiment_results)
+  if (save_experiments) {
+    write_rds(experiment_results, file = file.path(
+      results_dir,
+      glue("{difficulty}_experiment_results.rds")
+    ))
+    rm(experiment_results)
+    experiment_results <- NULL
+  }
   
-  processed_sims <- process_sims(difficulty_level = difficulty, results_dir = results_dir, drop_patches = drop_patches)
+  # processed_sims <- process_sims(
+  #   difficulty_level = difficulty,
+  #   results_dir = results_dir,
+  #   drop_patches = drop_patches,
+  #   project = project,
+  #   experiment_results = experiment_results,
+  #   load_results = save_experiments
+  # )
+
   
-  write_rds(processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
+  components <- names(processed_sims[[1]])
   
-  tmp <- processed_sims$mpa_outcomes |>
+  components <- components[!components %in% c("fauna_results", "difficulty")]
+  
+
+ # combine each component of the placement experiemnts into one dataframe per metric, in some way that may not be pretty but works
+   
+ flat_processed_sims <- vector(mode = "list", length = length(components)) |> 
+   set_names(components)
+ 
+ 
+
+ for (i in components){
+   
+   tmp <-  map(processed_sims,i) |> 
+     list_rbind()
+     
+   flat_processed_sims[[i]] <- tmp
+   
+ }
+ 
+ flat_processed_sims$species_variables <- processed_sims[[1]]$species_variables
+ 
+ flat_processed_sims$state_variables <- processed_sims[[1]]$state_variables
+ 
+ flat_processed_sims$difficulty <- difficulty
+ 
+  rm(processed_sims)
+
+  write_rds(flat_processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
+  
+  tmp <- flat_processed_sims$mpa_outcomes |>
+    filter(step == max(step)) |> 
     select(percent_mpa_effect,
            fleet,
            state_id,
@@ -402,7 +499,7 @@ for (difficulty in difficulties) {
            critter,
            prop_mpa,
            name) |>
-    left_join(processed_sims$species_variables,
+    left_join(flat_processed_sims$species_variables,
               by = c("state_id", "critter" = "scientific_name")) |>
     left_join(placement_experiments, by = c("placement_id", "prop_mpa")) # |>
   # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
@@ -450,8 +547,12 @@ for (difficulty in difficulties) {
         barwidth =  unit(11, "lines")
       )
     )  +
-    scale_x_continuous(name = "X Change in Species Biomass", oob = squish, limits = c(NA, 0.5)) +
-    scale_y_continuous(name = "X Change in Species Catch", oob = squish, limits = c(NA,0.5)) +
+    scale_x_continuous(name = "X Change in Species Biomass",
+                       oob = squish,
+                       limits = c(NA, 1)) +
+    scale_y_continuous(name = "X Change in Species Catch",
+                       oob = squish,
+                       limits = c(NA, 1)) +
     theme(legend.position = "bottom") +
     labs(caption = "20-40% of area in MPA")
   
@@ -472,5 +573,7 @@ for (difficulty in difficulties) {
   thirty_protected_plot
   toc()
   
-  rm(list = c("emulated_experiment_results","state_experiments"))
+  rm(list = c("state_experiments"))
 } # close difficulty loop
+future::plan(future::sequential)
+

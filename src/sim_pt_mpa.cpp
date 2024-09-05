@@ -21,7 +21,7 @@ List sim_pt_mpa(double r, double k,double init_b_inside, double init_b_outside, 
   
   double last_outside_b = 0.0;
   
-  double growth_mult = 1.0;
+  // double growth_mult = 1.0;
   
   NumericVector tmp (n);
   

@@ -6,6 +6,7 @@ run_mpa_experiment <-
            prop_mpa = 0.3,
            fauna,
            fleets,
+           log_rec_devs = NULL,
            placement_error = 0,
            mpa_response = "stay",
            critters_considered = NA,
@@ -15,7 +16,10 @@ run_mpa_experiment <-
            patch_area,
            years = 50,
            future_habitat = list(),
-           drop_patches = TRUE) {
+           drop_patches = TRUE, 
+           keep_age = FALSE,
+           steps_to_keep = "after",
+           mpa_offset = 2) {
     
     options(dplyr.summarise.inform = FALSE)
     
@@ -164,47 +168,73 @@ run_mpa_experiment <-
       mpa_locs <- -999
     }
     
-    ssb0s <- map_df(fauna, "ssb0_p", .id = "critter")
-    
-    ssb0s$ssb0 <- rowSums(ssb0s)
-    
+    ssb0s <- map(fauna, ~tibble(ssb0_p = as.numeric(.x$ssb0_p), patch = 1:length(.x$ssb0_p))) |> 
+      list_rbind(names_to = "critter") |> 
+      group_by(patch) |> 
+      mutate(ssb0_p_total = sum(ssb0_p)) |> 
+      ungroup()
+
     mpas <- expand_grid(x = 1:resolution[1], y = 1:resolution[2]) %>%
       mutate(patch = 1:nrow(.)) %>%
-      mutate(mpa = patch %in% mpa_locs) %>%
-      bind_cols(ssb0s)
-
+      mutate(mpa = patch %in% mpa_locs) 
+      
+    mpas_and_ssb0s <- ssb0s |> 
+      left_join(mpas, by = "patch")
+      
     # run MPA simulation
     starting_step = marlin::clean_steps(last(names(starting_conditions)))
   
     processed_step <- marlin::process_step(last(names(starting_conditions)))
-    
+
     mpa_sim <- simmar(
       fauna = fauna,
       fleets = fleets,
       years = years,
       manager = list(mpas = list(locations = mpas,
-                                 mpa_year = processed_step$year + 1)),
+                                 mpa_year = processed_step$year + mpa_offset)),
       habitat = future_habitat,
       starting_step = starting_step,
       keep_starting_step = FALSE,
-      initial_conditions = starting_conditions[[length(starting_conditions)]]
+      initial_conditions = starting_conditions[[length(starting_conditions)]],
+      log_rec_devs = log_rec_devs
     )
     
     steps <- marlin::clean_steps(names(mpa_sim))
     
-    out <- marlin::process_marlin(mpa_sim, steps_to_keep = last(steps), keep_age = FALSE)
+    ## XXX add in before here later if needed for BACI ##
+
+    # keep step in year one of MPA, 15 years after MPA, and in final year of simulation
+    # steps_to_keep <- c(steps[1], steps[15 * seasons], last(steps))
     
+    if (steps_to_keep == "before_after"){
+      keepers <- c(steps[1], last(steps))
+      
+    } else if (steps_to_keep == "after"){
+      keepers <-  last(steps)
+      
+    } else if (steps_to_keep == "before_during_after"){
+      
+      keepers <- c(steps[1], 15,last(steps))
+      
+    } else if (steps_to_keep == "all"){
+      keepers <- steps
+      
+    }
+    
+
+    out <- marlin::process_marlin(mpa_sim, steps_to_keep = keepers, keep_age = keep_age)
+  
     mpa_distances <- marlin::get_distance_to_mpas(mpas, resolution = resolution, patch_area = patch_area) |>
       select(-patch)
-    
+
     out$fauna <- out$fauna |>
       left_join(mpa_distances, by = c("x","y")) |> 
-      left_join(mpas |> select(-patch,-mpa), by = c("x","y"))
+      left_join(mpas_and_ssb0s |> select(-patch,-mpa), by = c("x","y", "critter"))
     
     out$fleets <- out$fleets |>
       left_join(mpa_distances, by = c("x","y")) |> 
-      left_join(mpas |> select(-patch,-mpa), by = c("x","y"))
-    
+      left_join(mpas_and_ssb0s |> select(-patch,-mpa), by = c("x","y", "critter"))
+
     if (drop_patches){
   
       # hacky step to get rid of patches when you don't need them to save memory

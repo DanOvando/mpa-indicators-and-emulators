@@ -8,6 +8,7 @@ create_fleets <-
            port_locations = NULL,
            tune_type = "explt",
            effort_cost_exponent = 1,
+           effort_int = 0,
            resolution) {
     
 
@@ -100,7 +101,7 @@ create_fleets <-
             spatial_catchability = d_spatial_q
           )
         ),
-        base_effort = prod(resolution),
+        base_effort = prod(resolution) + effort_int,
         cost_per_unit_effort = 10,
         cost_per_distance = 2000,
         effort_cost_exponent = effort_cost_exponent,
@@ -194,7 +195,7 @@ create_fleets <-
               spatial_catchability = d_spatial_q
             )
           ),
-          base_effort = prod(resolution),
+          base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 1000,
           cost_per_distance = 2000,
           effort_cost_exponent = effort_cost_exponent,
@@ -253,7 +254,7 @@ create_fleets <-
               spatial_catchability = d_spatial_q
             )
           ),
-          base_effort = prod(resolution),
+          base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 5,
           cost_per_distance = 1000,
           effort_cost_exponent = effort_cost_exponent,
@@ -299,7 +300,7 @@ create_fleets <-
               p_explt = 1,
               sel_unit = "length",
               spatial_catchability = a_spatial_q)),
-          base_effort = prod(resolution),
+          base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 10,
           cost_per_distance = 2000,
           effort_cost_exponent = effort_cost_exponent,
@@ -312,7 +313,188 @@ create_fleets <-
   
       
       
+    } else if (difficulty == "epo"){
+      
+      
+      fleets <- list(
+        "longline" = create_fleet(
+          list(
+            "thunnus obesus" = Metier$new(
+              critter = fauna$`thunnus obesus`,
+              price = 10,
+              sel_form = "logistic",
+              sel_start = 100,
+              sel_delta = .01,
+              catchability = .1,
+              p_explt = .5,
+              sel_unit = "length"
+            ),
+            "katsuwonus pelamis" = Metier$new(
+              critter = fauna$`katsuwonus pelamis`,
+              price = 1.36,
+              sel_form = "logistic",
+              sel_start = 65,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .05,
+              sel_unit = "length"
+              
+            ),
+            "thunnus albacares" = Metier$new(
+              critter = fauna$`thunnus albacares`,
+              price = 7.52,
+              sel_form = "logistic",
+              sel_start = 90,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = 0.28,
+              sel_unit = "length"
+              
+            ),
+            "carcharhinus longimanus" = Metier$new(
+              critter = fauna$`carcharhinus longimanus`,
+              price = 1.89,
+              sel_form = "logistic",
+              sel_start = 50,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .92,
+              sel_unit = "length"
+            ),
+            "carcharhinus falciformis" = Metier$new(
+              critter = fauna$`carcharhinus falciformis`,
+              price = 2.16,
+              sel_form = "logistic",
+              sel_start = 110,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .79,
+              sel_unit = "length"
+              
+            ),
+            "prionace glauca" = Metier$new(
+              critter = fauna$`prionace glauca`,
+              price = 1,
+              sel_form = "logistic",
+              sel_start = 100,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .99,
+              sel_unit = "length"
+              
+            ),
+            "sphyrna zygaena" = Metier$new(
+              critter = fauna$`sphyrna zygaena`,
+              price = 1,
+              sel_form = "logistic",
+              sel_start = 100,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .92,
+              sel_unit = "length"
+              
+            )
+          ),
+          effort_cost_exponent = effort_cost_exponent,
+          base_effort = resolution^2,
+          spatial_allocation = state$spatial_allocation[1],
+          resolution = resolution,
+          fleet_model = state$fleet_model[1],
+          mpa_response = state$mpa_response[1],
+          ports = ports[2,],
+        ),
+        "purseseine" = create_fleet(
+          list(
+            "thunnus obesus" = Metier$new(
+              critter = fauna$`thunnus obesus`,
+              price = 1,
+              sel_form = "dome",
+              sel_start = 50,
+              sel_delta = 5,
+              catchability = .1,
+              p_explt = .5,
+              sel_unit = "length"
+              
+            ),
+            "katsuwonus pelamis" = Metier$new(
+              critter = fauna$`katsuwonus pelamis`,
+              price = 1.36,
+              sel_form = "dome",
+              sel_start = 50,
+              sel_delta = 4,
+              catchability = .1,
+              p_explt = .95,
+              sel_unit = "length"
+              
+            ),
+            "thunnus albacares" = Metier$new(
+              critter = fauna$`thunnus albacares`,
+              price = 7.52,
+              sel_form = "dome",
+              sel_start = 60,
+              sel_delta = 4,
+              catchability = .1,
+              p_explt = .72,
+              sel_unit = "length"
+              
+            ),
+            "carcharhinus longimanus" = Metier$new(
+              critter = fauna$`carcharhinus longimanus`,
+              price = 1.89,
+              sel_form = "dome",
+              sel_start = 160,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .02,
+              sel_unit = "length"
+              
+            ),
+            "carcharhinus falciformis" = Metier$new(
+              critter = fauna$`carcharhinus falciformis`,
+              price = 2.16,
+              sel_form = "logistic",
+              sel_start = 120,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .08,
+              sel_unit = "length"
+              
+            ),
+            "prionace glauca" = Metier$new(
+              critter = fauna$`prionace glauca`,
+              price = 5,
+              sel_form = "logistic",
+              sel_start = 110,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .04,
+              sel_unit = "length"
+            ),
+            "sphyrna zygaena" = Metier$new(
+              critter = fauna$`sphyrna zygaena`,
+              price = 1,
+              sel_form = "logistic",
+              sel_start = 100,
+              sel_delta = 0.01,
+              catchability = .1,
+              p_explt = .08,
+              sel_unit = "length"
+              
+            )
+          ),
+          fleet_model = state$fleet_model[1],
+          mpa_response = state$mpa_response[1],
+          ports = ports[2,],
+          responsiveness = .5,
+          cr_ratio = 1,
+          effort_cost_exponent = effort_cost_exponent,
+          base_effort = resolution^2,
+          spatial_allocation = state$spatial_allocation[1],
+          resolution = resolution
+        )
+      )
+      
     }
-    
+
     fleets <- tune_fleets(fauna, fleets, tune_type = tune_type)
   }
