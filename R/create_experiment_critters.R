@@ -97,7 +97,7 @@ create_experiment_critters <-
       fec_expo = hyper,
       steepness =  steepness,
       ssb0 = ssb0,
-      b0 = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),b0 / 10,b0), # try and keep shark popsize on average smaller than others
+      b0 = b0, 
       spawning_seasons = spawning_seasons,
       resolution = resolution,
       sigma_rec = sigma_rec,

@@ -141,6 +141,8 @@ for (difficulty in difficulties) {
     mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
     mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
   
+  state_experiments$b0 <- ifelse(str_detect(state_experiments$critter,("carcharhinus|sphyrna|prionace")),state_experiments$b0 / 10,state_experiments$b0) # try and keep shark popsize on average smaller than others
+  
   message("finished habitats")
   
   

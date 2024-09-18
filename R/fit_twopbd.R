@@ -199,6 +199,10 @@ fit_twopbd <- function(fauna, fleets) {
       out <- fit$summary() |>
         filter(variable %in% vars)
     }
+    # if (names(fauna)[f] == "carcharhinus amblyrhynchos"){
+    #   browser()
+    #   
+    # }
     # i <- 1
     # observed <- critter_b_t_p$b_t_p[[i]] |>
     #   as.data.frame() |>
@@ -212,12 +216,12 @@ fit_twopbd <- function(fauna, fleets) {
     #   mutate(patch = factor(patch))
     # 
     # observed <- critter_b_t_p$b_c_t[[i]] |>
-    #   as.data.frame() 
+    #   as.data.frame()
     # 
     # 
-    # test <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]], hat_downward_b[year]) 
+    # test <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]], hat_downward_b[year])
     # 
-    # test2 <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]], hat_downward_catch[year]) 
+    # test2 <- tidybayes::spread_draws(critter_b_t_p$twopbd_fit[[i]], hat_downward_catch[year])
     # 
     # plot(observed$biomass, test$hat_downward_b)
     # abline(0,1)

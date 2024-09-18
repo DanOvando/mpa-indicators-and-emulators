@@ -6,8 +6,8 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 142, run_name = "emulators_v1.0", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
-# prep_run(n_states = 4, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
+# prep_run(n_states = 142, run_name = "emulators_v1.0", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 4, run_name = "test", drop_patches = TRUE, experiment_workers = 7) # loads packages and creates and returns some global variables for the analysis
 
 project <- "emulators"
 
@@ -17,9 +17,9 @@ resolution <- c(rx, ry)
 
 # difficulties <- c("simple")
 
-difficulties <- c("complex","medium","simple")
+# difficulties <- c("complex","medium","simple")
 
-# difficulties <- c("complex")
+difficulties <- c("complex")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -110,7 +110,9 @@ for (difficulty in difficulties) {
       ontogenetic_shift = sample(c(TRUE, FALSE), length(state_id), replace = TRUE)
     ) |>
     mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
-    mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
+    mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence)) 
+  
+  state_experiments$b0 <- ifelse(str_detect(state_experiments$critter,("carcharhinus|sphyrna|prionace")),state_experiments$b0 / 10,state_experiments$b0) # try and keep shark popsize on average smaller than others
   
   state_experiments <- state_experiments %>%
     rename(scientific_name = critter) |>
@@ -212,10 +214,10 @@ for (difficulty in difficulties) {
   
   state_experiments <- state_experiments %>%
     select(-tmp)
-  
+
   state_depletions <-
     map_df(state_experiments$starting_conditions,
-           ~ map_df(.x, ~ map_df(.x, ~ sum(.x$ssb_p_a) / .x$ssb0)),
+           ~ map_df(.x, ~ map_df(.x, ~ sum(.x$b_p_a) / .x$b0)),
            .id = "state_id") |>
     pivot_longer(-state_id, names_to = "critter", values_to = "step_depletion") |>
     group_by(state_id, critter) |>
@@ -230,55 +232,55 @@ for (difficulty in difficulties) {
     ggplot(aes(depletion)) +
     geom_histogram() +
     facet_wrap(~ critter)
-  
+
   ggsave(file.path(fig_dir, glue::glue("{difficulty}_init_dep.pdf")), init_dep_plot)
   
   
-  for (i in 1:nrow(state_experiments)) {
-    tmp <- state_experiments$proc_starting_conditions[[i]]$fauna |>
-      filter(step == max(step)) |>
-      group_by(critter) |>
-      mutate(n = n / max(n)) |>
-      ggplot(aes(x, y, fill = n)) +
-      geom_tile() +
-      facet_wrap(~ critter) +
-      scale_fill_viridis_c(limits = c(0, 1))
-    
-    tmp2 <- state_experiments$proc_starting_conditions[[i]]$fleet |>
-      filter(step == max(step)) |>
-      group_by(fleet, step) |>
-      mutate(effort = effort / max(effort, na.rm = TRUE)) |>
-      ggplot(aes(x, y, fill = effort)) +
-      geom_tile() +
-      facet_grid(step ~ fleet , labeller = label_both) +
-      scale_fill_viridis_c()
-    
-    
-    ggsave(file.path(
-      fig_dir,
-      glue::glue("{difficulty}_state_{i}_habitat.pdf")
-    ), tmp)
-    
-    ggsave(file.path(
-      fig_dir,
-      glue::glue("{difficulty}_state_{i}_fleet_allocation.pdf")
-    ), tmp2)
-    
-    
-  }
-  # fit two-patch biomass dynamics (twopbd) emulations
-  emulated_state_experiments <- state_experiments |>
-    mutate(twopbd_params = map2(
-      fauna,
-      fleet,
-      safely(fit_twopbd),
-      .progress = glue("fitting {difficulty} emulators")
-    )) |>
-    mutate(fit_worked = map_lgl(twopbd_params, ~ is.null(.x$error))) |>
-    filter(fit_worked) |>
-    mutate(twopbd_params = map(twopbd_params, "result")) |>
-    select(state_id, fleet, twopbd_params) |>
-    unnest(cols = twopbd_params)
+    for (i in 1:nrow(state_experiments)) {
+      tmp <- state_experiments$proc_starting_conditions[[i]]$fauna |>
+        filter(step == max(step)) |>
+        group_by(critter) |>
+        mutate(n = n / max(n)) |>
+        ggplot(aes(x, y, fill = n)) +
+        geom_tile() +
+        facet_wrap(~ critter) +
+        scale_fill_viridis_c(limits = c(0, 1))
+      
+      tmp2 <- state_experiments$proc_starting_conditions[[i]]$fleet |>
+        filter(step == max(step)) |>
+        group_by(fleet, step) |>
+        mutate(effort = effort / max(effort, na.rm = TRUE)) |>
+        ggplot(aes(x, y, fill = effort)) +
+        geom_tile() +
+        facet_grid(step ~ fleet , labeller = label_both) +
+        scale_fill_viridis_c()
+      
+      
+      ggsave(file.path(
+        fig_dir,
+        glue::glue("{difficulty}_state_{i}_habitat.pdf")
+      ), tmp)
+      
+      ggsave(file.path(
+        fig_dir,
+        glue::glue("{difficulty}_state_{i}_fleet_allocation.pdf")
+      ), tmp2)
+      
+      
+    }
+    # fit two-patch biomass dynamics (twopbd) emulations
+    emulated_state_experiments <- state_experiments |>
+      mutate(twopbd_params = map2(
+        fauna,
+        fleet,
+        safely(fit_twopbd),
+        .progress = glue("fitting {difficulty} emulators")
+      )) |>
+      mutate(fit_worked = map_lgl(twopbd_params, ~ is.null(.x$error))) |>
+      filter(fit_worked) |>
+      mutate(twopbd_params = map(twopbd_params, "result")) |>
+      select(state_id, fleet, twopbd_params) |>
+      unnest(cols = twopbd_params)
   
   emulated_experiment_results <-
     expand_grid(

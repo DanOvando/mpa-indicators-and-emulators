@@ -41,7 +41,11 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
+# prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
+
+prep_run(run_name = "test") # loads packages and creates and returns some global variables for the analysis
+
+
 
 # clean up figures generated in the report to ensure that all figures come from a fresh state
 paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
@@ -467,7 +471,7 @@ figsaver(fig)
 
 
 
-i <- 42
+i <-12
 
 i <- as.integer(sample(unique(complex_emulated_experiment_results$state_id),1))
 
@@ -513,7 +517,7 @@ b = ggplot() +
   guides(color = guide_legend(nrow = 2)) + 
   theme(strip.text.y = element_text(size = 6))
 
-fig <- (a | b) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) + plot_layout(guides = "collect")
+fig <- ((a | b) + plot_layout(guides = "collect") ) & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7)) 
 
 figsaver(fig)
 
