@@ -1,0 +1,269 @@
+---
+title: "Reviewer Response"
+author: "Dan Ovando"
+format: html
+---
+
+## Reviewer 1
+
+*This paper demonstrates the potential differences in predicted MPA outcomes  using a high resolution model vs. a low resolution model. Overall, results from this study suggest that using a low resolution model could yield overly optimistic MPA outcomes, and suggests that the type of simulation model utilized can dictate the predicted MPA outcomes, which could result in MPAs being implemented inappropriately.  I thought the paper was generally well written, clear and quite interesting.  I particularly enjoyed reading the discussion. Most comments I have relate to improving language, sentence structure, word choice, and clarification.* \
+\
+*The one perhaps major request I have is to also evaluate these results in the context of selectivity (i.e., domed, uniform, vs. asymptotic) across fleets. I think it would be quite interesting to see how selectivity interacts with the resultant age-structure of the population, and the predicted outcomes of the MPA. However, if this would require substantial computational overhead, I think this can be ignored (although perhaps noted as a caveat in the discussion) since the general scope of the study is to demonstrate the potential for differences in MPA outcomes, rather than the actual factors causing these differences.*
+
+### Abstract
+
+*L33: Change “is expanding” to “are expanding”*
+
+*L35: Could you list some of these objectives here?*
+
+*L33 and L35: Both sentences start with “While” and I wonder if another word could be used to improve sentence structure and flow.*
+
+*L38 - 41: I don’t quite get what’s being said here. Are you trying to say that it is generally unclear what type of model complexity is needed to predict changes in population biomass, and so the choice of what types of models (the complexity of the model) to use are generally pretty ad hoc? If so, I would recommend rewording / rephrasing to make that more clear.*
+
+*L41: Insert a comma after “In this paper”*
+
+*L41: “we compare” should be “I compare” since this is a single author? Not sure what the journal guidelines are.*
+
+*L43: Insert comma and change to “model, fitted to emulate the…” to maintain current tenses*
+
+*L44:" "We” should be “I”*
+
+*L44: “are some areas of agreement” should be “were some areas of agreement”*
+
+*L45: Rephrase “predictions of the two models” to “predictions made by the two models”*
+
+*L49: “Our results” should either be “My results” or “These results”*
+
+*L51: “simulation” is misspelled here*
+
+# Introduction
+
+*L103: “In many other cases” seems a bit redundant, recommend rephrasing to “In other cases”*
+
+*L108: Do you think you could expand on the Murdoch et al. (2002) study and describe what they found - i.e., are single species model a valid representation of pop dy for a species living in a multi-species environment? After that, it would be great to link these findings back to the context of the paper (i.e., parsimony and the ecological question at hand).*
+
+*L113: missing space between “environment” and “While”.*
+
+*L120: Since this is phrased as a question, but it seems odd to insert a question mark, maybe rephrase the parentheses to (e.g. “whether the goal of the model is for data exploration, inference…”).*
+
+*L123: “in some way shape or form” seems a bit awkwardly worded. Think that could just be deleted from this sentence.*
+
+*L131: “model” should be “models”*
+
+*L151: Missing comma between “data” and “it is”*
+
+*L168: Can you break out the “for example protection of …” into a separate sentence? Also, think citations are needed here.*
+
+*L178 - 187: This is awkwardly worded. Would recommend breaking this sentence up into two parts: 1) Irrespective of the policy objective, MPAs share a common feature, 2) These features include MPA area, etc.*
+
+*L189: Provide example of the sessile coral example?*
+
+*L196 - 199: Could improve sentence structure and flow by rephrasing to “For instance, many organisms … Gerber et al. (2005). Furthermore, the impacts of …”*
+
+*L215: “determining how to” should “determine how to”*
+
+*L210 - 216: This is a very long sentence. Considering breaking it up into two.*
+
+*L229: Could you expand on the insights from Gerber et al. (2003) with respect to what common insights were found? Otherwise, I don’t think this adds much to this introduction.*
+
+*L238: Similarly, could you be more specific about the Fulton et al. (2015) study. In particular, it would be helpful to provide one example of what types of models they suggested were appropriate for answering xyz, and why these models were more well suited to address a particular question, when compared to alternative models. Think this helps set up the question / objective of the study in the following sections.*
+
+*L248 - 251: This is awkwardly worded. Think the second part and third part of this sentence (separated by commas) are essentially saying the same thing? Can you restructure this to say something like “Across these works, while it is clear that some models are more capable of addressing a question (e.g., MPA effect on catch), it remains unclear to what extent…”*
+
+*L264: Would be helpful to provide a bit more introduction to the two-patch biomass dynamics model. Think something along the lines of how it is coarse-scale / low definition will suffice.*
+
+*L267: missing “to” for “needed provide”*
+
+*L269: “we are unaware” should be “I am unaware”*
+
+*L281: Change “peoples” to “communities”*
+
+*L275 - 283: This is a very long sentence. Consider breaking this up to improve readability.*
+
+*L292: Insert comma between “of this paper” and “is among the”*
+
+*L299: Could you provide examples of what these “core untestable assumptions are”. In a similar vein, could you further explain why it led to these changes in predicted outcomes? Think this would be helpful for a reader trying to understand why predicted outcomes from MPA modeling might change depending on the model type / assumptions commonly used.*
+
+*L317 - 319: Need citation(s) for these desired outcomes.*
+
+*L321: change “are produced” to “can be produced”*
+
+*L353 - 357: Seems a bit preemptive to present the core results in the introduction? I would consider removing this as it is results/discussion material, although can see including it either way for a reader that is quickly reading through.*
+
+# Methods
+
+*L366 and 369: What is it meant by “arbitrary numbers of”? Can this be rephrased to “any number of” or something alike? “Arbitrary” implies random, which I don’t think this is necessarily random - dependent on model complexity, question at hand, system of study, etc. Also, somewhere along here, it would be helpful to specify whether the simulation model follows Eulerian or Langragian dynamics .*
+
+*L434: Since CTMC isn’t used anywhere else, you could delete that abbreviation.*
+
+*L435: explain that diffusion represents random non-directed movement here?*
+
+*L448: What is the selectivity specified as?? Asymptotic? Domed?*
+
+*Table 2: Along these same lines, would it be possible to include a selectivity simulation state? i.e., domed, asymptotic, and uniform? Think it could potentially yield some interesting insights pertaining to some of the random forest variable importance methods, but not sure how long it would take to incorporate.*
+
+*L586 - 590: Based on the fact that the correlations are determined entirely from the upper triangular matrix, I assume R is also symmetric? Could you explicitly state that as well?*
+
+*L602 / Figure 1: Would you be able to provide some of the exact values for kappa and R used to generate these dynamics. If this is not too arduous to run, I feel it would be helpful for a reader to understand the consequences of different values for kappa and R, with 3 sets of contrast? (Set 1: kappa is close to 0 and minimal correlation, Set 2 kappa is intermediate (maybe 0.5 or 1?) and intermediate correlation among species, and Set 3, kappa is high and high correlation among species). Could be organized as a facet_grid with species on the columns and the “sets” on the rows. Just thought this would be a nice addition, but if requires much more computational resources, then can ignore.*
+
+*L670: The equation is missing here*
+
+*L689: F_BAU is not defined.*
+
+*L691 - 708: Would be helpful to have MPA = 1 and MPA = 0 explicitly defined as being an MPA and not being an MPA - though recognize this is implicit through the (1-Ft).*
+
+*L789: This is semantics, but strictly speaking, these are penalties rather than priors.*
+
+*L835 - phi should be \\phi*
+
+*L821 and 830: A bit confused about the “priors” used here. Why were they normal but then constrained to be between 0 and 1. Doubt it matters that much in the context of model performance but seems a bit odd. Similar for L826 where sigma is constrained to be larger than 0 but is generated from a normal instead of a lognormal.*
+
+*L841: Would be good to quantify the proportion of runs that failed to converge.*
+
+*L848 - 850: It would be helpful to include a supplementary plot showing how the LowDef model matched the HighDef model and the criteria that were used to determine what was “as best as possible”. I see this is now included in Figure 2 - maybe reference this figure, but still provide some sort of criteria as to how this was determined to match as best as possible?*
+
+*L921 - 924: Depending on how MSY is defined, MSY in this case is also a function of discards from each fleet, as well as the relative fishing effort of each fleet, which then determines the “global selectivity” for that species. Also, MSY is also determined by the dynamics of source-sink populations, local density dependence, and global density dependence. I would add something along the lines of that somewhere in here.*
+
+*L924 - 930: This all makes sense, but would benefit from separating the sentences out for readability. My suggestion is to end with “confusing results”. And then continue with “For instance, B/BMSY could increase even as B decreases…”*
+
+*L930: In addition to Kapur et al. (2021), I would also recommend citing the following items to address comments regarding L921 - 924.*
+
+*Goethel, D. R., Smith, M. W., Cass-Calay, S. L., & Porch, C. E. (2018). Establishing Stock Status Determination Criteria for Fisheries with High Discards and Uncertain Recruitment. North American Journal of Fisheries Management, 38(1), 120–139. <https://doi.org/10.1002/nafm.10007>*
+
+*Goethel, D. R., & Berger, A. M. (2017). Accounting for spatial complexities in the calculation of biological reference points: Effects of misdiagnosing population structure for stock status indicators. Canadian Journal of Fisheries and Aquatic Sciences, 74(11), 1878–1894. <https://doi.org/10.1139/cjfas-2016-0290>*
+
+*Bosley, K. M., Goethel, D. R., Berger, A. M., Deroba, J. J., Fenske, K. H., Hanselman, D. H., Langseth, B. J., & Schueller, A. M. (2019). Overcoming challenges of harvest quota allocation in spatially structured populations. Fisheries Research, 220, 105344. <https://doi.org/10.1016/j.fishres.2019.105344>*
+
+*The first citation discusses challenges in defining MSY when there are discard fleets and multiple fleets in the system, while the latter two discuss MSY calculations in the context of spatially structured populations.*
+
+# Results
+
+*L940: period should be a comma*
+
+*L972: Rephrase “In this case.” To be “By contrast, … “ or something alike*
+
+*L1052: Rephrase “In A, color indicates species points” to be more clear, denoting that colors represent species, points are the low definition model, and lines are the high definition model.*
+
+*Figure 3: Add a separate legend for high def and low-def models. Also for panel B, please increase the height of the figure so that the y axis is not squished.*
+
+*L1078: I am quite interested in this statement. I wonder under what circumstances would the effects predicted from both two models be able to match closely. For instance, would setting selectivity as uniform allow these effects to match more closely, which effectively removes the effect of the selectivity-at-age. If not, that suggests to me that the lack of alignment likely stem from the biology pertaining to the age-structure (i.e., weight-at-age, etc) + spatial processes rather than fishing processes. Relatedly, what would happen if two-dimensional movement was condensed into one-dimensional movement via a spatially stratified model? Theoretically, movement estimates from the CTMC model can be coarsened into a spatially stratified model. Would you still see similar effects under that circumstance or no?  My guess is that it’d be a pretty good match, but not perfect since the localized effects are smeared across. Apologies for the stream of consciousness thoughts here, probably not necessary to address in the form of a sensitivity run, but would be great to have some of these thoughts encapsulated in the discussion.*
+
+*Figure 4: Describe red line, and blue line in caption. Also, recreate the plot so that the x-axis labels don’t overlap each other. Also, would be helpful to specify whether this is aggregated across all species in the caption, or it’s just showing 1 species and 1 fleet. I presume it’s the former since there are more points in the “complex” panel but would be helpful for a reader.*
+
+*Lines 1151 - 1171: Somewhere in this text, you should reference Figure 5 again, just so readers know what figure you are generally referencing.*
+
+*L1173 - 1192: Similar to comment above, but somewhere in the start of this section, reference Figure 6 so reader’s know what you’re referencing.*
+
+*L1192: change “very loose” to “weak” or “not well defined”.*
+
+*L1278: change “tanks” to “ranks”*
+
+*Figure 7: Describe red line in caption. Rephrase “lower worse outcomes” to “while lower ranks represent worse outcomes”.*
+
+*L1371 - 1373: This should be described in the methods rather than in the results.*
+
+*L1426 - 1461: Similar to comment above, this should be first described in the methods rather than in the results. I think as a reader, I get confused when something new gets introduced into the results, when there wasn’t any discussion of it in the methods. I think it helps improve readability of the manuscript.*
+
+*Figures 9 and 10: Could you combine these figures to a single figure? There seems to be a lot of figures in this manuscript, so I am trying to find ways to condense the number of figures without loosing information.*
+
+*L1458: Change “food maximizing” to “catch maximizing” to be consistent with language used.*
+
+*Figures 11 and 12: Extend x-axis so labels are not overlapping*
+
+# Discussion
+
+*I don’t have much here to add, except that I thought the discussion was very well rounded and a joy to read!*
+
+*L1644: “frequently extremely different” feels redundant. Please rephrase.*
+
+*L1784 - 1792: This has already been previously mentioned in the methods and can be removed.*
+
+*L1797 - 1802: Although you have time-varying selectivity, given differences in effort by fleet! (depending on if selex for each fleet is different - to this, point it would be helpful to note in the methods what selectivity are used to parameterize revmoasl from each fleet).*
+
+*L1849: Change “we” to “I”*
+
+*L1863: add comma between “exercises” and “practitioners”.*
+
+*L1867: Typo? Should this be “wish”?*
+
+*L1862 - 1870: Agreed!*
+
+*L1870 - 1874: Or when your question is to assess whether an MPA would have “No effect”? as in the findings of this study (Figure 8)?*
+
+## Reviewer 2
+
+*I really enjoyed reviewing your paper "Predicted Effects of Marine Protected Areas on Conservation and Catches are Highly Sensitive to Model Structure".  I think it a useful contribution to the literature and does a good job of framing the motivation for the research and describing its value.  There are some minor editorial issues that I've included.  My main concern about this work is I feel that it lacks synthesis and would greatly benefit from a better synthesis of your major findings and a consideration of how better to communicate your methods and results (pictorial diagrams would be very helpful).  Further, consider what figures would be better left to supplementary material rather than the main text. For example, figured 4 & 6 are interesting to look at but I believe the results are much better summarized and communicated via Figure 8.  As a result, it's  easy to get bogged down in the minutia of the analysis which I feel distracts from your message.   I think you realize this, for example,  at line 1784 you admit to how complex the manuscript is but I think its unreasonable to ask the readers to go through your code (but I appreciate the admission).  I think rather, you should consider how to make it a clearer story. I feel like the burden to communicate your work should fall to the author.   Again, I did enjoy reviewing the manuscript and I would like to see it in the literature after substantial rework is completed.*
+
+### Abstract
+
+In this paper we compare the effects of MPAs on catch and biomass predicted by a spatially explicit age-structured multi-species and multi-fleet (High-definition) model to the predictions generated by a two-patch surplus production (Low-definition) model fit to emulate the High-definition model. We found that while there are some areas of agreement, in many cases the predictions of the two models were markedly different, with the Low-definition model frequently predicting substantially higher biomass and catch benefits from MPAs than the High-definition model, and in many cases incorrectly estimating the direction (positive or negative) of the MPA effects
+
+> assessing whether models of differing complexity provide complimentary or contradictory predictions of the effects of MPAs across multiple policy dimensions.
+
+[**The High-definition model**]{.underline} uses a framework called **marlin** described in Ovando, Bradley, et al. (2023) . The marlin model simulates arbitrary numbers of independent age-structured fish-like populations distributed in a two-dimensional seascape
+
+[**The Low-definition model**]{.underline} is two-patch Pella-Tomlinson (Pella and Tomlinson 1969) surplus production model, described in Ovando, Liu, et al. (2023) and based on Cabral et al. (2020).
+
+### Editorial
+
+*It is a single author paper, the author should consider using the rare “I”.  For example, line 337: “Specifically, **I** simulated a range of MPA outcomes using a spatially explicit age structured multi-species….”*
+
+*196: I would argue that the reason MPAs are simulation based is because they have complex experimental designs and simulation is used to evaluate that design to achieve a certain effect size.*
+
+*References to github are good (such as table 2) but as they are dynamic sites I believe this information should be also placed in a fixed location (such as supporting documentation / electronic appendix)*
+
+*Line 102: “be be”*
+
+*Line 131: I think the key difference in simulation models compared to more traditional fitting models to data is that the latter are retrospective while the former are forward looking with no data to evaluate model fit. I’m unsure how degrees of freedom or time-scale is relevant in this context since the data don’t exist.*
+
+*Last paragraph starting 147:  This is very good framing for the motivation for this paper.*
+
+*Line 165: “..activities such as fishing without their borders”   “…**WITHIN** their borders.”?*
+
+*Line 179: Confusing wording.  “…policy goal decisions must be made as to how to design a given MPA”  “policy goal decisions must be made **SUCH** as to how to design a given MPA”*
+
+*Line 202: Collection **OF** data*
+
+*Line 267: “..needed **TO** provide”*
+
+*Line 330: “in marine social-ecological systems **IS** far beyond the”*
+
+*Line 340: I think the paper would benefit for a clear flow chart of data generation and model fitting to accompany this part (or in the methods). In place of lines 381 – 396.  I’m a little confused in the numbered list.  Isn’t 2 & 3 the same thing?*
+
+### **Methods**
+
+*Line 389: I’m unsure how data are used to estimate the parameters from a model.  I think it would be better put that Data are generated from a high-definition model and parameters from those data are estimated via the Low-definition model.*
+
+*Line 401: The code should be supplied as an appendix if paper is published.*
+
+*Line 471: it would be helpful to understand why these species were chosen and the implications of that choice.  For example, is it because snappers have much lesser movement compared to the reef shark?*
+
+*Line 497:  I’m unsure how the author arrived at 142 states.  It would be helpful to clarify this.*
+
+*Line 606: I think common names for the figure would help most readers similar to Figure 3*
+
+*Line 647:  This is a very clear description of the low definition model.*
+
+*Line 691: I did not confirm the correctness of the equations. I ask the authors to double check that they are correct.*
+
+*Line 798:  I think this could be better summarized in a table.*
+
+*Figure 3.  If you are going to use (a) and (b) you need to label the figures accordingly.  Clean up left y-axis label – probably rotate right y-axis lable.*
+
+*Line 1076: “due in the case of this model to **displace effort** from the MPA onto habitat of highly depleted”*
+
+*Figure 4: would be helpful to describe what the red diagonal line means in the figure.  Clean up x-axis.*
+
+*Figure 5.  Remove “points” from y-axis*
+
+*Figure 6.  I think for all of these plots it would be useful to quantify how many simulations fall above or below the parity line.  Parity line should be red like figure 4.*
+
+*-        My above comment about figure 6 where I ask that plots should enumerate model runs seems to have been done in Figure 8.  I think Figure 8 captures all the information without needing the dot plots in previous figures.*
+
+*Line 1371: “ You can use /delta if you want but I think it’s distracting to the reader.  At a minimum define it first.*
+
+*1459: Consider an acronym in place of low and high definition models.*
+
+*1789: “We encourage readers seeking to better understand the nuances of the simulation settings and process to examine the code along with the text of this paper.”*
+
+*-        I agree that this paper is quite complex but I don’t think it has to be.  I think admitting that the paper was hard to synthesize into clear argument is a step in the right direction but I think asking the reader to go through code in order to understand your argument isn’t reasonable.  I think this is a clear admission from the author that the article needs substantial work to communicate its findings better.*

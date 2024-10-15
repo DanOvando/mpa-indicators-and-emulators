@@ -43,7 +43,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 # prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
 
-prep_run(run_name = "test") # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
 
 
 
@@ -56,7 +56,7 @@ difficulties <- c("simple","medium","complex")
 
 min_depletion <- 0.00001
 
-tune_grids <- TRUE
+tune_grids <- FALSE
 ```
 
 ```{r}
@@ -471,9 +471,10 @@ figsaver(fig)
 
 
 
-i <-12
 
 i <- as.integer(sample(unique(complex_emulated_experiment_results$state_id),1))
+
+i <- 83
 
 emulation <- complex_emulated_experiment_results |> 
   filter(state_id == i) |> 
@@ -578,12 +579,12 @@ Examining the catch results (@fig-hi-v-low), the *Low-definition* models had a r
 
 fig <- highres_vs_lowres |> 
   filter(between(numeric_prop_mpa,0.1,0.4)) |> 
-  ggplot(aes(lowres_percent_mpa_effect,percent_mpa_effect, color = depletion)) + 
+  ggplot(aes(lowres_percent_mpa_effect,percent_mpa_effect)) + 
   geom_hline(yintercept = 0) + 
   geom_vline(xintercept = 0) +
   geom_abline(slope = 1, intercept = 0, color = "tomato") +
   geom_smooth(method = "lm") +
-    geom_point(alpha = 0.1) + 
+    geom_point(alpha = 0.1, aes(color = depletion)) + 
   facet_grid(name~fct_rev(difficulty)) +
   scale_y_continuous(
     name = "High-definition % MPA Effect",
@@ -1074,10 +1075,10 @@ fig <- lowres_to_highres_outcomes |>
   ggplot(aes(biomass, catch, color = pmin(2,percent_delta_yield))) + 
   geom_hline(yintercept = 0, linetype = 2) + 
   geom_vline(xintercept = 0, linetype = 2) + 
-  geom_point(alpha = 0.4) + 
+  geom_point(alpha = .5, size = 2) + 
   facet_grid(placement_strategy ~ fct_rev(difficulty)) + 
-  scale_x_continuous(name = "High-definition Biomass Outcome",limits = c(-1,2), oob = squish, labels = scales::percent) + 
-  scale_y_continuous(name = "High-definition Catch Outcome",limits = c(-1,2), oob = squish, labels = scales::percent) + 
+  scale_x_continuous(name = "High-definition Biomass Outcome",limits = c(NA,1), oob = squish, labels = scales::percent) + 
+  scale_y_continuous(name = "High-definition Catch Outcome",limits = c(NA,1), oob = squish, labels = scales::percent) + 
   scale_color_viridis_b(option = "magma", name = "Low-definition Predicted Change in Catch", labels = scales::percent) + 
   theme(legend.position = "top")
   # scale_color_gradient2(low = "tomato", mid = "green", high = "steelblue", midpoint = 0)
@@ -1091,6 +1092,8 @@ figsaver(fig)
 #| label: fig-imps2
 #| fig-cap: Difference in catch and biomass outcomes predicted by the food-maximizing MPA network predicted by the *Low-definition* model (x-axis) applied to the *High-definition world* (y-axis).  Top row is biomass effect, bottom row catch, columns indicate the scenario set in question. Color indicates the biomass divided by unfished biomass (B/B0) under business as usual (BAU) conditions without any MPA.  Plotted effect sizes are capped at 200%. 
 
+
+# attach the catch maximizing low-resolution MPA, then filter the dataset to match that MPA size
 hmm <- highres_vs_lowres |> 
   left_join(catch_max_mpa_lowres, by = "state_id") |>
   mutate(delta_mpa = (numeric_prop_mpa - lowres_catch_prop_mpa) ^ 2) |>
@@ -1106,18 +1109,18 @@ fig <- hmm |>
               intercept = 0,
               color = "tomato") +
   geom_smooth(method = "lm", color = "blue") +
-  geom_point(alpha = 0.1) +
+  geom_point(alpha = 0.75) +
   facet_grid(name ~ fct_rev(difficulty)) +
   scale_y_continuous(
     name = "High-definition % MPA Effect",
     labels = scales::percent,
-    limits = c(NA, 2),
+    limits = c(NA, 1),
     oob = squish
   ) +
   scale_x_continuous(
     name = "Low-definition % MPA Effect",
     labels = scales::percent,
-    limits = c(NA, 2),
+    limits = c(NA, 1),
     oob = squish
   ) +
   scale_color_viridis_b(name = "BAU B/B0",

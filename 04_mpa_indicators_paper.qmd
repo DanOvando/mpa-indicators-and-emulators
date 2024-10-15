@@ -58,7 +58,7 @@ paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_d
 
 unlink(paper_figs)
 
-min_depletion <- 0.025
+min_depletion <- 0.01
 
 tune_grids <- FALSE
 ```
@@ -1140,12 +1140,77 @@ best_performers_noncausal |>
   geom_hex(bins = 10) + 
   geom_hline(yintercept = 0, linetype = 2, color = "tomato") + 
     geom_vline(xintercept = 0, linetype = 2, color = "tomato") +
-  facet_grid(difficulty~combo, scales = "free_x") + 
+  facet_grid(difficulty~combo) + 
   scale_y_continuous(limits = c(-1,4), oob = squish) + 
   scale_fill_viridis_c() + 
     theme(legend.position = "bottom")
 
 ```
+
+
+```{r}
+message("add in and color be depletion level")
+rrs <- best_performers_noncausal |>
+  filter(indicator == "ind_biomass_rr",
+         name %in% c("biomass", "catch"),
+         between(prop_mpa,0.1,0.4)) |> 
+    mutate(approx_rr = round(indicator_value / 0.1) * 0.1)
+
+
+ca_rrs <- read_rds(here("data", "mpa_level_meta_results.Rds")) |> 
+  filter(target_status == "Targeted") |> 
+  janitor::clean_names() |> 
+  as_tibble() |> 
+  mutate(approx_rr = round(estimate / 0.1) * 0.1) 
+
+ca_rrs |> 
+  ggplot(aes(estimate)) + 
+  geom_histogram(bins = 15) + 
+  geom_rug() +
+  scale_x_continuous(breaks = seq(-2,5,by = 0.25) )
+
+ca_rr_freq <- ca_rrs |> 
+  group_by(approx_rr) |> 
+  count() |> 
+  ungroup() |> 
+  mutate(prop = n / sum(n))
+
+ca_rr_freq |> 
+  ggplot(aes(approx_rr, prop))  +
+  geom_col()
+
+sigh <- ca_rrs |> 
+  left_join(rrs |> select(approx_rr, name, percent_mpa_effect, indicator_value),
+            relationship = "many-to-many", by = "approx_rr") |> 
+  filter(!is.na(indicator_value)) |> 
+  ungroup()
+
+
+
+ca_rr_ind_plot <- sigh |>
+  slice_sample(n = 1000) |> 
+  ggplot(aes(indicator_value, percent_mpa_effect)) +
+  # geom_density_2d(alpha = 0.5, show.legend = FALSE) +
+  geom_bin_2d(color = "transparent", show.legend = FALSE, alpha = 0.5, bins = 10) +
+    geom_point(color = "black", alpha = 0.75) +
+    geom_rug(sides = "b") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  facet_wrap( ~ name, scales = "free_y", ncol = 1, strip.position = "left") +
+  scale_y_continuous(limits = c(NA, 1), oob = squish, name = "Simulated effect of MPA on..", labels = scales::percent) +
+  scale_fill_viridis_c() +
+  scale_x_continuous(limits = c(NA,1.25), name = "Simulated Response Ratios (Biomass Inside / Biomass Outside - 1)") +
+  theme(legend.position = "top")  + 
+  labs(caption = "MPA size between 10-40% of seascape")
+
+
+ca_rr_ind_plot
+```
+
 
 Include a table of the performance of all the indicators.
 
