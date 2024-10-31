@@ -5,9 +5,9 @@ using namespace Rcpp;
 List sim_pt_mpa(double r, double k,double init_b_inside, double init_b_outside, double m, double u, double p_mpa,
                       int local_dd,int years, double phi, bool pt,
                       double plim) {
-  
-  
   int n;
+  
+  n = years;
   
   double mu = 0;
   
@@ -24,8 +24,6 @@ List sim_pt_mpa(double r, double k,double init_b_inside, double init_b_outside, 
   // double growth_mult = 1.0;
   
   NumericVector tmp (n);
-  
-  n = years;
   
   last_inside_b = inside_b[0] =  init_b_inside;
   

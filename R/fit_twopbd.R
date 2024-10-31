@@ -1,4 +1,4 @@
-fit_twopbd <- function(fauna, fleets) {
+fit_twopbd <- function(fauna, fleets, state_id, difficulty, years) {
   # when fleets < critters not always possible to get all critters to target depletion, so pretend single species system just to fit dynamics
   
   out <- vector("list", length(fauna))
@@ -26,7 +26,7 @@ fit_twopbd <- function(fauna, fleets) {
     depfoo <- function(fmult, target, tmp_fleets, tmp_fauna) {
       tmp_fleets <- purrr::modify_in(tmp_fleets, list(1, "base_effort"), \(x) x * fmult)
       
-      fished_down <- simmar(tmp_fauna, tmp_fleets, steps = 100)
+      fished_down <- simmar(tmp_fauna, tmp_fleets, years = years)
       
       initial_conditions <- fished_down[[length(fished_down)]]
       
@@ -53,13 +53,13 @@ fit_twopbd <- function(fauna, fleets) {
       upper = 20
     )
     
-    if (hmm$objective > 0.05){
-      stop("failed to reach desired depletion, rejecting emulation")
+    if (hmm$objective > 2){
+       stop("failed to reach desired depletion, rejecting emulation")
     }
     
     tmp_fleets <- purrr::modify_in(tmp_fleets, list(1, "base_effort"), \(x) x * hmm$par)
     
-    fished_down <- simmar(tmp_fauna, tmp_fleets) # fish the populations down to target depletion level
+    fished_down <- simmar(tmp_fauna, tmp_fleets, years = years) # fish the populations down to target depletion level
     
     downward_slide = purrr::modify_depth(fished_down, 2, \(x) data.frame(biomass = sum(x$b_p_a), catch = sum(x$c_p_a)))
     
@@ -131,7 +131,7 @@ fit_twopbd <- function(fauna, fleets) {
     rebuild <- simmar(
       fauna = tmp_fauna,
       fleets = tmp_fleets,
-      years = 100,
+      years = years,
       manager = list(mpas = list(
         locations = close_everything, mpa_year = 1
       )),
@@ -171,12 +171,12 @@ fit_twopbd <- function(fauna, fleets) {
       mutate(b_t_p = map(data, \(x) as.matrix(x |> select(-time_step))))
     
     # tune twopsp ------------------------------------------
-    foo <- function(b_t_p, b_c_t,local_dd, plim = 0.2) {
+    foo <- function(b_t_p, b_c_t,local_dd, plim = 0.2,approx_mpa_size) {
       twopbd_data <- list(
         b_t_p = b_t_p,
         downward_b = b_c_t[,1],
         downward_catch = b_c_t[,2],
-        mpa_size = 0.5,
+        mpa_size = approx_mpa_size,
         # by assumption in this phase
         n_t = nrow(b_t_p),
         n_p = ncol(b_t_p),
@@ -188,17 +188,67 @@ fit_twopbd <- function(fauna, fleets) {
       
       fit <- sigh$optimize(data = twopbd_data, seed = 123)
     }
+
+    critter_b_t_p <- critter_b_t_p |> 
+      mutate(approx_mpa_size = map_dbl(b_t_p, ~last(.x[,1]) / (last(.x[,1]) + last(.x[,2]))))
     
     critter_b_t_p <- critter_b_t_p |>
       left_join(dd_type, by = "critter") |>
       left_join(downward_slide |> select(critter, b_c_t), by = "critter") |> 
-      mutate(twopbd_fit = pmap(list(b_t_p = b_t_p, local_dd = local_dd, b_c_t = b_c_t), foo))
+      mutate(twopbd_fit = pmap(list(b_t_p = b_t_p, local_dd = local_dd, b_c_t = b_c_t,approx_mpa_size = approx_mpa_size), foo))
     
     
     get_params <- function(fit, vars = c("g", "k", "phi", "m")) {
       out <- fit$summary() |>
         filter(variable %in% vars)
     }
+    
+    get_diagnostics <- function(b_t_p,twopbd_fit){
+      
+      observed <- b_t_p |>
+        as.data.frame() |>
+        pivot_longer(everything(), names_to = "patch", values_to = "biomass") |>
+        mutate(patch = as.numeric(as.logical(patch)) + 1) |>
+        group_by(patch) |>
+        mutate(year = 1:length(biomass))
+      
+      diagnostics <- tidybayes::spread_draws(twopbd_fit, hat_b_t_p[year, patch]) |>
+        left_join(observed, by = c("patch", "year")) |>
+        mutate(patch = factor(patch)) |> 
+        ungroup()
+      
+      return(diagnostics)
+      
+    }
+    
+    critter_b_t_p <- critter_b_t_p |> 
+      mutate(diagnostics = map2(b_t_p,twopbd_fit,get_diagnostics)) |> 
+      mutate(fit_mape = map_dbl(diagnostics, ~yardstick::mape(.x |> filter(year > 1),hat_b_t_p, biomass)$.estimate))
+    
+    if (any(critter_b_t_p$fit_mape > 25)){
+      # browser()
+      stop("at least one MAPE between observed and predicted total biomass per patch was greater than 25%")
+    }
+    
+    for (i in 1:nrow(critter_b_t_p)){
+      
+      tmp = critter_b_t_p$diagnostics[[i]] |>
+        ggplot() +
+        geom_point(aes(year, biomass, color = patch)) +
+        geom_line(aes(year, hat_b_t_p, color = patch)) + 
+        labs(caption = "Line are values estimated by low-resolution model, points data from high-resolution model",
+             x = "Year", y = "Biomass")
+      
+      ggsave(file.path(
+        fig_dir,
+        glue::glue("{difficulty}_state_id_{state_id}_{critter_b_t_p$critter}_emulation_fit.pdf")
+      ), tmp)
+      
+      
+    }
+    
+
+    
     # if (names(fauna)[f] == "carcharhinus amblyrhynchos"){
     #   browser()
     #   
@@ -236,8 +286,9 @@ fit_twopbd <- function(fauna, fleets) {
     #   geom_line(aes(year, hat_b_t_p, color = patch))
     # a
     out[[f]] <- critter_b_t_p |>
+      select(-diagnostics) |> 
       mutate(twopbd_params = map(twopbd_fit, get_params)) |>
-      select(critter, local_dd, twopbd_params)
+      select(critter, local_dd, twopbd_params, fit_mape)
   } # close loop over individual fauna
   
   out <- list_rbind(out)

@@ -1,0 +1,75 @@
+---
+title: "Supporting Information for Predicted Effects of Marine Protected Areas on Conservation and Catches are Sensitive to Model Structure"
+author:
+  - name: Daniel Ovando
+    affiliation:
+      - name: Inter-American Tropical Tuna Commission
+        department: Ecosystem & Bycatch Group
+        id: 1
+        address: 8901 La Jolla Shores Drive
+        city: La Jolla
+        state: CA
+        postal-code: 92037
+    email: dovando@iattc.org
+    attributes:
+      equal-contributor: true
+      corresponding: true
+format:
+  html: 
+    toc: true
+  pdf:
+    toc: true
+  nature-pdf:
+    keep-tex: true
+    classoption: [lineno, referee]
+    toc: true
+    equal-margins: true
+bibliography: references.bib
+execute: 
+  echo: false
+  warning: false
+---
+
+
+```{r}
+#|label: setup
+#|include: false
+
+foos <- list.files(here::here("R"))
+
+purrr::walk(foos, ~ source(here::here("R", .x)))
+
+# prep_run(run_name = "emulators_v1.0") # loads packages and creates and returns some global variables for the analysis
+
+prep_run(run_name = "emulators_v1.1") # loads packages and creates and returns some global variables for the analysis
+
+
+
+# clean up figures generated in the report to ensure that all figures come from a fresh state
+paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
+
+unlink(paper_figs)
+
+difficulties <- c("simple","medium","complex")
+
+min_depletion <- 0.00001
+
+tune_grids <- FALSE
+```
+
+
+
+```{r}
+#| label: fig-bpd
+#| fig-cap: Partial dependency plots of selected covariates on model disagreement (Low-definition minus High-definition) for biomass. Points are permuted values,lines are partial dependency gradients for a given permutation set
+
+knitr::include_graphics(file.path(fig_dir, "biomass_pd_plot.png"))
+```
+
+
+```{r}
+#| label: fig-cpd
+#| fig-cap: Partial dependency plots of selected covariates on model disagreement (Low-definition minus High-definition) for catch. Points are permuted values,lines are partial dependency gradients for a given permutation set
+
+knitr::include_graphics(file.path(fig_dir, "catch_pd_plot.png"))
+```

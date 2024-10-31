@@ -111,13 +111,13 @@ create_fleets <-
         ),
         base_effort = prod(resolution) + effort_int,
         cost_per_unit_effort = 10,
-        cost_per_distance = 2000,
+        cost_per_distance = 200,
         effort_cost_exponent = effort_cost_exponent,
         spatial_allocation = state$spatial_allocation[1],
         resolution = resolution,
         fleet_model = state$fleet_model[1],
         mpa_response = state$mpa_response[1],
-        ports = if_else(use_ports[1], port_locations[1,], NULL)
+        ports =ports[[1]][1,]
       )
     )
     } else if (difficulty == "complex"){
@@ -191,7 +191,7 @@ create_fleets <-
               sel05_anchor = fauna[[3]]$length_50_mature* sels[[1]]$sel05_anchor[[3]],
               sel_at_linf = sels[[1]]$sel_at_linf[[3]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = c_spatial_q
             ),
@@ -204,7 +204,7 @@ create_fleets <-
               sel05_anchor = fauna[[4]]$length_50_mature* sels[[1]]$sel05_anchor[[4]],
               sel_at_linf = sels[[1]]$sel_at_linf[[4]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = d_spatial_q
             )
@@ -230,7 +230,7 @@ create_fleets <-
               sel05_anchor = fauna[[1]]$length_50_mature* sels[[2]]$sel05_anchor[[1]],
               sel_at_linf = sels[[2]]$sel_at_linf[[1]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = a_spatial_q
               
@@ -244,7 +244,7 @@ create_fleets <-
               sel05_anchor = fauna[[2]]$length_50_mature* sels[[2]]$sel05_anchor[[2]],
               sel_at_linf = sels[[2]]$sel_at_linf[[2]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = b_spatial_q
               
@@ -278,7 +278,7 @@ create_fleets <-
           ),
           base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 5,
-          cost_per_distance = 1000,
+          cost_per_distance = 100,
           effort_cost_exponent = effort_cost_exponent,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
