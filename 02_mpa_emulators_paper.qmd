@@ -1,5 +1,5 @@
 ---
-title: "Sensitivity of the Predicted Effects of Marine Protected Areas on Conservation and Catches to Model Structure"
+title: "Predicted Effects of Marine Protected Areas on Conservation and Catches are Sensitive to Model Structure."
 author:
   - name: Daniel Ovando
     affiliation:
@@ -248,10 +248,10 @@ rm(list = c("simple", "medium", "complex", "tidy_lowres"))
 The field of ecology depends on models; it is how we move from simply
 describing ecological phenomena to understanding ecological processes.
 All models are abstractions of reality, requiring scientists to make
-decisions as to how best to approximate a given system to
-address the ecological question at hand. In some cases, these decisions
-can be based simply on first principles such as our understanding of the
-basic physics of the universe. In other cases we are faced with multiple
+decisions as to how best to approximate a given system to address the
+ecological question at hand. In some cases, these decisions can be based
+simply on first principles such as our understanding of the basic
+physics of the universe. In other cases we are faced with multiple
 competing models of the ecological process in question, with a common
 goal being the search for a "parsimonious" model that best explains the
 phenomena in question without containing extraneous features that may
@@ -268,7 +268,9 @@ process is that models are judged by their ability to explain observed
 data. For example, @murdoch2002 examined under what conditions a
 single-species model may or may not be a valid representation of
 population dynamics of species existing in a multi-species environment.
-They found that the data on the dynamics of generalist consumers (such as fish species) in a multi-species environment could be explained by a single species model. 
+They found that the data on the dynamics of generalist consumers (such
+as many species of fish) in a multi-species environment could be
+explained by a single species model.
 
 While quantitative methods for data fitting and comparison are
 appealing, they are not always feasible. For example, the widely used
@@ -279,34 +281,35 @@ has far more parameters than data points, meaning that many different
 model configurations might all explain the available data equally well.
 Alternatively, a different end-to-end ecosystem model, such as ATLANTIS
 [@audzijonyte2019], could in theory be tuned to fit the same data
-equally well. In these cases it is unclear how to judge performance when alternative
-parameterizations or model structures can all explain the data (or when there is no data to confront a model with). This can have
+equally well. In these cases it is unclear how to judge performance when
+alternative parameterizations or model structures can all explain the
+data (or when there is no data to confront a model with). This can have
 important implications if alternative equally plausible models provide
-conflicting guidance as to the impact of a phenomena or policy in
-question.
+conflicting guidance as to the impact of a particular phenomena or
+policy.
 
 This challenge is well illustrated by the science of Marine Protected
 Areas (MPAs). While MPAs have taken and continue to take numerous forms
 throughout human history [@johannes1978; @grorud-colvert2021], I refer
 to them here broadly as spatially defined areas in which some forms of
-human activities are restricted regardles of their objective [^1]. The most conventional form of MPAs
-involve the restriction of some to all forms of extractive activities
-such as fishing within their borders. The exact form of these
-restrictions may vary but the choice of what is implemented is ideally
-made to achieve some policy objective. For example, the California MPA
-network developed as part of the Marine Life Protection Act was designed
-around a broad set of policy objectives ranging from recreation,
-cultural value, research, and rebuilding of depleted populations
-(California Fish and Game Code, §§ 2850-2863).
+human activities are restricted regardless of their objective [^1]. The
+most conventional form of MPAs involve the restriction of some to all
+forms of extractive activities such as fishing within their borders. The
+exact form of these restrictions may vary but the choice of what is
+implemented is ideally made to achieve some policy objective. For
+example, the California MPA network developed as part of the Marine Life
+Protection Act was designed around a broad set of policy objectives
+ranging from recreation, cultural value, research, and rebuilding of
+depleted populations (California Fish and Game Code, §§ 2850-2863).
 
 [^1]: Note that the term MPA has many different definitions, see
     @grorud-colvert2021
 
 The use of MPAs to achieve various policy objectives has exploded in
-recent years and looks to grow further, as expressed by the goals
-of the 30x30 movement, which seeks to place 30% of terrestrial and
-marine ecosystems in some form of protected area by 2030 [@cbd2022].
-However, the choice of exactly what 30% to protect, and what forms that
+recent years and looks to grow further, as expressed by the goals of the
+30x30 movement, which seeks to place 30% of terrestrial and marine
+ecosystems in some form of protected area by 2030 [@cbd2022]. However,
+the choice of exactly what 30% to protect, and what forms that
 protection will take, can have large impacts on the actual outcomes that
 this proposed network will have. The difficulty is that baring the most
 straight-forward of cases (e.g. protection of sensitive habitat of
@@ -323,41 +326,44 @@ studies of the net effect of MPAs inside and outside of their borders
 can require collection of data over a large spatial scale over many
 years, an important but costly task. As such, an experimental design
 approach to understanding what MPA network might achieve a given effect
-size for a given objective is not generally feasible. In the absence of experimental designs,
-observational studies lacking appropriate statistical controls can
-easily misdiagnose the effects of a spatial policy such as an MPA
-[@ovando2021; @ferraro2018]. 
+size for a given objective is not generally feasible. In the absence of
+experimental designs, observational studies lacking appropriate
+statistical controls can easily misdiagnose the effects of a spatial
+policy such as an MPA [@ovando2021; @ferraro2018].
 
 Given then that we cannot realistically rely on direct empirical
 evidence to design large-scale networks of MPAs, we instead must often
 rely on simulations if we wish to provide guidance as to the predicted
-policy effects of a proposed protected area. Many models have
-been developed to fill this gap [@fulton2015]. These models vary greatly in complexity,
-ranging from single species two-patch biomass dynamics models with
-analytical solutions [@hastings1999] to end-to-end spatially explicit
-social-ecological models with thousands of parameters such as ATLANTIS
-[@audzijonyte2019].
+policy effects of a proposed protected area. Many models have been
+developed to fill this gap [@fulton2015]. These models vary greatly in
+complexity, ranging from single species two-patch biomass dynamics
+models with analytical solutions [@hastings1999] to end-to-end spatially
+explicit social-ecological models with thousands of parameters such as
+ATLANTIS [@audzijonyte2019].
 
 Several works have surveyed the MPA modeling landscape. @gerber2003
-reviewed a range of MPA models and summarized the types of
-processes included and common insights across models (e.g. that MPAs can
-increase yield when overfishing is present, and that highly-mobile
-species may benefit less from MPAs). @pelletier2005 scored the suitability of different MPA models for
-addressing different kinds of policy questions, finding that many different complexities could be appropriate for broad questions like addressing "Enhancement of fisheries yield". @fulton2015
-examined features and utility of different MPA models across a
-spectrum of complexity. As part of this paper, they identified different
+reviewed a range of MPA models and summarized the types of processes
+included and common insights across models (e.g. that MPAs can increase
+yield when overfishing is present, and that highly-mobile species may
+benefit less from MPAs). @pelletier2005 scored the suitability of
+different MPA models for addressing different kinds of policy questions,
+finding that many different complexities could be appropriate for broad
+questions like addressing "Enhancement of fisheries yield". @fulton2015
+examined features and utility of different MPA models across a spectrum
+of complexity. As part of this paper, they identified different
 "appropriate model types" for addressing specific questions around MPA
-performance. They found that the list of models categorized as appropriate for particular
-MPA questions can span a vast range. For example, the list of models
-listed as appropriate for assessing the ecological impacts of MPAs range
-form "population models", "qualitative mathematical models",
-"multi-species models", or "explicit ecosystem models" [@fulton2015].
+performance. They found that the list of models categorized as
+appropriate for particular MPA questions can span a vast range. For
+example, the list of models listed as appropriate for assessing the
+ecological impacts of MPAs range form "population models", "qualitative
+mathematical models", "multi-species models", or "explicit ecosystem
+models" [@fulton2015].
 
 Collectively, these studies demonstrate that models across a wide range
 of complexity are all in theory capable of providing guidance on the
 effects of MPAs. However, it remains unclear to how the choice of a
 specific model within this spectrum might influence the direction and
-magnitude of the effect being studied. 
+magnitude of the effect being studied.
 
 For example, suppose we compare the predictions made by two models, a
 "low-definition" two-patch biomass dynamics model and a
@@ -374,8 +380,8 @@ MPAs in that area. The more detailed high-definition model though might
 be needed to provide tactical advice as to the exact configuration of
 the protected patches.
 
-While this additive gradient in MPA model complexity would be ideal, I am
-unaware of any work that has explicitly tested whether it exists.
+While this additive gradient in MPA model complexity would be ideal, I
+am unaware of any work that has explicitly tested whether it exists.
 Answering this question has real policy implications, particularly
 because models are the primary tool used to provide advice on MPA design
 [@oleary2016; @fulton2015]. If different levels of model complexity
@@ -392,18 +398,18 @@ the conservation and food security outcomes of a proposed global network
 of no-take MPAs, and as of publication of this paper, is among the most
 highly cited and widely publicized findings in the recent marine
 conservation literature
-(<https://nature.altmetric.com/details/101895056>, noting that the food and conservation
-outputs of this model are only one part of the broader results presented
-in @sala2021). However, @ovando2023 showed that changes to core
-assumptions made by @sala2021 (e.g. choice of population model, spatial
-boundaries of individual fish stocks) fundamentally altered both the
-total predicted outcomes of MPAs for food security and the
-prioritization map of this proposed global MPA network.
+(<https://nature.altmetric.com/details/101895056>, noting that the food
+and conservation outputs of this model are only one part of the broader
+results presented in @sala2021). However, @ovando2023 showed that
+changes to core assumptions made by @sala2021 (e.g. choice of population
+model, spatial boundaries of individual fish stocks) fundamentally
+altered both the total predicted outcomes of MPAs for food security and
+the prioritization map of this proposed global MPA network.
 
 The question then is what models of MPAs are best suited for addressing
 which policy questions when multiple different models can in theory
-serve? For example, two outcomes of interest MPAs are changes in
-total population biomass and total fishery catches [@gaines2010]. These
+serve? For example, two outcomes of interest MPAs are changes in total
+population biomass and total fishery catches [@gaines2010]. These
 metrics, or at least representations of them, can be produced both by a
 two-patch biomass dynamics model and a full ecosystem model, and
 essentially every MPA model in between. It is unclear then how to decide
@@ -417,20 +423,20 @@ to provide a step towards this broader goal by assessing whether models
 of differing complexity provide complimentary or contradictory
 predictions of the effects of MPAs across multiple policy dimensions.
 
-To do so, I simulated a range of MPA outcomes using a spatially
-explicit age structured multi-species and multi-fleet simulation
-framework presented in @ovando2023a called `marlin`. I then tuned a
-two-patch biomass dynamics model presented in @ovando2023 and based on
+To do so, I simulated a range of MPA outcomes using a spatially explicit
+age structured multi-species and multi-fleet simulation framework
+presented in @ovando2023a called `marlin`. I then tuned a two-patch
+biomass dynamics model presented in @ovando2023 and based on
 @cabral2020, the foundation for the results presented in @sala2021, to
-emulate the simulated dynamics of the more complex `marlin` model. I then
-compare the effects of no-take MPAs predicted by these two models, and
-evaluate if and when the two models are in agreement. While these are
-only two models out of the many available to model MPAs, they are
+emulate the simulated dynamics of the more complex `marlin` model. I
+then compare the effects of no-take MPAs predicted by these two models,
+and evaluate if and when the two models are in agreement. While these
+are only two models out of the many available to model MPAs, they are
 instructive as both types of models have been used to provide
-predictions of the effects of MPAs on biomass and catch. I find
-evidence that while the two models have areas of agreement, the choice
-of one model over the other can strongly affect the predicted impacts of
-MPAs on conservation and catches.
+predictions of the effects of MPAs on biomass and catch. I find evidence
+that while the two models have areas of agreement, the choice of one
+model over the other can strongly affect the predicted impacts of MPAs
+on conservation and catches.
 
 ## Methods
 
@@ -463,11 +469,11 @@ Each simulation follows the same general structure (@fig-flow):
 4.  Compare the percent change in biomass and catch predicted by the
     *High* and *Low-definition* models
 
-This paper involves a great deal of code that cannot
-realistically be translated in full into the text of the methods section
-here. The code needed to reproduce this paper and all results contained
-within can be examined, accessed, and run through the repository
-available at XX.
+This paper involves a great deal of code that cannot realistically be
+translated in full into the text of the methods section here. The code
+needed to reproduce this paper and all results contained within can be
+examined, accessed, and run through the repository available at
+https://github.com/DanOvando/mpa-indicators-and-emulators/releases/tag/mpa_emulators_v1.0
 
 ```{r}
 #| label: fig-flow
@@ -495,7 +501,8 @@ simulated using a continuous-time Markov chain , as described in
 non-directed movement) and taxis (directed movement) component, where
 the taxis component allows fish to preferentially move towards better
 habitat. The model runs in 6-month time steps for these simulations.
-Core life history values (growth, mortality, and maturity) are pulled from `Fishlife` for each individual species [@thorson2020].
+Core life history values (growth, mortality, and maturity) are pulled
+from `Fishlife` for each individual species [@thorson2020].
 
 Fishing fleets are simulated based on effort. Each fleet exerts an
 amount of fishing effort in a time step, and chooses how to allocate
@@ -519,12 +526,16 @@ as the target species.
 
 #### Simulated States
 
-The four possible species simulated are a grouper (*Epinephelus fuscoguttatus*, Serranidae), a shallow-reef snapper (*Lutjanus malabaricus*, Lutjanidae), a deep-reef snapper (*Pristipomoides filamentosus*, Lutjanidae), and a reef shark (*Carcharhinus amblyrhynchos*, Carcharhinidae). These species were chosen to reflect a sportfolio commonly caught in coastal reef fisheries, and to encompass a
+The four possible species simulated are a grouper (*Epinephelus
+fuscoguttatus*, Serranidae), a shallow-reef snapper (*Lutjanus
+malabaricus*, Lutjanidae), a deep-reef snapper (*Pristipomoides
+filamentosus*, Lutjanidae), and a reef shark (*Carcharhinus
+amblyrhynchos*, Carcharhinidae). These species were chosen to reflect a
+portfolio commonly caught in coastal reef fisheries, and to encompass a
 range of life-history strategies related to somatic growth rates,
 natural mortality rates, and fecundity schedules. Two possible fleets
-are simulated. Both fleets
-catch all four species to some extent. The set of scenarios evaluated
-are shown in @tbl-scenes.
+are simulated. Both fleets catch all four species to some extent. The
+set of scenarios evaluated are shown in @tbl-scenes.
 
 ::: {#tbl-scenes}
 | Name      | Species                                 | Fleets               |
@@ -541,7 +552,9 @@ For each scenario set I simulated
 random number, chosen to make clear that this is not a statistical
 estimation process after determining a minimum sample size that the
 results presented here stabilized). Each state was generated by drawing
-a random variable from the sets described in @tbl-states. Variables not listed in this table (e.g. natural mortality) are fixed baesd on the values for the species in question found in FishLife. 
+a random variable from the sets described in @tbl-states. Variables not
+listed in this table (e.g. natural mortality) are fixed based on the
+values for the species in question found in FishLife.
 
 ::: {#tbl-states}
 | Name | Description |
@@ -568,8 +581,8 @@ a random variable from the sets described in @tbl-states. Variables not listed i
 | Price per unit weight | Price per unit weight for every *métier* |
 
 Variables that define a given simulation state. See accompanying code at
-https://github.com/DanOvando/mpa-indicators-and-emulators XX for details
-of individual distributions.
+https://github.com/DanOvando/mpa-indicators-and-emulators/releases/tag/mpa_emulators_v1.0
+for details of individual distributions.
 :::
 
 #### Simulating Habitats
@@ -777,7 +790,7 @@ general means for quickly and robustly fitting the data generated by the
 
 ::: {#tbl-model}
 | Process | Penalty Distribution |
-|-------------------|-----------------------------------------------------|
+|--------------------|----------------------------------------------------|
 | Initial biomass decline | $log(bdep_t) \sim N(log(\hat{bdep_t}),\sigma_b)$ |
 | Initial catch decline | $log(cdep_t) \sim N(log(\hat{cdep_t}),\sigma_c)$ |
 | Biomass in right-hand rebuilding patch | $log(bright_t) \sim N(log(\hat{bright_t}),\sigma_b)$ |
@@ -789,7 +802,7 @@ general means for quickly and robustly fitting the data generated by the
 | Observation error | $\sigma_b \sim N(0.05,0.1), \sigma_b > 0$ |
 
 Processes estimated by the low-definition model, along with associated
-penalty distributions. *t* indicates time step. 
+penalty distributions. *t* indicates time step.
 :::
 
 The model was fit using penalized maximum likelihood through the
@@ -800,9 +813,9 @@ to converge (`r fail_rate` of high-definition states) were discarded
 from the process. Convergence failure was defined either by an abnormal
 termination of the optimization, or a mean absolute percent error
 between the "observed" (high-definition) and "estimated"
-(low-definition) biomass greater than 25%. The post-filter
-mean absolute percent error (MAPE) between the biomass data generated by
-the High-definition model and the biomass values estimated by the
+(low-definition) biomass greater than 25%. The post-filter mean absolute
+percent error (MAPE) between the biomass data generated by the
+High-definition model and the biomass values estimated by the
 Low-definition model was `r percent(mean(fit_mapes$fit_mape) / 100)`.
 Once the Low-definition parameters were estimated for a given state, the
 Low-definition model was then run through the appropriate MPA scenarios
@@ -834,13 +847,14 @@ MPA patches.
 For each simulation, both the *High-definition* and *Low-definition*
 models start at the same business-as-usual depletion level
 ($B_{bau} /  B_{0}$), the biomass level that would occur in the absence
-of the MPA. The lower this value, the higher fishin pressure. Both definition models are then simulated forward in time 50
-years with and without the selected MPA designs. Each simulation (a
-combination of scenario, state and placement) produces simulated biomass
-per species and catch per species per fleet with and without MPAs for
-the *Low-* and *High-definition* models. I measured the effect sizes of
-the MPAs (MPAE) for state *s* and MPA placement scenario *p* for model
-type *m* as percentage differences in the outcome in question
+of the MPA. The lower this value, the higher fishing pressure. Both
+definition models are then simulated forward in time 50 years with and
+without the selected MPA designs. Each simulation (a combination of
+scenario, state and placement) produces simulated biomass per species
+and catch per species per fleet with and without MPAs for the *Low-* and
+*High-definition* models. I measured the effect sizes of the MPAs (MPAE)
+for state *s* and MPA placement scenario *p* for model type *m* as
+percentage differences in the outcome in question
 
 $$
 MPAE_{s,p,m} = \frac{Outcome_{MPA=1,s,p,m}}{Outcome_{MPA=0,s,p,m}} -1 
@@ -854,16 +868,18 @@ $$
 \Delta_{s,p} = MPAE_{s,p,m=Low} - MPAE_{s,p,m=High}
 $$
 
-A positive value of $\Delta$ indicates that the
-*Low-definition* model predicted a higher percent change in the given
-metric than the *High-definition* model, and *vice versa*.
+A positive value of $\Delta$ indicates that the *Low-definition* model
+predicted a higher percent change in the given metric than the
+*High-definition* model, and *vice versa*.
 
 Rather than comparing specific predictions of percent point changes of
 biomass and catch, we can also compare the "rank" of each fishery, in
 terms of biomass or catch potential from MPAs, predicted by the *Low-*
-and *High-definition* models. To that end I grouped simulations by MPA size and then ranked the change in biomass and catch for each simulated fishery conditional on a given MPA size. This provides a prediction of, if we were to protect a
-given percentage of a seascape in an MPA, which fisheries stand to
-benefit the most and the least.
+and *High-definition* models. To that end I grouped simulations by MPA
+size and then ranked the change in biomass and catch for each simulated
+fishery conditional on a given MPA size. This provides a prediction of,
+if we were to protect a given percentage of a seascape in an MPA, which
+fisheries stand to benefit the most and the least.
 
 The objective of an MPA modeling exercise may be even coarser than
 rankings, simply asking which fisheries might benefit or lose in terms
@@ -879,25 +895,29 @@ assigned each of our simulation results to one of five quadrants:
 This can be viewed as a "diagnosis" problem, where the *Low-definition*
 model predicts the quadrant a given MPA will place a fishery in, which
 we can then compare to the "true" quadrant resulting from the MPA under
-the *High-definition* model. Since MPA outcomes are
-asymptotic as MPA size goes to 0 or 100%, I restricted this analysis to
-the more realistic range of 5-40% of the seascape.
+the *High-definition* model. Since MPA outcomes are asymptotic as MPA
+size goes to 0 or 100%, I restricted this analysis to the more realistic
+range of 5-40% of the seascape.
 
-Each simulation run provides an estimate of the difference $\Delta$ between the biomass and catch outcomes predicted by the *Low-definition* and *High-definition* models. I used a random forest model to predict the magnitude of
-$\Delta$ for both catch and biomass as a function of the state variables
-defining the High-definition state, and then extracted the permutation-based variable importance scores for each state variable.
+Each simulation run provides an estimate of the difference $\Delta$
+between the biomass and catch outcomes predicted by the *Low-definition*
+and *High-definition* models. I used a random forest model to predict
+the magnitude of $\Delta$ for both catch and biomass as a function of
+the state variables defining the High-definition state, and then
+extracted the permutation-based variable importance scores for each
+state variable.
 
-We can use this simulation framework to evaluate the outcomes of following
-guidance based on the *Low-definition* model in a *High-definition*
-world. To achieve this, for each state I found the MPA size that
-maximized the total gain in catches according to the *Low-definition*
-model. For single species cases in the *simple* scenarios, this is
-equal to the MPA size that maximizes catch for the individual species.
-For the *complex* scenario, this is the single MPA size that maximized
-the *Low-definition* catch across all four species in total. I then
-applied that "catch maximizing" MPA size recommended by the
-*Low-definition* model to the *High-definition* model and compared the
-outcomes.
+We can use this simulation framework to evaluate the outcomes of
+following guidance based on the *Low-definition* model in a
+*High-definition* world. To achieve this, for each state I found the MPA
+size that maximized the total gain in catches according to the
+*Low-definition* model. For single species cases in the *simple*
+scenarios, this is equal to the MPA size that maximizes catch for the
+individual species. For the *complex* scenario, this is the single MPA
+size that maximized the *Low-definition* catch across all four species
+in total. I then applied that "catch maximizing" MPA size recommended by
+the *Low-definition* model to the *High-definition* model and compared
+the outcomes.
 
 ### A Note on MSY
 
@@ -923,8 +943,8 @@ distribution in space result in BMSY decreasing. See @kapur2021 and
 ## Results
 
 @fig-eg-complex shows a result from the *complex* set of scenarios, in
-which the High-definition model simulations four different species
-deferentially targeted by two different fishing fleets.
+which the *High-definition* model simulates four different species
+differentially targeted by two different fishing fleets.
 
 ```{r}
 #| label: fig-eg-simple
@@ -957,7 +977,7 @@ a = ggplot() +
     aes(prop_mpa, value / b0, color = "High-definition Model")
   ) +
   geom_point(data = emulation, aes(prop_mpa, depletion_mpa, color = "Low-definition Model")) +
-  scale_y_continuous(limits = c(0, 1), name = "~B/B0") + 
+  scale_y_continuous(limits = c(0, 1), name = "B/B0") + 
   scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
   facet_wrap(~placement_strategy) + 
   labs(title = "A") + 
@@ -1092,12 +1112,12 @@ compare_max_catch_mpa |>
 
 ### Low-definition Compared to High-definition {#sec-compare}
 
-Each *state*, *placement strategy* and *MPA size* is associated with
-predictions of percent change in biomass and catch for each species from
-the *Low-* and *High-definition* models (noting that fleet-specific
-predictions are only possible for the *High-definition* model results).
-Plotting the *Low-definition* versus the *High-definition* predictions
-provides a measure of the degree of agreement between these two models.
+Each state, placementstrategy and MPAsize is associated with predictions
+of percent change in biomass and catch for each species from the *Low-*
+and *High-definition* models (noting that fleet-specific predictions are
+only possible for the *High-definition* model results). Plotting the
+*Low-definition* versus the *High-definition* predictions provides a
+measure of the degree of agreement between these two models.
 
 ```{r}
 
@@ -1129,34 +1149,52 @@ Examining first changes in biomass (top row of @fig-hi-v-low), across
 than the *High-definition* model, often substantially so. The *Low-* and
 *High-definition* models agreed that the potential increases in biomass
 are positively correlated with the degree of fishing pressure (as
-measured by BAU depletion, $B_{bau}/B_0$). However, across all difficulties the *Low-definition* model could only explain roughly `r percent(tallies$r2[tallies$name == "biomass"])` of the variation in the *High-definition* biomass outcomes
-(@fig-hi-v-low).
+measured by BAU depletion, $B_{bau}/B_0$). However, across all
+difficulties the *Low-definition* model explained roughly
+`r percent(tallies$r2[tallies$name == "biomass"])` of the variation in
+the *High-definition* biomass outcomes, and this value decreased as
+model complexity increased (@fig-hi-v-low).
 
 Examining the catch results (bottom row of @fig-hi-v-low), across
 `r tallies$lowres_higher[tallies$name == "catch"]` of simulations the
 *Low-definition* model predicted a higher percent increase in catch than
-the *High-definition* model. The *Low-definition* model explained `r percent(tallies$r2[tallies$name == "catch"])` of the variation in the *High-definition* catch outcomes across all difficulties. The *Low-definition* models had a clear
-cutoff point where depletion values greater than 0.25 were less likely
-to provide positive catch benefits. In contrast, the *High-definition*
-models predicted positive catch effects across many levels of depletion.
+the *High-definition* model. The *Low-definition* model explained
+`r percent(tallies$r2[tallies$name == "catch"])` of the variation in the
+*High-definition* catch outcomes across all difficulties, and this value
+decreased as model complexity increased. The *Low-definition* models had
+a clear cutoff point where depletion values greater than 0.25 were less
+likely to provide positive catch benefits. In contrast, the
+*High-definition* models predicted positive catch effects across many
+levels of depletion (see Discussion section).
 
 <!-- This may seem counter-intuitive, as the literature and basic biology is -->
+
 <!-- fairly clear that MPA can only increase catch if the population was -->
+
 <!-- overfished in the first place. As with the biomass results, -->
+
 <!-- while there is a positive correlation between the predicted catch -->
+
 <!-- effects of MPAs of the *Low-definition* and *High-definition* models the -->
+
 <!-- relationship is much more variable than the biomass-based results. The -->
+
 <!-- catch-based results are more sensitive to the complexity of the -->
+
 <!-- simulation, in particular the addition of a second fleet in the -->
+
 <!-- *complex* scenarios, than the biomass results. -->
 
-
-
 <!-- The increased catches under higher -->
+
 <!-- depletion levels (lower fishing pressure) predicted by the -->
+
 <!-- *High-definition* model come under the *avoid_fishing* placement -->
+
 <!-- strategies, specifically where the fleet is concentrated in remaining -->
+
 <!-- fishing grounds given a constant effort fleet model and the assumption -->
+
 <!-- of MPA displacement rather than attrition. -->
 
 ```{r}
@@ -1193,15 +1231,16 @@ figsaver(fig)
 
 ```
 
-The *Low-definition* model consistently overestimated the percent increase
-in biomass caused by a given MPA across all levels of $B_{bau}/B_0$ (top
-row of @fig-delta). When $B_{bau}/B_0$ was low, the level of positive bias followed a dome-shaped pattern, with peak median bias levels generally greater than
-or equal to 50 percentage points. When $B_{bau}/B_0$ values were higher,
-the level of bias was lower at smaller MPA sizes but increased as MPA
-size increased. Higher levels of $B_{bau}/B_0$ had lower bias levels, as
-the models tended to agree more that the closer a population was to
-unfished biomass, the less scope for percentage increases in biomass is
-possible.
+The *Low-definition* model consistently overestimated the percent
+increase in biomass caused by a given MPA across all levels of
+$B_{bau}/B_0$ (top row of @fig-delta). When $B_{bau}/B_0$ was low, the
+level of positive bias followed a dome-shaped pattern, with peak median
+bias levels generally greater than or equal to 50 percentage points.
+When $B_{bau}/B_0$ values were higher, the level of bias was lower at
+smaller MPA sizes but increased as MPA size increased. Higher levels of
+$B_{bau}/B_0$ had lower bias levels, as the models tended to agree more
+that the closer a population was to unfished biomass, the less scope for
+percentage increases in biomass is possible.
 
 Predicted catch effects were less biased than predicted biomass effects.
 The *Low-definition* model was more likely to overestimate catch effects
@@ -1242,7 +1281,7 @@ figsaver(fig)
 Both models estimated similar levels of maximum potential catch
 increases achievable by MPAs, though the *Low-definition* generally
 underestimated the maximum potential catch increase achievable by MPAs
-predicted by the *High-definition* model [@fig-max-catch].
+compared to the *High-definition* model [@fig-max-catch].
 
 ```{r}
 #| label: fig-max-catch
@@ -1265,15 +1304,15 @@ figsaver(fig)
 
 Both the *Low-* and *High-definition* models agreed that for both catch
 and biomass, the highest rank fisheries were those with the lowest
-$B_{bau}/B_0$ values (@fig-ranks). For the *simple* scenarios, there was near 100%
-agreement in the top-ranked fisheries for both biomass and catch.
-However, in the *complex* scenarios there was less agreement between the
-models even at the top ranks. Biomass rankings were relatively stable
-between the *High-* and *Low-definition* models across all ranges of
-complexity. Catch rankings were much more variable between the two
-models; for the *complex* scenarios, fisheries ranked in the top 75% by
-the *Low-definition* models could be anywhere between near the bottom 0
-or top 95% according the *High-definition* model.
+$B_{bau}/B_0$ values (@fig-ranks). For the *simple* scenarios, there was
+near 100% agreement in the top-ranked fisheries for both biomass and
+catch. However, in the *complex* scenarios there was less agreement
+between the models even at the top ranks. Biomass rankings were
+relatively stable between the *High-* and *Low-definition* models across
+all ranges of complexity. Catch rankings were much more variable between
+the two models; for the *complex* scenarios, fisheries ranked in the top
+75% by the *Low-definition* models could be anywhere between near the
+bottom 0 or top 95% according the *High-definition* model.
 
 ```{r}
 #| label: fig-ranks
@@ -1310,11 +1349,12 @@ figsaver(fig)
 
 The *Low-definition* model was a reliable predictor of "No Effect"
 outcomes, correctly diagnosing the *High-definition* state over 90% of
-the time across all complexity levels (@fig-agreement). The *Low-definition* model was
-also a reliable predictor of the "Biomass Increases & Catch Increases"
-scenarios. Across all complexity levels the most poorly predicted
-quadrant was "Biomass Increases & Catch Decreases", with the "true"
-effect in those cases most commonly being "No Effect" (@fig-agreement).
+the time across all complexity levels (@fig-agreement). The
+*Low-definition* model was also a reliable predictor of the "Biomass
+Increases & Catch Increases" scenarios. Across all complexity levels the
+most poorly predicted quadrant was "Biomass Increases & Catch
+Decreases", with the "true" effect in those cases most commonly being
+"No Effect" (@fig-agreement).
 
 ```{r}
 #| label: fig-agreement
@@ -1437,8 +1477,8 @@ figsaver(fig)
 
 ### Variable Importance Scores
 
-*Depletion* ($B_{bau}/B_0$) and prop_mpa (percent of seascape in MPA)
-were the most important predictor for both biomass and catch by a wide
+Depletion ($B_{bau}/B_0$) and prop_mpa (percent of seascape in MPA) were
+the most important predictor for both biomass and catch by a wide
 margin. Examining the partial dependency plots, $\Delta$ tended to
 increase as $B_{bau}/B_0$ decreases, meaning the lower biomass was, the
 more the *Low-definition* model over-estimated both biomass and catch
@@ -1731,19 +1771,43 @@ imp_diff_tallies <- hmm |>
     )),
     r2 = round(yardstick::rsq_vec(percent_mpa_effect, lowres_percent_mpa_effect),2)) |> 
   mutate(core = sqrt(r2))
-imp_diff_tallies
 
 ```
 
-The final experiment conducted was to ask, how different would the conservation and catch outcomes be between the predictions of a *Low-* and *High-definition* models when using the MPA size predicted by the *Low-definition* model to maximize catch (@fig-imps2)? The conservation outcomes of the two models were positively correlated, but across all difficulties the *Low-definition* model could only explain roughly `r percent(imp_tallies$r2[imp_tallies$name == "biomass"])` of the variation in the *High-definition* biomass outcomes. The biomass R^2^ values decreased dramatically as model complexity increased. The *Low-definition* model overestimated the the biomass effect of the MPA in `r (imp_tallies$lowres_higher[imp_tallies$name == "biomass"])` of simulations. At the most extreme, cases occured where the *Low-definition* model predicted a large increase in
-biomass from the catch-maximizing MPA, but the *High-definition* world actually produced a net loss in
-biomass. 
+The final experiment conducted was to ask, how different would the
+conservation and catch outcomes be between the predictions of a *Low-*
+and *High-definition* models when using the MPA size predicted by the
+*Low-definition* model to maximize catch (@fig-imps2)? The conservation
+outcomes of the two models were positively correlated, but across all
+difficulties the *Low-definition* model could only explain roughly
+`r percent(imp_tallies$r2[imp_tallies$name == "biomass"])` of the
+variation in the *High-definition* biomass outcomes. The biomass R^2^
+values decreased dramatically as model complexity increased. The
+*Low-definition* model overestimated the the biomass effect of the MPA
+in `r (imp_tallies$lowres_higher[imp_tallies$name == "biomass"])` of
+simulations. At the most extreme, cases occured where the
+*Low-definition* model predicted a large increase in biomass from the
+catch-maximizing MPA, but the *High-definition* world actually produced
+a net loss in biomass.
 
-The catch outcomes of the two models were also positively correlated, but across all difficulties the *Low-definition* model explained `r percent(imp_tallies$r2[imp_tallies$name == "catch"])` of the variation in the *High-definition* catch outcomes. The catch R^2^ values also decreased dramatically as model complexity increased. As an example of this variation, MPAs predicted by the *Low-definition* model to result in an 100% increase in catch produced anything from a 100% loss to an over 200% gain when applied to the *High-definition* complex world. The *Low-definition* model underestimated the catch effect of the MPA in `r (imp_tallies$lowres_higher[imp_tallies$name == "catch"])`. 
+The catch outcomes of the two models were also positively correlated,
+but across all difficulties the *Low-definition* model explained
+`r percent(imp_tallies$r2[imp_tallies$name == "catch"])` of the
+variation in the *High-definition* catch outcomes. The catch R^2^ values
+also decreased dramatically as model complexity increased. As an example
+of this variation, MPAs predicted by the *Low-definition* model to
+result in an 100% increase in catch produced anything from a near 100%
+loss to an over 200% gain when applied to the *High-definition* complex
+world. The *Low-definition* model underestimated the catch effect of the
+MPA in `r (imp_tallies$lowres_higher[imp_tallies$name == "catch"])` of
+scenarios.
 
-In total, applying the MPA size predicted by the *Low-definition* model to maximize catch to the *High-definition* world produced correlated outcomes for both biomass and catch. However, the *High-definition* outcomes were generally substantially different than the *Low-definition* predictions, and were positively biased for conservation and negatively biased for catch. 
-
-
+In total, applying the MPA size predicted by the *Low-definition* model
+to maximize catch to the *High-definition* world produced correlated
+outcomes for both biomass and catch. However, the *High-definition*
+outcomes were generally substantially different than the
+*Low-definition* predictions, and were positively biased for
+conservation and negatively biased for catch.
 
 ```{r}
 #| label: fig-imps2
@@ -1789,20 +1853,30 @@ figsaver(fig)
 <!--# Running parallel analyses is cumbersome. At best, alternative models perform equally well, meaning that the same results could have been achieved with far less work. At worst, alternative models show vastly different results, leaving open the complicated question of which to trust, if any. While difficult, these sorts of insights are important. For example, the IPCC... -->
 
 <!-- MPA sizes projected to have a positive effect on catch by the -->
+
 <!-- *Low-definition* model in some instances resulted in net reductions in -->
+
 <!-- catch when applied to the *High-definition* model (@fig-imps2). This -->
+
 <!-- difference is driven in part by the fact that the *Low-definition* model -->
+
 <!-- has no way of accounting for heterogeneity in habitats and fishing -->
+
 <!-- fleets. For example, under the *High-definition* model, protecting 30% -->
+
 <!-- of the seascape in an MPA may protect 30% of the habitat of one species, -->
+
 <!-- but near 100% of another species that primarily occurs in a small subset -->
+
 <!-- of the seascape. Similarly, if an MPA is placed primarily on the habitat -->
+
 <!-- of species *A*, but effort is then displaced onto the habitat of species -->
+
 <!-- *B* which is not covered by the MPA, the net result can be reduction in -->
+
 <!-- the population and catch of species *B*. -->
 
-
-Models are a key tool in the ecological toolbox. Recent decades have
+Models are a key part of the ecological toolbox. Recent decades have
 seen an explosion in computational capabilities that have vastly
 expanded the complexity and scale of social-ecological processes that
 can now be simulated, and this trend will only continue. While this
@@ -1824,110 +1898,174 @@ potential impacts are desired. As such, a wide range of models have been
 developed to inform MPA decisions [@fulton2015]. This paper compared the
 sensitivity of simulated effects of MPAs on conservation and fishery
 catches to the choice of model structure, using two types of models
-commonly seen in the literature. 
-
-While the two models agreed in some
-broad strategic ways, the choices of model can have strong impacts on
-the predicted impacts of MPAs, particularly for more tactical
-applications. In general the *Low-definition* models overestimated the reduction in catches for a given size of MPA, and as a result also overestimated the increase in biomass caused by the closure. 
+commonly seen in the literature.
 
 ### Implications for Tactical and Strategic Use
 
-Both models predicted that under most conditions MPAs increased biomass
-of protected species, and that MPAs could also increase fishery catches
-when the population would have been overfished in the absence of the
-MPA. This is consistent with many previous surveys of the MPA modeling
-literature. The predictions of the two models were also generally
-correlated with each other, but often with high levels of bias and
-variance around this relationship (@fig-hi-v-low). The biomass and
-catch effects predicted by the *Low-* and *High-definition* models were
-broadly consistent with each other when the catch-maximizing MPA size
-predicted by the *Low-definition* model was applied to the
-*High-definition* world (@fig-imps2). The two models generally agreed as
-to the maximum potential increase in catch achievable from MPAs, with
-the *Low-definition* model underestimating the potential catch benefits
-of MPAs when $B_{bau}/B_0$ was low (@fig-max-catch).
+This paper found that the *Low-definition* models overestimated the
+reduction in catches for a given size of MPA, and as a result
+overestimated the increase in biomass caused by the closure. This means
+that MPA projections from a *Low-definition* model may over-estimate the
+losses in catches, but as a result overestimate the potential
+conservation gains, if the world in fact follows the *High-definition*
+dynamics. Conversely, using a *High-definition* model may result in more
+optimistic catch projections but more pessimistic conservation
+predictions. The two models often agreed in directional and broad
+outcomes (good or bad for catch or biomass) (@fig-agreement), but had
+very little correlation between the absolute values of those same
+outcomes (@fig-hi-v-low, @fig-imps2).
 
-While there were broad areas of agreement, the specific MPA effects
-predicted by the *High-* and *Low-definition* models also differed in
-meaningful ways. The *Low-definition* models over-estimated the amount
-that an MPA would increase biomass in nearly every simulated scenario,
-with the amount of positive bias generally increasing with MPA size and
-degree of overfishing (@fig-delta). Differences in catch outcomes were
-often large but generally not biased at lower MPA sizes, but at higher
-MPA sizes the *Low-definition* model tended to estimate lower values of
-catch than the *High-definition* models. However, in scenarios with
-higher $B_{bau}/B_0$ this difference was generally because of effort
-displacement concentrating effort in the *High-definition* world, as
-opposed to rebuilding of biomass. As model complexity increased, the
-variation in the *High-definition* outcomes explained by the
-*Low-definition* predictions decreased (@fig-hi-v-low).
+One interesting difference was that in many cases the *High-definition*
+model predicted an increase in catch from MPAs even when $B_{bau}/B_0$
+was high, particularly under the more complex scenarios (@fig-hi-v-low).
+This runs counter to the general MPA literature that says $B_{bau}/B_0$
+has to be low to for an MPA to increase catches. The explanation here is
+that this increase occurs due to a displacement of the fishing fleet
+from one area onto another, potentially increasing the effort on species
+found more frequently in that new area. In other words, the catch
+increases in these cases are due to increased effort, not increased
+biomass from a rebuilding stock.
+
+<!-- Both models predicted that under most conditions MPAs increased biomass -->
+
+<!-- of protected species, and that MPAs could also increase fishery catches -->
+
+<!-- when the population would have been overfished in the absence of the -->
+
+<!-- MPA. This is consistent with many previous surveys of the MPA modeling -->
+
+<!-- literature. The predictions of the two models were also generally -->
+
+<!-- correlated with each other, but often with high levels of bias and -->
+
+<!-- variance around this relationship (@fig-hi-v-low). The biomass and -->
+
+<!-- catch effects predicted by the *Low-* and *High-definition* models were -->
+
+<!-- broadly consistent with each other when the catch-maximizing MPA size -->
+
+<!-- predicted by the *Low-definition* model was applied to the -->
+
+<!-- *High-definition* world (@fig-imps2). The two models generally agreed as -->
+
+<!-- to the maximum potential increase in catch achievable from MPAs, with -->
+
+<!-- the *Low-definition* model underestimating the potential catch benefits -->
+
+<!-- of MPAs when $B_{bau}/B_0$ was low (@fig-max-catch). -->
+
+<!-- While there were broad areas of agreement, the specific MPA effects -->
+
+<!-- predicted by the *High-* and *Low-definition* models also differed in -->
+
+<!-- meaningful ways. The *Low-definition* models over-estimated the amount -->
+
+<!-- that an MPA would increase biomass in nearly every simulated scenario, -->
+
+<!-- with the amount of positive bias generally increasing with MPA size and -->
+
+<!-- degree of overfishing (@fig-delta). Differences in catch outcomes were -->
+
+<!-- often large but generally not biased at lower MPA sizes, but at higher -->
+
+<!-- MPA sizes the *Low-definition* model tended to estimate lower values of -->
+
+<!-- catch than the *High-definition* models. However, in scenarios with -->
+
+<!-- higher $B_{bau}/B_0$ this difference was generally because of effort -->
+
+<!-- displacement concentrating effort in the *High-definition* world, as -->
+
+<!-- opposed to rebuilding of biomass. As model complexity increased, the -->
+
+<!-- variation in the *High-definition* outcomes explained by the -->
+
+<!-- *Low-definition* predictions decreased (@fig-hi-v-low). -->
 
 <!-- This result was driven in part by the fact that the *Low-definition* model -->
+
 <!-- has no way of accounting for heterogeneity in habitats and fishing -->
+
 <!-- fleets. For example, under the *High-definition* model, protecting 30% -->
+
 <!-- of the seascape in an MPA may protect 30% of the habitat of one species, -->
+
 <!-- but near 100% of another species that primarily occurs in a small subset -->
+
 <!-- of the seascape. Similarly, if an MPA is placed primarily on the habitat -->
+
 <!-- of species *A*, but effort is then displaced onto the habitat of species -->
+
 <!-- *B* which is not covered by the MPA, the net result can be reduction in -->
+
 <!-- the population and catch of species *B*. -->
 
 <!-- Under the *simple* world, MPA sizes designed to maximize food security -->
+
 <!-- under the *Low-definition* world generally at least provided $\geq$ zero -->
+
 <!-- benefits to biomass and catch when applied to the *High-definition* -->
+
 <!-- world, unless the MPAs were placed using the *avoid_fishing* placement -->
+
 <!-- strategy, in which cases it was possible for both biomass and catch -->
+
 <!-- benefits to be \< zero. However, as the states of nature became -->
+
 <!-- increasingly complex (four species and two fleets at most, which is -->
+
 <!-- still far less complex than many fisheries), the performance of the MPAs -->
+
 <!-- predicted to maximize food by the *Low-definition* model deteriorated, -->
+
 <!-- including predicted cases of MPA-mediated catch-increases in fact -->
+
 <!-- producing net losses in catch when applied to the *High-definition* -->
+
 <!-- world (@fig-imps2). -->
 
 These results show that the choice of model definition can have a strong
 and in cases biased effect in the specific effect sizes of MPAs on
 biomass and catch. This suggests that the *Low-definition* model is not
 well suited to more "tactical" applications in which specific effect
-sizes are emphasized [such as @sala2021], and that the presence of
-biases indicates that averaging effects across many simulations may still
-be produce incorrect results. 
+sizes or locations are emphasized [such as @sala2021], and that the
+presence of biases indicates that averaging effects across many
+simulations may still be produce incorrect results as measured by
+absolute effect sizes.
 
 However, users may care less about precise values and more about general
-strategic insights around rankings and outcomes. These results
-indicate that while they differed in absolute values, the two models
-generally agreed on the relative ranking of fisheries in terms of
-potential conservation efficacy of MPAs (@fig-ranks), though there was
-much less agreement for on catch rankings beyond the top 25% of
-fisheries. Looking even more coarsely, the *Low-definition* model often
-performed well at predicting *High-definition* quadrants for the cases
-of "No Effect" and "Biomass Increases & Catch Increases" (often
-coinciding with simulations of extreme combinations of fishing pressure
-and MPA size). However, *Low-definition* predictions of "Biomass
-increases and Catch Decreases" were incorrect over 50% of the time
-across all difficulty levels, with many of the disagreements stemming
-from the positively-based conservation outcomes of the *Low-definition*
-model.
+strategic insights around rankings and outcomes. These results indicate
+that while they differed in absolute values, the two models generally
+agreed on the relative ranking of fisheries in terms of potential
+conservation efficacy of MPAs, though there was much less agreement for
+on catch rankings beyond the top 25% of fisheries (@fig-ranks). Looking
+even more coarsely, the *Low-definition* model often performed well at
+predicting *High-definition* quadrants for the cases of "No Effect" and
+"Biomass Increases & Catch Increases" (often coinciding with simulations
+of extreme combinations of fishing pressure and MPA size). Still,
+*Low-definition* predictions of "Biomass increases and Catch Decreases"
+were incorrect over 50% of the time across all difficulty levels, with
+many of the disagreements stemming from the positively-based
+conservation outcomes of the *Low-definition* model.
 
 In total, from the perspective of food security, these results indicate
-that *Low-definition* models may be suited for helping identifying
+that *Low-definition* models may be suitable for helping identifying
 fisheries with the highest chance of increasing catches. However, even
 for cases of heavy overfishing, the *High-definition* outcomes for food
 security often were substantially different than the *Low-definition*
-predictions, indicating that catch results of *Low-definition* MPA
-models should be interpreted with great caution.
+predictions, indicating that specific catch results of *Low-definition*
+MPA models are not reliable.
 
-From a pure conservation perspective, the potential risks of using a
+From a conservation perspective, the potential risks of using a
 *Low-definition* model in a *High-definition* world are somewhat
-subtler. Under the *Low-definition* model it is impossible for an MPA to
-have a negative conservation effect, whereas negative effects are
-possible under the *High-definition* model, due primarily as modeled
-here to the combined effects of displacement of fishing effort and
-heterogeneous habitat. While we have no way of knowing how common the
-states leading to the net conservation losses predicted by the
-*High-definition* model are in the real world, we do have some evidence
-that they can occur [@abbott2012].
+subtler. One risk is that under the *Low-definition* model it is
+impossible for an MPA to have a negative conservation effect, whereas
+negative effects are possible under the *High-definition* model, due
+primarily as modeled here to the combined effects of displacement of
+fishing effort and heterogeneous habitat. While we have no way of
+knowing how common the states leading to the net conservation losses
+predicted by the *High-definition* model are in the real world, we do
+have some evidence that they can occur [@abbott2012].
 
 That being said, while there is a real risk of MPAs causing a net
 conservation loss, there are clearly more ways for MPAs to benefit
@@ -1937,34 +2075,34 @@ of an MPA, particularly if the objective of an MPA is not explicitly to
 also benefit food security? If the goal is to rebuild a severely
 overfished species and a *Low-definition* model overestimates the
 potential conservation gains of a given MPA size, while some rebuilding
-may occur we may fall short of the actual rebuilding goal. There is also
+may occur we may fall short of the actual goal. There is also
 opportunity cost; if a manager has finite capital, real or political, to
 implement a conservation action, and the potential conservation benefits
 of an MPA are overestimated relative to an alternative policy, a
-sub-optimal choice may be made by the manager.
+sub-optimal choice may be made by the manager. Similar losses in
+potential conservation outcomes may occur if incorrectly specified
+models are used to measure conservation gains as inputs to market based
+solutions (e.g. trading conservation obligations across nations)
+[@villasenor-derbez2024].
 
 ### What Traits Drive Model Differences?
 
-Interestingly, many of differences between the *Low-* and
-*High-definition* models emerged even in the *simple* set of scenarios
-(one species, one fleet), even in the cases where habitat of the single
-species is heterogeneous. This indicates that the basic dynamics of
-age-structure and two-dimensional space are enough on their own to
-explain some of the discrepancy between the *High-* and *Low-definition*
-models. In other words, find evidence that *Low-definition* MPA models
-are not consistently reliable emulators of *High-definition* MPA models
-so long as the world is "simple". Rather, even the *simple* cases had
-very different predictions between the two models, and these differences
-were only amplified for the *medium* and *complex* states.
-
-The variable importance score analysis sheds some insights into the
-drivers here. Beyond core attributes of depletion and MPA size, traits
-such as the placement strategy, timing of density dependence, and adult
+Interestingly, many differences between the *Low-* and *High-definition*
+models emerged in the *simple* set of scenarios (one species, one
+fleet), even in the cases where habitat of the single species is
+heterogeneous. This indicates that the basic dynamics of age-structure
+and two-dimensional space are enough on their own to explain some of the
+discrepancy between the *High-* and *Low-definition* models. The
+variable importance score analysis sheds some insights into the drivers
+here. Beyond core attributes of depletion and MPA size, traits such as
+the placement strategy, timing of density dependence, and adult
 diffusion were highly useful predictors of differences between the two
 models for biomass and / or catch. After that, a range of other
 variables were important but less clearly so, including the intrinsic
 traits of the animal itself and the patterns of selectivity of the
-fisheries (@fig-all-importance). In general, it is interesting that many
+fisheries (@fig-all-importance). Many of these variables have an effect
+across all the simulated difficulties, explaining why differences occur
+even in the *simple* scenarios. In general, it is interesting that many
 of the more important variables seem to be biological in nature, rather
 than fishing process variables.
 
@@ -2002,10 +2140,10 @@ being fit to fishery-dependent data instead that would introduce
 additional errors and biases that would manifest as model
 misspecification errors to the extent to which the sampling process was
 not accounted for (e.g. if the data came from a dome-shaped selectivity
-process that the Low-definition model cannot correct for). I also
-assume that all biological parameters (e.g. natural mortality, growth
-rates, habitat preferences), are time-invariant. Contact selectivity by
-fleet is fixed, but the population selectivity can vary over time as the
+process that the Low-definition model cannot correct for). I also assume
+that all biological parameters (e.g. natural mortality, growth rates,
+habitat preferences), are time-invariant. Contact selectivity by fleet
+is fixed, but the population selectivity can vary over time as the
 relative effort by different fleets in space changes. These results also
 only consider the simplest of economic dynamics (constant effort with or
 without MPA-driven effort displacement). Other works have shown that
@@ -2046,22 +2184,16 @@ direction of predicted outcomes of closed areas.
 
 ### Potential Solutions for Model Selection
 
-That being said, the *High-definition* model is able to represent
-processes that we know exist in the real world (e.g. age structure,
-heterogeneous habitat, spatial fleet dynamics) and that cannot be
-represented in the *Low-definition* model. I also show here that the
-incorporation of these processes can have substantial impacts in the
-projected effects of policies such as MPAs. I suggest that prior to
-embarking on simulation exercises, practitioners should ideally develop
-conceptual models ["modelling what to model", @minte-vera2024] of the
-key processes in the system(s) they which to model, consider how these
-processes might impact the goals of the simulation model (e.g. projected
-MPA outcomes), and use this process to inform the degree of model
-definition suitable for the task. A two-patch surplus production model
-in the manner of the *Low-definition* model used here might be suitable
-in a system where one fleet targets one population distributed across a
-homogeneous habitat through passive diffusion. Something like the
-`marlin` model used in the *High-definition* might be needed when
+Prior to embarking on simulation exercises, practitioners should ideally
+develop conceptual models ["modelling what to model", @minte-vera2024]
+of the key processes in the system(s) they which to model, consider how
+these processes might impact the goals of the simulation model (e.g.
+projected MPA outcomes), and use this process to inform the degree of
+model definition suitable for the task. A two-patch surplus production
+model in the manner of the *Low-definition* model used here might be
+suitable in a system where one fleet targets one population distributed
+across a homogeneous habitat through passive diffusion. Something like
+the `marlin` model used in the *High-definition* might be needed when
 age-structure matters, multiple species are targeted based on a range of
 economic incentives, and species are heterogeneously distributed in
 space and time. In cases where there is good reason to think that
@@ -2129,7 +2261,7 @@ empirically measure their outcomes [@ovando2021; @ferraro2018;
 being able to confront them with data directly. I show here that
 predicted effects of MPAs on conservation and food security can be
 highly sensitive to the choice of model used. While we do not yet have
-an answer for what model is suitable for what question, I suggest that
+an answer for what model is suitable for what question, I recommend that
 practitioners using models to inform MPA science and management directly
 consider this challenge and provide justification for why they believe
 their choice of modeling framework is appropriate to the question at
@@ -2138,8 +2270,7 @@ that authors should not make this the sole basis for their choice. MPAs
 can play an important role in the conservation and management of marine
 social-ecological systems, but we should acknowledge that our ability to
 accurately predict these effects depends largely on the suitability of
-modeling assumptions that may be difficult or impossible to directly
-test.
+modeling assumptions that may be difficult to directly test.
 
 ## References
 
