@@ -1,0 +1,158 @@
+---
+title: "Supporting Information for Predicted Effects of Marine Protected Areas on Conservation and Catches are Sensitive to Model Structure"
+author:
+  - name: Daniel Ovando
+    affiliation:
+      - name: Inter-American Tropical Tuna Commission
+        department: Ecosystem & Bycatch Group
+        id: 1
+        address: 8901 La Jolla Shores Drive
+        city: La Jolla
+        state: CA
+        postal-code: 92037
+    email: dovando@iattc.org
+    attributes:
+      equal-contributor: true
+      corresponding: true
+format:
+  html: 
+    toc: true
+  pdf:
+    toc: false
+  nature-pdf:
+    keep-tex: true
+    classoption: [lineno, referee]
+    toc: true
+    equal-margins: false
+bibliography: references.bib
+execute: 
+  echo: false
+  warning: false
+---
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\renewcommand{\thetable}{S\arabic{table}}
+
+```{r}
+#|label: setup
+#|include: false
+
+foos <- list.files(here::here("R"))
+
+purrr::walk(foos, ~ source(here::here("R", .x)))
+
+library(glue)
+
+
+prep_run(run_name = "emulators_v1.1") # loads packages and creates and returns some global variables for the analysis
+
+# clean up figures generated in the report to ensure that all figures come from a fresh state
+paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
+
+unlink(paper_figs)
+
+difficulties <- c("simple","medium","complex")
+
+min_depletion <- 0.00001
+
+tune_grids <- FALSE
+
+results <- list.files(results_dir)
+
+results <- results[str_detect(results,"(processed_sims.rds$)|(emulated_experiment_results.rds)|(placement_experiments.rds)|(state_experiments.rds)|(emulator_fits.rds$)")]
+
+
+
+purrr::walk(results, ~ assign(str_remove_all(.x,"\\.rds$"), read_rds(here(results_dir,.x)), envir = .GlobalEnv))
+
+
+
+critter_namer <- function(x){
+  
+  y <- forcats::fct_recode(x,shark = "carcharhinus amblyrhynchos",grouper = "epinephelus fuscoguttatus",snapper = "lutjanus malabaricus", "deep-snapper" = "pristipomoides filamentosus")
+  
+}
+
+```
+
+
+
+
+```{r}
+#| label: fig-bpd
+#| fig-cap: Partial dependency plots of selected covariates on model disagreement (Low-definition minus High-definition) for biomass. Points are permuted values,lines are partial dependency gradients for a given permutation set
+
+knitr::include_graphics(file.path(fig_dir, "biomass_pd_plot.png"))
+```
+
+
+```{r}
+#| label: fig-cpd
+#| fig-cap: Partial dependency plots of selected covariates on model disagreement (Low-definition minus High-definition) for catch. Points are permuted values,lines are partial dependency gradients for a given permutation set
+
+knitr::include_graphics(file.path(fig_dir, "catch_pd_plot.png"))
+```
+
+
+```{r}
+#| label: fig-emus
+#| fig-cap: 
+#|  - "Randomly selected plot of fit of Low-definition model to High-resolution rebuilding phase "
+#|  - "Randomly selected plot of fit of Low-definition model to High-resolution rebuilding phase "
+#|  - "Randomly selected plot of fit of Low-definition model to High-resolution rebuilding phase "
+#|  - "Randomly selected plot of fit of Low-definition model to High-resolution rebuilding phase "
+
+
+emus <- list.files(fig_dir)
+
+emus <- emus[str_detect(emus,"emulation_")]
+
+emus <- sample(emus,4, replace = FALSE)
+
+knitr::include_graphics(file.path(fig_dir, emus[1]))
+
+knitr::include_graphics(file.path(fig_dir, emus[2]))
+
+knitr::include_graphics(file.path(fig_dir, emus[3]))
+
+knitr::include_graphics(file.path(fig_dir, emus[4]))
+
+
+```
+
+
+```{r}
+#| label: fig-mape
+#| fig-cap: 
+#|  - "Distribution of mean absolute percent error (MAPE) between predicted Low-resolution and observed High-resolution biomass from the model fitting stage. Only simulations with MAPE values less than 25% were included in analysis."
+simple <- simple_emulator_fits |> 
+  filter(fit_worked) |> 
+  mutate(fit_mape = map_dbl(twopbd_params, c("result","fit_mape"))) |> 
+  mutate(difficulty = "simple")
+
+medium <-medium_emulator_fits |> 
+  filter(fit_worked) |> 
+  mutate(fit_mape = map(twopbd_params, c("result","fit_mape"))) |> 
+  unnest(cols = fit_mape) |> 
+  mutate(difficulty = "medium")
+
+
+
+complex <-complex_emulator_fits |> 
+  filter(fit_worked) |> 
+  mutate(fit_mape = map(twopbd_params, c("result","fit_mape"))) |> 
+  unnest(cols = fit_mape) |> 
+  mutate(difficulty = "complex")
+
+fit_mapes <- bind_rows(simple, medium, complex)
+# 
+fit_mapes |>
+  ggplot(aes(fit_mape / 100, fill = difficulty)) +
+  geom_density(alpha = 0.5) + 
+  scale_x_continuous(name = "Mean absolute percent error",labels = scales::percent) + 
+  scale_y_continuous(name = "Density") + 
+  theme(legend.position = "top")
+# 
+```
+

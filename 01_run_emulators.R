@@ -6,7 +6,9 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
-prep_run(n_states = 142, run_name = "emulators_v1.0", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
+prep_run(n_states = 142, run_name = "emulators_v1.1", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
+
+# prep_run(n_states = 10, run_name = "emulators_test", drop_patches = TRUE, experiment_workers = 8) # loads packages and creates and returns some global variables for the analysis
 
 project <- "emulators"
 
@@ -16,9 +18,7 @@ resolution <- c(rx, ry)
 
 # difficulties <- c("simple")
 
-# difficulties <- c("complex","medium","simple")
-
-difficulties <- c("complex")
+difficulties <- c("complex","medium","simple")
 
 difficulty_species <- list(
   simple = c("lutjanus malabaricus"),
@@ -142,30 +142,51 @@ for (difficulty in difficulties) {
   
   
   # aggregate into lists of fauna
+
+  # function to randomize selectivity parameters
+  selfoo <- function(x,i){
+    out <-   list(
+      sel_start = runif(i, .05, 2),
+      # proportion of length 50% mature at 50% selectivity
+      sel_delta = runif(i, 1e-3, .25),
+      # offset for 95% selectivity
+      sel05_anchor = runif(i, 0, 0.9),
+      sel_at_linf = runif(i, 0, 1)
+    )
+    
+    out$sel05_anchor <- out$sel05_anchor * out$sel_start # must be smaller than length at 50% selectivity
+    
+    return(out)
+    
+  }
   state_experiments <- state_experiments %>%
     group_by(state_id) %>%
     nest() %>%
     mutate(
       fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
-      sels = map(fauna, ~ runif(length(.x), 0.1, 1.25)),
-      prices = map(fauna, ~ runif(length(.x), 1, 10))
-    )
+      sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
+      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
+      prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
+      use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
+    ) |> 
+    ungroup()
+  
+
+  
   
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
   
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
-  #
-  # stop()
+
   
   state_experiments <- state_experiments %>%
-    ungroup() %>%
-    mutate(use_ports = sample(c(TRUE,FALSE), nrow(.), replace = TRUE)) %>%
     mutate(
       fleet = pmap(
         list(
           fauna = fauna,
           state = data,
           sels = sels,
+          sel_form =sel_form,
           prices = prices,
           use_ports = use_ports
         ),
@@ -176,8 +197,14 @@ for (difficulty in difficulties) {
       )
     )
   
+  # i <- 4
+  # plot(state_experiments$fleet[[i]]$alpha$metiers[[1]]$sel_at_age, col = "red", type = "l")
+  # lines(state_experiments$fleet[[i]]$alpha$metiers[[2]]$sel_at_age, col = "green")
+  # lines(state_experiments$fleet[[i]]$alpha$metiers[[3]]$sel_at_age,col = "blue")
+  # lines(state_experiments$fleet[[i]]$alpha$metiers[[4]]$sel_at_age,col ="orange")
+
   # add in starting conditions
-  init_condit <- function(fauna, fleets, years = 125) {
+  init_condit <- function(fauna, fleets, years = 75) {
     starting_trajectory <-
       simmar(fauna = fauna,
              fleets = fleets,
@@ -269,13 +296,23 @@ for (difficulty in difficulties) {
     }
     # fit two-patch biomass dynamics (twopbd) emulations
     emulated_state_experiments <- state_experiments |>
-      mutate(twopbd_params = map2(
-        fauna,
-        fleet,
+      mutate(twopbd_params = pmap(
+        list(fauna = fauna,
+        fleet = fleet,
+        state_id = state_id,
+        difficulty = difficulty),
         safely(fit_twopbd),
+        years = 50,
         .progress = glue("fitting {difficulty} emulators")
       )) |>
-      mutate(fit_worked = map_lgl(twopbd_params, ~ is.null(.x$error))) |>
+      mutate(fit_worked = map_lgl(twopbd_params, ~ is.null(.x$error)))
+    
+    write_rds(
+      emulated_state_experiments |> select(state_id, twopbd_params, fit_worked),
+      file.path(results_dir, glue::glue("{difficulty}_emulator_fits.rds"))
+    )
+    
+    emulated_state_experiments <- emulated_state_experiments |>
       filter(fit_worked) |>
       mutate(twopbd_params = map(twopbd_params, "result")) |>
       select(state_id, fleet, twopbd_params) |>

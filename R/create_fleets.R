@@ -3,6 +3,7 @@ create_fleets <-
            state,
            difficulty = "medium",
            sels,
+           sel_form,
            prices,
            use_ports,
            port_locations = NULL,
@@ -11,14 +12,14 @@ create_fleets <-
            effort_int = 0,
            resolution) {
     
-
-    
-    if (use_ports == TRUE){
-      ports <- port_locations
-    } else {
-      ports <- NULL
+    ports <- vector( mode = "list", length = 2)
+    for (i in seq_along(use_ports)){
+      if (use_ports[i]){
+        ports[[i]] <- port_locations
+      }
+      
     }
-    
+
     if (difficulty == "medium"){
     
       if (all(state$spatial_q == TRUE)) {
@@ -50,16 +51,17 @@ create_fleets <-
       } else {
         a_spatial_q <- b_spatial_q <-  c_spatial_q <- d_spatial_q <- NA
       }
-    
     fleets <- list(
       "alpha" = create_fleet(
         list(
           "lutjanus malabaricus" = Metier$new(
             critter = fauna$`lutjanus malabaricus`,
-            price = prices[1],
-            sel_form = "logistic",
-            sel_start = fauna$`lutjanus malabaricus`$length_50_mature * sels[1],
-            sel_delta = 0.01,
+            price = prices[[1]][1],
+            sel_form = sel_form[[1]][1],
+            sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
+            sel_delta =  fauna[[1]]$length_50_mature* sels[[1]]$sel_delta[1],
+            sel05_anchor = sels[[1]]$sel05_anchor[[1]] * fauna[[1]]$length_50_mature,
+            sel_at_linf = sels[[1]]$sel_at_linf[[1]],
             catchability = .1,
             p_explt = 1,
             sel_unit = "length",
@@ -68,10 +70,12 @@ create_fleets <-
           ),
           "pristipomoides filamentosus" = Metier$new(
             critter = fauna$`pristipomoides filamentosus`,
-            price = prices[2],
-            sel_form = "logistic",
-            sel_start = fauna$`pristipomoides filamentosus`$length_50_mature *  sels[2],
-            sel_delta = 0.01,
+            price = prices[[1]][2],
+            sel_form = sel_form[[1]][2],
+            sel_start = fauna[[2]]$length_50_mature * sels[[1]]$sel_start[2],
+            sel_delta =  fauna[[2]]$length_50_mature* sels[[1]]$sel_delta[2],
+            sel05_anchor = fauna[[2]]$length_50_mature* sels[[1]]$sel05_anchor[[2]],
+            sel_at_linf = sels[[1]]$sel_at_linf[[2]],
             catchability = .1,
             p_explt = 1,
             sel_unit = "length",
@@ -80,10 +84,12 @@ create_fleets <-
           ),
           "epinephelus fuscoguttatus" = Metier$new(
             critter = fauna$`epinephelus fuscoguttatus`,
-            price = prices[3],
-            sel_form = "logistic",
-            sel_start = fauna$`epinephelus fuscoguttatus`$length_50_mature * sels[3],
-            sel_delta = 0.01,
+            price = prices[[1]][3],
+            sel_form = sel_form[[1]][3],
+            sel_start = fauna[[3]]$length_50_mature * sels[[1]]$sel_start[3],
+            sel_delta =  fauna[[3]]$length_50_mature* sels[[1]]$sel_delta[3],
+            sel05_anchor = fauna[[3]]$length_50_mature* sels[[1]]$sel05_anchor[[3]],
+            sel_at_linf = sels[[1]]$sel_at_linf[[3]],
             catchability = .1,
             p_explt = 1,
             sel_unit = "length",
@@ -91,10 +97,12 @@ create_fleets <-
           ),
           "carcharhinus amblyrhynchos" = Metier$new(
             critter = fauna$`carcharhinus amblyrhynchos`,
-            price = prices[4],
-            sel_form = "logistic",
-            sel_start = fauna$`carcharhinus amblyrhynchos`$length_50_mature * sels[3],
-            sel_delta = 0.01,
+            price = prices[[1]][4],
+            sel_form = sel_form[[1]][4],
+            sel_start = fauna[[4]]$length_50_mature * sels[[1]]$sel_start[4],
+            sel_delta =  fauna[[4]]$length_50_mature* sels[[1]]$sel_delta[4],
+            sel05_anchor = fauna[[4]]$length_50_mature* sels[[1]]$sel05_anchor[[4]],
+            sel_at_linf = sels[[1]]$sel_at_linf[[4]],
             catchability = .1,
             p_explt = 1,
             sel_unit = "length",
@@ -103,13 +111,13 @@ create_fleets <-
         ),
         base_effort = prod(resolution) + effort_int,
         cost_per_unit_effort = 10,
-        cost_per_distance = 2000,
+        cost_per_distance = 200,
         effort_cost_exponent = effort_cost_exponent,
         spatial_allocation = state$spatial_allocation[1],
         resolution = resolution,
         fleet_model = state$fleet_model[1],
         mpa_response = state$mpa_response[1],
-        ports = ports[1,]
+        ports =ports[[1]][1,]
       )
     )
     } else if (difficulty == "complex"){
@@ -143,17 +151,17 @@ create_fleets <-
       } else {
         a_spatial_q <- b_spatial_q <-  c_spatial_q <- d_spatial_q <- NA
       }
-      
-      
       fleets <- list(
         "alpha" = create_fleet(
           list(
             "lutjanus malabaricus" = Metier$new(
               critter = fauna$`lutjanus malabaricus`,
-              price = prices[1],
-              sel_form = "logistic",
-              sel_start = fauna$`lutjanus malabaricus`$length_50_mature * sels[1],
-              sel_delta = 0.01,
+              price = prices[[1]][1],
+              sel_form = sel_form[[1]][1],
+              sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
+              sel_delta =  fauna[[1]]$length_50_mature* sels[[1]]$sel_delta[1],
+              sel05_anchor = fauna[[1]]$length_50_mature* sels[[1]]$sel05_anchor[[1]],
+              sel_at_linf = sels[[1]]$sel_at_linf[[1]],
               catchability = .1,
               p_explt = 1,
               sel_unit = "length",
@@ -162,10 +170,12 @@ create_fleets <-
             ),
             "pristipomoides filamentosus" = Metier$new(
               critter = fauna$`pristipomoides filamentosus`,
-              price = prices[2],
-              sel_form = "logistic",
-              sel_start = fauna$`pristipomoides filamentosus`$length_50_mature *  sels[2],
-              sel_delta = 0.01,
+              price = prices[[1]][2],
+              sel_form = sel_form[[1]][2],
+              sel_start = fauna[[2]]$length_50_mature * sels[[1]]$sel_start[2],
+              sel_delta =  fauna[[2]]$length_50_mature* sels[[1]]$sel_delta[2],
+              sel05_anchor = fauna[[2]]$length_50_mature* sels[[1]]$sel05_anchor[[2]],
+              sel_at_linf = sels[[1]]$sel_at_linf[[2]],
               catchability = .1,
               p_explt = 1,
               sel_unit = "length",
@@ -174,23 +184,27 @@ create_fleets <-
             ),
             "epinephelus fuscoguttatus" = Metier$new(
               critter = fauna$`epinephelus fuscoguttatus`,
-              price = prices[3],
-              sel_form = "logistic",
-              sel_start = fauna$`epinephelus fuscoguttatus`$length_50_mature * sels[3],
-              sel_delta = 0.01,
+              price = prices[[1]][3],
+              sel_form = sel_form[[1]][3],
+              sel_start = fauna[[3]]$length_50_mature * sels[[1]]$sel_start[3],
+              sel_delta =  fauna[[3]]$length_50_mature* sels[[1]]$sel_delta[3],
+              sel05_anchor = fauna[[3]]$length_50_mature* sels[[1]]$sel05_anchor[[3]],
+              sel_at_linf = sels[[1]]$sel_at_linf[[3]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = c_spatial_q
             ),
             "carcharhinus amblyrhynchos" = Metier$new(
               critter = fauna$`carcharhinus amblyrhynchos`,
-              price = prices[4],
-              sel_form = "logistic",
-              sel_start = fauna$`carcharhinus amblyrhynchos`$length_50_mature * sels[4],
-              sel_delta = 0.01,
+              price = prices[[1]][4],
+              sel_form = sel_form[[1]][4],
+              sel_start = fauna[[4]]$length_50_mature * sels[[1]]$sel_start[4],
+              sel_delta =  fauna[[4]]$length_50_mature* sels[[1]]$sel_delta[4],
+              sel05_anchor = fauna[[4]]$length_50_mature* sels[[1]]$sel05_anchor[[4]],
+              sel_at_linf = sels[[1]]$sel_at_linf[[4]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = d_spatial_q
             )
@@ -203,40 +217,46 @@ create_fleets <-
           resolution = resolution,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
-          ports = ports[1,]
+          ports = ports[[1]][1,]
         ),
         "beta" = create_fleet(
           list(
             "lutjanus malabaricus" = Metier$new(
               critter = fauna$`lutjanus malabaricus`,
-              price = prices[1],
-              sel_form = "logistic",
-              sel_start = fauna$`lutjanus malabaricus`$length_50_mature * sels[4],
-              sel_delta = 0.01,
+              price = prices[[2]][1],
+              sel_form = sel_form[[2]][1],
+              sel_start = fauna[[1]]$length_50_mature * sels[[2]]$sel_start[1],
+              sel_delta =  fauna[[1]]$length_50_mature* sels[[2]]$sel_delta[1],
+              sel05_anchor = fauna[[1]]$length_50_mature* sels[[2]]$sel05_anchor[[1]],
+              sel_at_linf = sels[[2]]$sel_at_linf[[1]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = a_spatial_q
               
             ),
             "pristipomoides filamentosus" = Metier$new(
               critter = fauna$`pristipomoides filamentosus`,
-              price = prices[2],
-              sel_form = "logistic",
-              sel_start = fauna$`pristipomoides filamentosus`$length_50_mature *  sels[3],
-              sel_delta = 0.01,
+              price = prices[[2]][2],
+              sel_form = sel_form[[2]][2],
+              sel_start = fauna[[2]]$length_50_mature * sels[[2]]$sel_start[2],
+              sel_delta =  fauna[[2]]$length_50_mature* sels[[2]]$sel_delta[2],
+              sel05_anchor = fauna[[2]]$length_50_mature* sels[[2]]$sel05_anchor[[2]],
+              sel_at_linf = sels[[2]]$sel_at_linf[[2]],
               catchability = .1,
-              p_explt = 4,
+              p_explt = 1,
               sel_unit = "length",
               spatial_catchability = b_spatial_q
               
             ),
             "epinephelus fuscoguttatus" = Metier$new(
               critter = fauna$`epinephelus fuscoguttatus`,
-              price = prices[3],
-              sel_form = "logistic",
-              sel_start = fauna$`epinephelus fuscoguttatus`$length_50_mature * sels[2],
-              sel_delta = 0.01,
+              price = prices[[2]][3],
+              sel_form = sel_form[[2]][3],
+              sel_start = fauna[[3]]$length_50_mature * sels[[2]]$sel_start[3],
+              sel_delta =  fauna[[3]]$length_50_mature* sels[[2]]$sel_delta[3],
+              sel05_anchor = fauna[[3]]$length_50_mature* sels[[2]]$sel05_anchor[[3]],
+              sel_at_linf = sels[[2]]$sel_at_linf[[3]],
               catchability = .1,
               p_explt = 1,
               sel_unit = "length",
@@ -244,10 +264,12 @@ create_fleets <-
             ),
             "carcharhinus amblyrhynchos" = Metier$new(
               critter = fauna$`carcharhinus amblyrhynchos`,
-              price = prices[4],
-              sel_form = "logistic",
-              sel_start = fauna$`carcharhinus amblyrhynchos`$length_50_mature * sels[1],
-              sel_delta = 0.01,
+              price = prices[[2]][4],
+              sel_form = sel_form[[2]][4],
+              sel_start = fauna[[4]]$length_50_mature * sels[[2]]$sel_start[4],
+              sel_delta =  fauna[[4]]$length_50_mature* sels[[2]]$sel_delta[4],
+              sel05_anchor = fauna[[4]]$length_50_mature* sels[[2]]$sel05_anchor[[4]],
+              sel_at_linf = sels[[2]]$sel_at_linf[[4]],
               catchability = .1,
               p_explt = 1,
               sel_unit = "length",
@@ -256,13 +278,13 @@ create_fleets <-
           ),
           base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 5,
-          cost_per_distance = 1000,
+          cost_per_distance = 100,
           effort_cost_exponent = effort_cost_exponent,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
-          ports = ports[2,]
+          ports = ports[[2]][2,]
         )
       )
       
@@ -280,22 +302,24 @@ create_fleets <-
       } else {
         a_spatial_q <- NA
       }
-      
-      if (use_ports == TRUE){
-        ports <- port_locations
-      } else {
-        ports <- NULL
-      }
-      
+      # 
+      # if (use_ports == TRUE){
+      #   ports <- port_locations
+      # } else {
+      #   ports <- NULL
+      # }
+      # 
       fleets <- list(
         "longline" = create_fleet(
           list(
             "lutjanus malabaricus" = Metier$new(
               critter = fauna$`lutjanus malabaricus`,
-              price = prices[1],
-              sel_form = "logistic",
-              sel_start = fauna$`lutjanus malabaricus`$length_50_mature * sels[1],
-              sel_delta = 0.01,
+              price = prices[[1]][1],
+              sel_form = sel_form[[1]][1],
+              sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
+              sel_delta =  fauna[[1]]$length_50_mature* sels[[1]]$sel_delta[1],
+              sel05_anchor = fauna[[1]]$length_50_mature* sels[[1]]$sel05_anchor[[1]],
+              sel_at_linf = sels[[1]]$sel_at_linf[[1]],
               catchability = .1,
               p_explt = 1,
               sel_unit = "length",
@@ -308,7 +332,7 @@ create_fleets <-
           resolution = resolution,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
-          ports = ports[1,]
+          ports = ports[[1]][1,]
         ))
   
       
@@ -401,7 +425,7 @@ create_fleets <-
           resolution = resolution,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
-          ports = ports[2,],
+          ports = ports[2,]
         ),
         "purseseine" = create_fleet(
           list(

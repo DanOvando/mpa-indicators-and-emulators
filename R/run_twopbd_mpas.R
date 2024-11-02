@@ -49,7 +49,6 @@ run_twopbd_mpas <-
       pt = 1,
       plim = .2
     )
-    
     out <-
       tibble(
         b_inside = mpa_sim$inside_b,

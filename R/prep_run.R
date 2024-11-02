@@ -58,7 +58,7 @@ prep_run <- function(run_name = "test",
   
   # set up figures ----------------------------------------------------------
   
-  theme_set(theme_minimal(base_size = figure_text_size))
+  theme_set(theme_minimal(base_size = figure_text_size, base_line_size = figure_text_size / 44))
   
   # prepare results location ---------------------------------------------------------
   
