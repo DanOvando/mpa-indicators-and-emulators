@@ -473,7 +473,7 @@ This paper involves a great deal of code that cannot realistically be
 translated in full into the text of the methods section here. The code
 needed to reproduce this paper and all results contained within can be
 examined, accessed, and run through the repository available at
-https://github.com/DanOvando/mpa-indicators-and-emulators/releases/tag/mpa_emulators_v1.0
+<https://github.com/DanOvando/mpa-indicators-and-emulators/releases/tag/mpa_emulators_v1.0>
 
 ```{r}
 #| label: fig-flow
@@ -581,7 +581,7 @@ values for the species in question found in FishLife.
 | Price per unit weight | Price per unit weight for every *métier* |
 
 Variables that define a given simulation state. See accompanying code at
-https://github.com/DanOvando/mpa-indicators-and-emulators/releases/tag/mpa_emulators_v1.0
+<https://github.com/DanOvando/mpa-indicators-and-emulators/releases/tag/mpa_emulators_v1.0>
 for details of individual distributions.
 :::
 
