@@ -7,8 +7,8 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 4,
-  run_name = "indicators_test",
+  n_states = 84,
+  run_name = "indicators_",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
@@ -353,7 +353,8 @@ state_experiments <- state_experiments |>
       length(state_experiments$fauna[[1]]),
       by = 1
     ),
-    placement_error = c(0)
+    placement_error = c(0),
+    observation_error =c(.2)
   ) %>%
     group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
     nest() %>%
@@ -442,7 +443,8 @@ state_experiments <- state_experiments |>
         experiment_results = experiment_results,
         placement_experiments = placement_experiments[c(zerofinder,p), ],
         state_experiments = state_experiments,
-        load_results = save_experiments
+        load_results = save_experiments,
+        observation_error = placement_experiments$observation_error[p]
       )
       
       

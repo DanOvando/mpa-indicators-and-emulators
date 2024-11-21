@@ -5,7 +5,8 @@ process_sims <- function(difficulty_level = "complex",
                          load_results = TRUE,
                          experiment_results = NULL,
                          placement_experiments = NULL,
-                         state_experiments = NULL) {
+                         state_experiments = NULL,
+                         observation_error = 0 ) {
   if (load_results) {
     experiment_results <-
       read_rds(file = file.path(
@@ -178,7 +179,7 @@ process_sims <- function(difficulty_level = "complex",
 
     tmp <- tmp |>
       mutate(
-        indicators = map2(treatment, prop_mpa, calculate_indicators, .progress = "calculating MPA indicators")
+        indicators = map2(treatment, prop_mpa, calculate_indicators, observation_error = observation_error, .progress = "calculating MPA indicators")
         
       )
   } else {
