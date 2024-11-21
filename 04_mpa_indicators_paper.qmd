@@ -45,7 +45,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 library(gt)
 
-prep_run(run_name = "indicators_v0.11",figure_text_size = 15) # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_test",figure_text_size = 15) # loads packages and creates and returns some global variables for the analysis
 
 project <- "indicators"
 
@@ -1529,6 +1529,8 @@ figsaver(fig)
 ```
 
 ### Discussion
+
+Potential negaitve imapcts are not unique to MPAs, a quota could also have leakage into a non-quota species 
 
 xx push back on mark costello no redustribution claim @costello2024
 
