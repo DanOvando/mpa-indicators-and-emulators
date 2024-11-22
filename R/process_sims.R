@@ -6,7 +6,8 @@ process_sims <- function(difficulty_level = "complex",
                          experiment_results = NULL,
                          placement_experiments = NULL,
                          state_experiments = NULL,
-                         observation_error = 0 ) {
+                         observation_error = 0 ,
+                         aggregate = FALSE) {
   if (load_results) {
     experiment_results <-
       read_rds(file = file.path(
@@ -73,11 +74,12 @@ process_sims <- function(difficulty_level = "complex",
     arrange(id) |>
     left_join(benchmark, by = "id")
   
-  calculate_outcomes <- function(treatment, control) {
+  calculate_outcomes <- function(treatment, control, aggregate = FALSE) {
     # calculate treatment
     
-    
     treatment_fauna <- treatment$fauna[[1]] |>
+      ungroup() |> 
+      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -98,6 +100,9 @@ process_sims <- function(difficulty_level = "complex",
     }
     
     treatment_fleets <- treatment$fleets[[1]] |>
+      ungroup() |> 
+      mutate(fleet = ifelse(aggregate, "all_fleets", fleet)) |> 
+      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
       group_by(fleet, critter, step) |>
       summarise(
         catch = sum(catch, na.rm = TRUE),
@@ -125,6 +130,8 @@ process_sims <- function(difficulty_level = "complex",
     }
     
     control_fauna <- control_fauna |> 
+      ungroup() |> 
+      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -138,8 +145,9 @@ process_sims <- function(difficulty_level = "complex",
       mutate(fleet = "nature")
     
     control_fleets <- control$fleets[[1]] |>
-      # select(-mpa) |>
-      # left_join(mpas, by = c("x", "y")) |>
+      ungroup() |> 
+      mutate(fleet = ifelse(aggregate, "all_fleets", fleet)) |> 
+      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
       group_by(fleet, critter, step) |>
       summarise(
         catch = sum(catch, na.rm = TRUE),
@@ -161,7 +169,7 @@ process_sims <- function(difficulty_level = "complex",
     outcomes <- treatment_outcomes |>
       left_join(control_outcomes, by = c("step", "critter", "fleet", "name")) |>
       mutate(percent_mpa_effect = value / control_value - 1)
-    
+
     # out <- list(base_fauna = base_fauna, base_fleet = base_fleets)
     
     return(outcomes)
@@ -172,14 +180,20 @@ process_sims <- function(difficulty_level = "complex",
     ungroup() |>
     # slice(1) |>
     mutate(
-      outcomes = map2(treatment, control, calculate_outcomes, .progress = "calculating MPA outcomes")
+      outcomes = map2(treatment, control, calculate_outcomes,aggregate = aggregate, .progress = "calculating MPA outcomes")
     )
   
   if (!drop_patches) {
-
     tmp <- tmp |>
       mutate(
-        indicators = map2(treatment, prop_mpa, calculate_indicators, observation_error = observation_error, .progress = "calculating MPA indicators")
+        indicators = map2(
+          treatment,
+          prop_mpa,
+          calculate_indicators,
+          observation_error = observation_error,
+          aggregate = aggregate,
+          .progress = "calculating MPA indicators"
+        )
         
       )
   } else {

@@ -10,7 +10,7 @@ prep_run(
   n_states = 4,
   run_name = "indicators_test",
   drop_patches = FALSE,
-  experiment_workers = 1,
+  experiment_workers = 8,
   rx = 20,
   ry = 20,
   patch_area = 5
@@ -354,14 +354,14 @@ state_experiments <- state_experiments |>
 
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "area", "avoid_fishing"),
-    prop_mpa = seq(0, 0.75, by = 0.05),
+    prop_mpa = seq(0, 0.6, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
       length(state_experiments$fauna[[1]]),
       by = 1
     ),
     placement_error = c(0),
-    observation_error =c(.2)
+    observation_error =c(0,.1)
   ) %>%
     group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
     nest() %>%
@@ -385,7 +385,7 @@ state_experiments <- state_experiments |>
   experiment_results <-
     vector(mode = "list", length = 2) # for memory-concious mode, only save reference and the current MPA size
   
-  processed_sims <-
+  processed_sims <- total_processed_sims <-
     vector(mode = "list", length = nrow(placement_experiments) - 1) # for memory-concious mode, only save reference and the current MPA size
   
   pb <- progress_bar$new(
@@ -451,9 +451,23 @@ state_experiments <- state_experiments |>
         placement_experiments = placement_experiments[c(zerofinder,p), ],
         state_experiments = state_experiments,
         load_results = save_experiments,
-        observation_error = placement_experiments$observation_error[p]
+        observation_error = placement_experiments$observation_error[p],
+        aggregate = FALSE
       )
       
+      
+      total_processed_sims[[p-1]] <- process_sims(
+        difficulty_level = difficulty,
+        results_dir = results_dir,
+        drop_patches = drop_patches,
+        project = project,
+        experiment_results = experiment_results,
+        placement_experiments = placement_experiments[c(zerofinder,p), ],
+        state_experiments = state_experiments,
+        load_results = save_experiments,
+        observation_error = placement_experiments$observation_error[p],
+        aggregate = TRUE
+      )
       
     } else {
       # store baseline case with no MPA
@@ -495,10 +509,9 @@ state_experiments <- state_experiments |>
 
  # combine each component of the placement experiemnts into one dataframe per metric, in some way that may not be pretty but works
    
- flat_processed_sims <- vector(mode = "list", length = length(components)) |> 
+ flat_processed_sims <- flat_total_processed_sims <-  vector(mode = "list", length = length(components)) |> 
    set_names(components)
- 
- 
+
 
  for (i in components){
    
@@ -506,6 +519,11 @@ state_experiments <- state_experiments |>
      list_rbind()
      
    flat_processed_sims[[i]] <- tmp
+   
+   tmp <-  map(total_processed_sims,i) |> 
+     list_rbind()
+   
+   flat_total_processed_sims[[i]] <- tmp
    
  }
  
@@ -515,9 +533,15 @@ state_experiments <- state_experiments |>
  
  flat_processed_sims$difficulty <- difficulty
  
+ flat_total_processed_sims$difficulty <- difficulty
+ 
   rm(processed_sims)
-
+  
+  rm(total_processed_sims)
+  
   write_rds(flat_processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
+  
+  write_rds(flat_total_processed_sims, file = file.path(results_dir, glue("{difficulty}_total_processed_sims.rds")))
   
   tmp <- flat_processed_sims$mpa_outcomes |>
     filter(step == max(step)) |> 

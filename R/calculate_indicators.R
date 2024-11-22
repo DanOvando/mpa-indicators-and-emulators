@@ -1,12 +1,15 @@
-calculate_indicators <- function(x, prop_mpa, observation_error = 0) {
+calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate = FALSE) {
+  
   fauna <-  x$fauna[[1]] |>
+    ungroup() |> 
+    mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
     group_by(step, critter, patch, x, y, patch_name) |>
     summarise(
       biomass = sum(b),
       mean_length = weighted.mean(mean_length, w = n),
       mpa = unique(mpa),
       distance_to_mpa_edge = unique(distance_to_mpa_edge),
-      ssb0_p =  unique(ssb0_p)
+      ssb0_p =  ifelse(aggregate,sum(unique(ssb0_p)),unique(ssb0_p))
     ) |>
     ungroup() |>
     mutate(
@@ -27,6 +30,8 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0) {
   fleets <-  x$fleets[[1]] |>
     rename(tmpcatch = catch) |>
     filter(!is.na(tmpcatch)) |>
+    mutate(fleet = ifelse(aggregate, "all_fleets", fleet)) |> 
+    mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
     group_by(step, critter, patch, x, y, patch_name) |>
     summarise(
       catch = sum(tmpcatch),
@@ -34,7 +39,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0) {
       effort = sum(effort),
       mpa = unique(mpa),
       distance_to_mpa_edge = unique(distance_to_mpa_edge),
-      ssb0_p =  unique(ssb0_p)
+      ssb0_p =  ifelse(aggregate,sum(unique(ssb0_p)),unique(ssb0_p))
     ) |>
     mutate(cpue = catch / effort) |>
     ungroup() |>
@@ -112,6 +117,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0) {
   
   if (prop_mpa > 0 &
       prop_mpa < 1 & enough_distance & canary_alive) {
+    
     survey_indicators <- fauna |>
       mutate(weight = abs(distance_to_mpa_edge)) |>
       group_by(critter, step) |>
