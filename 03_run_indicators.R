@@ -7,10 +7,10 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 84,
-  run_name = "indicators_",
+  n_states = 4,
+  run_name = "indicators_test",
   drop_patches = FALSE,
-  experiment_workers = 8,
+  experiment_workers = 1,
   rx = 20,
   ry = 20,
   patch_area = 5
@@ -53,6 +53,13 @@ difficulty_species <- list(
           "sphyrna zygaena",
           "carcharhinus longimanus")
 )
+
+
+critter_templates <- map(unique(list_c(difficulty_species)),
+                         ~ marlin::create_critter(scientific_name = .x, seasons = seasons)) |>
+  set_names(unique(list_c(difficulty_species)))
+
+
 
 # if ("epo" %in% difficulties){
 #   
@@ -145,7 +152,6 @@ for (difficulty in difficulties) {
   
   message("finished habitats")
   
-  
   message("creating critters")
   state_experiments <- state_experiments %>%
     rename(scientific_name = critter) |>
@@ -169,6 +175,7 @@ for (difficulty in difficulties) {
           sigma_rec = sigma_rec
         ),
         create_experiment_critters,
+        critter_templates = critter_templates,
         resolution = resolution,
         seasons = seasons,
         .progress = TRUE,

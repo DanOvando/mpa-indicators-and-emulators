@@ -165,7 +165,8 @@ for (difficulty in difficulties) {
     mutate(
       fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
       sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
-      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
+      sel_form
+      = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
       prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
       use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
     ) |> 

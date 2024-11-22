@@ -17,7 +17,8 @@ create_experiment_critters <-
            density_dependence,
            kiss = FALSE,
            sigma_rec = 0,
-           ac_rec = 0) {
+           ac_rec = 0,
+           critter_templates = NULL) {
     
     hab <- habitat %>%
       pivot_wider(names_from = y, values_from = habitat) %>%
@@ -84,25 +85,65 @@ create_experiment_critters <-
       recruit_habitat <- list()
     }
     
-    critter <- marlin::create_critter(
-      scientific_name = sciname,
-      habitat = hab,
-      recruit_habitat = recruit_habitat,
-      adult_diffusion = adult_diffusion,
-      recruit_diffusion = recruit_diffusion,
-      density_dependence = density_dependence,
-      fec_form = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),"pups","weight"),
-      pups = 6,
-      seasons = seasons,
-      fec_expo = hyper,
-      steepness =  steepness,
-      ssb0 = ssb0,
-      b0 = b0, 
-      spawning_seasons = spawning_seasons,
-      resolution = resolution,
-      sigma_rec = sigma_rec,
-      ac_rec = ac_rec
-    )
+    if (is.null(critter_templates)){
+      critter <- marlin::create_critter(
+        scientific_name = sciname,
+        habitat = hab,
+        recruit_habitat = recruit_habitat,
+        adult_diffusion = adult_diffusion,
+        recruit_diffusion = recruit_diffusion,
+        density_dependence = density_dependence,
+        fec_form = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),"pups","weight"),
+        pups = 6,
+        seasons = seasons,
+        fec_expo = hyper,
+        steepness =  steepness,
+        ssb0 = ssb0,
+        b0 = b0, 
+        spawning_seasons = spawning_seasons,
+        resolution = resolution,
+        sigma_rec = sigma_rec,
+        ac_rec = ac_rec
+      )
+    } else {
+      
+      critter_template <- critter_templates[[sciname]]
+      
+      critter <- marlin::create_critter(
+        query_fishlife = FALSE,
+        scientific_name = sciname,
+        m_at_age = critter_template$m_at_age,
+        linf = critter_template$linf,
+        vbk = critter_template$vbk,
+        t0 = critter_template$t0,
+        min_age = critter_template$min_age,
+        max_age = critter_template$max_age,
+        age_mature = critter_template$age_mature,
+        weight_a = critter_template$weight_a,
+        weight_b = critter_template$weight_b,
+        habitat = hab,
+        recruit_habitat = recruit_habitat,
+        adult_diffusion = adult_diffusion,
+        recruit_diffusion = recruit_diffusion,
+        density_dependence = density_dependence,
+        fec_form = ifelse(str_detect(
+          sciname, ("carcharhinus|sphyrna|prionace")
+        ), "pups", "weight"),
+        pups = 6,
+        seasons = seasons,
+        fec_expo = hyper,
+        steepness =  steepness,
+        ssb0 = ssb0,
+        b0 = b0,
+        spawning_seasons = spawning_seasons,
+        resolution = resolution,
+        sigma_rec = sigma_rec,
+        ac_rec = ac_rec
+      )
+      
+    }
+    
+
     
     critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.8
     
