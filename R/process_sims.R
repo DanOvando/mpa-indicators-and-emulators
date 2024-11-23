@@ -76,10 +76,9 @@ process_sims <- function(difficulty_level = "complex",
   
   calculate_outcomes <- function(treatment, control, aggregate = FALSE) {
     # calculate treatment
-    
     treatment_fauna <- treatment$fauna[[1]] |>
       ungroup() |> 
-      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
+      mutate(critter = if_else(rep(aggregate,n()),"all_critters",critter)) |> 
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -101,8 +100,8 @@ process_sims <- function(difficulty_level = "complex",
     
     treatment_fleets <- treatment$fleets[[1]] |>
       ungroup() |> 
-      mutate(fleet = ifelse(aggregate, "all_fleets", fleet)) |> 
-      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
+      mutate(fleet = if_else(rep(aggregate,n()), "all_fleets", fleet)) |> 
+      mutate(critter = if_else(rep(aggregate,n()), "all_critters", critter)) |> 
       group_by(fleet, critter, step) |>
       summarise(
         catch = sum(catch, na.rm = TRUE),
@@ -131,7 +130,7 @@ process_sims <- function(difficulty_level = "complex",
     
     control_fauna <- control_fauna |> 
       ungroup() |> 
-      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
+      mutate(critter = if_else(rep(aggregate,n()), "all_critters", critter)) |> 
       group_by(critter, step) |>
       summarise(
         biomass = sum(b),
@@ -146,8 +145,8 @@ process_sims <- function(difficulty_level = "complex",
     
     control_fleets <- control$fleets[[1]] |>
       ungroup() |> 
-      mutate(fleet = ifelse(aggregate, "all_fleets", fleet)) |> 
-      mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
+      mutate(fleet = if_else(rep(aggregate,n()), "all_fleets", fleet)) |> 
+      mutate(critter = if_else(rep(aggregate,n()), "all_critters", critter)) |> 
       group_by(fleet, critter, step) |>
       summarise(
         catch = sum(catch, na.rm = TRUE),

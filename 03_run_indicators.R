@@ -454,8 +454,7 @@ state_experiments <- state_experiments |>
         observation_error = placement_experiments$observation_error[p],
         aggregate = FALSE
       )
-      
-      
+
       total_processed_sims[[p-1]] <- process_sims(
         difficulty_level = difficulty,
         results_dir = results_dir,

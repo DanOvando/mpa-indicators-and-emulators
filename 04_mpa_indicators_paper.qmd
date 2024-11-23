@@ -45,7 +45,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 library(gt)
 
-prep_run(run_name = "indicators_test",figure_text_size = 15) # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_test",figure_text_size = 8) # loads packages and creates and returns some global variables for the analysis
 
 project <- "indicators"
 
@@ -108,7 +108,6 @@ state_depletions <- simple |>
   
 valid_state_depletions <- state_depletions |>
   filter(depletion >= min_depletion)
-
 
 simple <- simple_processed_sims$mpa_outcomes |> 
   mutate(difficulty = "simple")
@@ -325,35 +324,74 @@ total_comparison <- total_outcomes |>
 
 This paper explores two general questions
 
-1.  Are MPA outcomes variable enough to justify efforts to measure their performance?
+1.  Are MPA outcomes variable enough to justify efforts to measure their
+    performance?
 
 2.  If so, which indicators are reliable measures of performance?
 
-MPAs are increasingly being looked to to achieve a range of objectives around the world [@grorud-colvert2021], 30x30, etc.
+MPAs are increasingly being looked to to achieve a range of objectives
+around the world [@grorud-colvert2021], 30x30, etc.
 
-A common thread across these objectives is that they are often hard to measure directly, either due to logistics or problems of causal inference. By logistics, mean the challenge of collecting representative and high quality data on lots of species and fleets over space and time. By causal inference, even if you do all that, if catch goes up or down without a counterfactual hard to know if caused by MPA or something else.
+A common thread across these objectives is that they are often hard to
+measure directly, either due to logistics or problems of causal
+inference. By logistics, mean the challenge of collecting representative
+and high quality data on lots of species and fleets over space and time.
+By causal inference, even if you do all that, if catch goes up or down
+without a counterfactual hard to know if caused by MPA or something
+else.
 
-As a result, empirical evidence for MPAs often depends on evaluating simplier indicators [@harford2021] that are interpreted as proxies for broader harder to measure objectives. For example "response ratios" measure attributes such as biomass densities inside MPAs relative to selected "reference" sites outside MPAs, which in turn are then interpreted as being indicative of MPA performance [@lester2009; @caselle2022].
+As a result, empirical evidence for MPAs often depends on evaluating
+simplier indicators [@harford2021] that are interpreted as proxies for
+broader harder to measure objectives. For example "response ratios"
+measure attributes such as biomass densities inside MPAs relative to
+selected "reference" sites outside MPAs, which in turn are then
+interpreted as being indicative of MPA performance [@lester2009;
+@caselle2022].
 
-There is a large body of "indicator" based empirical evidence from MPAs, which can create an impression of clear empirical conclusions around MPAs. For example, a 2018 NPR piece stated that
+There is a large body of "indicator" based empirical evidence from MPAs,
+which can create an impression of clear empirical conclusions around
+MPAs. For example, a 2018 NPR piece stated that
 
-"The jury is in on marine reserves: They work. Research has repeatedly shown that fish numbers quickly climb following well-enforced fishing bans, creating tangible benefits for fishers who work the surrounding waters. In fact, many experts believe fishing will only be sustainable if marine reserves are expanded significantly." [@bland2018]
+"The jury is in on marine reserves: They work. Research has repeatedly
+shown that fish numbers quickly climb following well-enforced fishing
+bans, creating tangible benefits for fishers who work the surrounding
+waters. In fact, many experts believe fishing will only be sustainable
+if marine reserves are expanded significantly." [@bland2018]
 
-However, interpreting empirical indicators as evidence for causal effects on broader processes can be challenging in social-ecological systems [@ferraro2018]. Even a perfectly measured indicator may not actually map onto the outcome in question. Violations of key assumptions in common empirical strategies (SUTVA, parallel trends, etc) can bias estimates.
+However, interpreting empirical indicators as evidence for causal
+effects on broader processes can be challenging in social-ecological
+systems [@ferraro2018]. Even a perfectly measured indicator may not
+actually map onto the outcome in question. Violations of key assumptions
+in common empirical strategies (SUTVA, parallel trends, etc) can bias
+estimates.
 
-As we expand MPA usage around the world, important that we are able to accurately measure performance so that we can track progress towards outcomes objectives, not area covered objectives, and adapt and learn best practices in MPA design to achieve given outcomes.
+As we expand MPA usage around the world, important that we are able to
+accurately measure performance so that we can track progress towards
+outcomes objectives, not area covered objectives, and adapt and learn
+best practices in MPA design to achieve given outcomes.
 
 To that end, this paper asks two questions:
 
-1.  Are MPA outcomes variable enough to justify efforts to measure their performance?
+1.  Are MPA outcomes variable enough to justify efforts to measure their
+    performance?
 
 2.  If so, which indicators are reliable measures of performance?
 
-The first is important since if the effects of MPAs are sufficiently consistent and predictable, there isn't really a need for careful monitoring; if closing 30% of an area produces the same general magnitude of conservation and food security benefits 99% of the time, probably not worth spending time trying to track the 1% of surprises.
+The first is important since if the effects of MPAs are sufficiently
+consistent and predictable, there isn't really a need for careful
+monitoring; if closing 30% of an area produces the same general
+magnitude of conservation and food security benefits 99% of the time,
+probably not worth spending time trying to track the 1% of surprises.
 
-But, if MPA effects are variable, then we want to be able to measure performance to inform management (e.g. is population increasing or decreasing because of MPA), and offset trade offs (e.g. losses in food or profit related to fishing).
+But, if MPA effects are variable, then we want to be able to measure
+performance to inform management (e.g. is population increasing or
+decreasing because of MPA), and offset trade offs (e.g. losses in food
+or profit related to fishing).
 
-So far, our results show that 1. MPA outcomes can be highly variable, particulary for food security, and 2. empirical indicators commonly used to track performance of MPAs are actually poor predictors of real outcomes.
+So far, our results show that 1. MPA outcomes can be highly variable,
+particulary for food security, and 2. empirical indicators commonly used
+to track performance of MPAs are actually poor predictors of real
+outcomes.
 
 We suggest some solutions.
 
@@ -361,19 +399,36 @@ We suggest some solutions.
 
 ### Simulation Modeling
 
-We use the `marlin` operating model described in @ovando2023a to simulate lots of states of nature, ranging in complexity from single species and single fleet to multi species and multi fleet. Simulations vary in lots of ecological and economic traits.
+We use the `marlin` operating model described in @ovando2023a to
+simulate lots of states of nature, ranging in complexity from single
+species and single fleet to multi species and multi fleet. Simulations
+vary in lots of ecological and economic traits.
 
-We apply a range of MPAs to each simulated state of nature, with MPA defined by size (percent of seascape in no-take MPA) and placement strategy (how to decide where that percent of seascape is placed).
+We apply a range of MPAs to each simulated state of nature, with MPA
+defined by size (percent of seascape in no-take MPA) and placement
+strategy (how to decide where that percent of seascape is placed).
 
-We then calculate the effect of the MPA on total biomass of each species, total biomass inside the MPAs of each species, and total catch of each species, quantified as the values of each of these metrics in the simulated state without the MPA, relative to the value of the metric in the simulated state with the MPAs, holding things like recruitment deviates constant.
+We then calculate the effect of the MPA on total biomass of each
+species, total biomass inside the MPAs of each species, and total catch
+of each species, quantified as the values of each of these metrics in
+the simulated state without the MPA, relative to the value of the metric
+in the simulated state with the MPAs, holding things like recruitment
+deviates constant.
 
 ### Empirical Indicators
 
-We calculated a range of empirical indicators from the simulated MPA scenarios. All indicators were based on simulated data without any observation error, in order to isolate the fundamental performance of the indicator from questions around data quality and bias.
+We calculated a range of empirical indicators from the simulated MPA
+scenarios. All indicators were based on simulated data without any
+observation error, in order to isolate the fundamental performance of
+the indicator from questions around data quality and bias.
 
 #### Response Ratios
 
-Response ratios are calculated as the difference in mean log biomass density inside the MPA relative to outside, weighted by distance of sampled patches from the MPA border, such that the comparison is weighted towards locations furthest inside the MPA relative to sites furthest outside the MPA.
+Response ratios are calculated as the difference in mean log biomass
+density inside the MPA relative to outside, weighted by distance of
+sampled patches from the MPA border, such that the comparison is
+weighted towards locations furthest inside the MPA relative to sites
+furthest outside the MPA.
 
 $$
 log(B) \sim N(MPA,\sigma_{obs})
@@ -389,7 +444,9 @@ $$
 
 #### Mean Length
 
-We calculate a length-based response ratio as well, which operates the same as the biomass response ratio but measure mean length inside versus outside rather than biomass.
+We calculate a length-based response ratio as well, which operates the
+same as the biomass response ratio but measure mean length inside versus
+outside rather than biomass.
 
 $$
 log(L) \sim N(MPA,\sigma)
@@ -399,13 +456,39 @@ $$
 
 #### Gradients
 
-Response ratios require data from both outside and inside of an MPA. If an MPA is truly no-take, as simulated here, this presents a problem, as the only way to get data from inside would be a fishery-independent monitoring program, which many communities may not have funds to support, particularly at large spatial scales.
+Response ratios require data from both outside and inside of an MPA. If
+an MPA is truly no-take, as simulated here, this presents a problem, as
+the only way to get data from inside would be a fishery-independent
+monitoring program, which many communities may not have funds to
+support, particularly at large spatial scales.
 
-Gradients are an alternative form of indicator that gets around this challenge by attempting to measure some form of "spillover" from MPAs and attributing that spillover as an index of MPA performance. For example, @halpern2009 examined how biomass densities (right?XX) changed with distance from MPA borders across a range of case studies. @medoff2022 measured CPUE of tropical tunas close to and far from the border of a large MPA. "Fishing-the-line" [@kellner2007], or increased fishing effort in the water around an MPA relative to far, has also been measured XX citations here, actually hard to find in lit? XX
+Gradients are an alternative form of indicator that gets around this
+challenge by attempting to measure some form of "spillover" from MPAs
+and attributing that spillover as an index of MPA performance. For
+example, @halpern2009 examined how biomass densities (right?XX) changed
+with distance from MPA borders across a range of case studies.
+@medoff2022 measured CPUE of tropical tunas close to and far from the
+border of a large MPA. "Fishing-the-line" [@kellner2007], or increased
+fishing effort in the water around an MPA relative to far, has also been
+measured XX citations here, actually hard to find in lit? XX
 
-While appealing, gradients do present some empirical challenges. For example the "slope" coefficient of a model measuring CPUE as a function of distance will depend on the units of distance in the model, so outside of "is significantly different than zero", hard to know what is a big effect vs. a small effect. @halpern2009 solved this by assuming that biomass would go to zero in the absence of an MPA, but this is rarely (ever) the case.
+While appealing, gradients do present some empirical challenges. For
+example the "slope" coefficient of a model measuring CPUE as a function
+of distance will depend on the units of distance in the model, so
+outside of "is significantly different than zero", hard to know what is
+a big effect vs. a small effect. @halpern2009 solved this by assuming
+that biomass would go to zero in the absence of an MPA, but this is
+rarely (ever) the case.
 
-While lots of functional forms for measuring spillover gradients have been proposed, they all are based on the basic premise that there should be a difference in the metric in question near the MPA relative to far from the MPA. We use a generalized form of a gradient model then that breaks patches outside of the MPA into two categories of "near" (top 20th percentile of linear distance to an MPA) and "far" (bottom 20th percentile of patches by linear distance to an MPA), and then measure the difference in the outcome in question in the near relative to the far
+While lots of functional forms for measuring spillover gradients have
+been proposed, they all are based on the basic premise that there should
+be a difference in the metric in question near the MPA relative to far
+from the MPA. We use a generalized form of a gradient model then that
+breaks patches outside of the MPA into two categories of "near" (top
+20th percentile of linear distance to an MPA) and "far" (bottom 20th
+percentile of patches by linear distance to an MPA), and then measure
+the difference in the outcome in question in the near relative to the
+far
 
 $$
 log(outcome) \sim N(NEAR,\sigma)
@@ -417,17 +500,36 @@ $$
 
 @medoff2022
 
-"The expectation that spillover from marine reserves will produce abundance gradients with distance from the reserve, with a shape that depends on species mobility and catch rates, was first described over a decade ago (Rakitin & Kramer 1996) and later refined and modelled (Kaunda-Arara & Rose 2004; Goni et al. 2006)." [@halpern2009]
+"The expectation that spillover from marine reserves will produce
+abundance gradients with distance from the reserve, with a shape that
+depends on species mobility and catch rates, was first described over a
+decade ago (Rakitin & Kramer 1996) and later refined and modelled
+(Kaunda-Arara & Rose 2004; Goni et al. 2006)." [@halpern2009]
 
-@halpern2009 defined two metrics for estimating spillover distance; the distance at which biomass density was 5% of the maximum observed biomass density inside or outside of the MPA, and the distance at which biomass density was 5% of the range, where range is calculated as the average of the two points furthest from the reserve border and the two points furthest inside the reserve, after fitting a smoother to the density as a function of distance relationship
+@halpern2009 defined two metrics for estimating spillover distance; the
+distance at which biomass density was 5% of the maximum observed biomass
+density inside or outside of the MPA, and the distance at which biomass
+density was 5% of the range, where range is calculated as the average of
+the two points furthest from the reserve border and the two points
+furthest inside the reserve, after fitting a smoother to the density as
+a function of distance relationship
 
-However, this method makes the assumption that biomass density goes to 0 at some distance from the reserve.
+However, this method makes the assumption that biomass density goes to 0
+at some distance from the reserve.
 
 ### BACI and BAG
 
-Indicator programs will often only have access to data post-MPA implementation, interpreting inside vs. outside or near vs. far as their control and impact groups, but lacking the before and after. This is a well known problem because without before and after data it is harder to control for pre-treatment differences in values, or to account for exogenous changes in the outcome in question (e.g. environmental shocks).
+Indicator programs will often only have access to data post-MPA
+implementation, interpreting inside vs. outside or near vs. far as their
+control and impact groups, but lacking the before and after. This is a
+well known problem because without before and after data it is harder to
+control for pre-treatment differences in values, or to account for
+exogenous changes in the outcome in question (e.g. environmental
+shocks).
 
-BACI and BAG two common solutions to this, so we include those as well, of the general form, where $after \times MPA$ is assumed to be the effect of the MPA.
+BACI and BAG two common solutions to this, so we include those as well,
+of the general form, where $after \times MPA$ is assumed to be the
+effect of the MPA.
 
 $$
 log(outcome) \sim N(after + MPA + after \times MPA, \sigma)
@@ -435,7 +537,13 @@ $$
 
 ### A note on Significance
 
-Empirical indicators are often evaluated to some degree based on their statistical signficance (e.g. p \< 0.05). Notwithstanding broader questions as to the usefulness of frequentist statistical significance as a concept, we do not report significance values here as this is a simulation paper, and so statistical significance would have no real meaning since the sample size available to the test are arbitrarily chosen. See @white2014.
+Empirical indicators are often evaluated to some degree based on their
+statistical signficance (e.g. p \< 0.05). Notwithstanding broader
+questions as to the usefulness of frequentist statistical significance
+as a concept, we do not report significance values here as this is a
+simulation paper, and so statistical significance would have no real
+meaning since the sample size available to the test are arbitrarily
+chosen. See @white2014.
 
 ## Results
 
@@ -863,7 +971,8 @@ figsaver(fig)
 
 ```
 
-Example below shows how the MPA experiment works. Percent difference between the two lines is the MPA effect.
+Example below shows how the MPA experiment works. Percent difference
+between the two lines is the MPA effect.
 
 ```{r}
 #| label: fig-cs-2
@@ -962,14 +1071,15 @@ figsaver(fig)
 
 ```
 
-Another case study figure. The above hold MPA constant, this shows change as a function of MPA size. Will decide which is more helpful.
+Another case study figure. The above hold MPA constant, this shows
+change as a function of MPA size. Will decide which is more helpful.
 
 ```{r}
 #|label: fig-mpa-cs
 #| fig-cap: "Example trajectories of bioimass / unfished biomass and catch by species and fleet as a function of MPA size and placement strategy."
 
 
-i <- as.integer(sample(unique(complex_processed_sims$mpa_outcomes$state_id),1))
+i <- as.integer(sample(unique(simple_processed_sims$mpa_outcomes$state_id),1))
 
 reality <- complex_processed_sims$mpa_outcomes |> 
   mutate(state_id = as.integer(state_id)) |> 
@@ -1019,10 +1129,12 @@ fig
 
 ### How Variable are MPA Effects?
 
-This section of results explore how variable the simulated effects of MPAs are.
+This section of results explore how variable the simulated effects of
+MPAs are.
 
-Key results are that positive biomass more possible than negative but both possible, negative and positive catch effects both possible, and magnitude of effects in all directions increases with complexity
-
+Key results are that positive biomass more possible than negative but
+both possible, negative and positive catch effects both possible, and
+magnitude of effects in all directions increases with complexity
 
 ```{r}
 
@@ -1095,7 +1207,6 @@ mpa_outcomes |>
 
 ```
 
-
 ```{r}
 
 outcome_labeller <- c(
@@ -1132,7 +1243,6 @@ total_mpa_outcomes |>
         panel.spacing.x = unit(2, "lines"))
 
 ```
-
 
 ```{r}
 #| label: fig-outcomes
@@ -1196,7 +1306,6 @@ total_mpa_outcomes |>
   #ggplotly(thirty_protected_plot)
 ```
 
-
 ```{r}
 #| label: fig-total-outcomes
 #| fig-cap: "Distribution of MPA effects on total biomass (x-axis) and total catch (y-axis) as a function of simulation complexity (columns) and MPA size (rows). Color indicates simulated depletion (biomass relative to unfished biomass) in the absence of the MPA."
@@ -1258,7 +1367,6 @@ total_mpa_outcomes |>
 
   #ggplotly(thirty_protected_plot)
 ```
-
 
 ```{r}
 #| label: fig-biomass-outcomes
@@ -1324,7 +1432,10 @@ total_mpa_outcomes |>
   #ggplotly(thirty_protected_plot)
 ```
 
-Can also examine how frequency of simulated quadrant outcomes changes as a function of MPA size, being clear throughout that cannot assign probability of any one of these states of nature so can't say this means that this distribution is representative of the real world per say.
+Can also examine how frequency of simulated quadrant outcomes changes as
+a function of MPA size, being clear throughout that cannot assign
+probability of any one of these states of nature so can't say this means
+that this distribution is representative of the real world per say.
 
 ```{r}
 #| label: fig-quadrant-freq
@@ -1354,7 +1465,11 @@ figsaver(fig)
 
 #### Drivers of Outcomes
 
-We ran a random forest predicting percent MPA effect and estimated the variable importance score of the simulated attributes. This allows us to examine which simulation attributes seem to be the most important in determining the percent MPA effect, being clear that importance does not equal effect size.
+We ran a random forest predicting percent MPA effect and estimated the
+variable importance score of the simulated attributes. This allows us to
+examine which simulation attributes seem to be the most important in
+determining the percent MPA effect, being clear that importance does not
+equal effect size.
 
 ```{r}
 drivers_and_outs <- inds_and_outs |> 
@@ -1490,8 +1605,6 @@ best_performers_noncausal <- comparison |>
 
 ```
 
-
-
 ```{r}
 #|label: total-ind-performance
 #|
@@ -1552,7 +1665,9 @@ best_total_performers_noncausal <- total_comparison |>
 
 ```
 
-We mapped each indicator value onto each MPA outcome, and then fit a linear model to them and calculated which indicators were the "best performer", as measured by RMSE, in being able to predict the outcome.
+We mapped each indicator value onto each MPA outcome, and then fit a
+linear model to them and calculated which indicators were the "best
+performer", as measured by RMSE, in being able to predict the outcome.
 
 Plotting the best performing indicator (x-axis) against outcome (y-axis)
 
@@ -1651,7 +1766,6 @@ figsaver(fig)
 
 ```
 
-
 ```{r}
 #| label: fig-total-perfomance-baci
 #| fig-cap: Indicator value (x-axis) and outcome value (y-axis) for the best performing indicator for the outcome in question (row label) broken out by simulation complexity (rows).
@@ -1696,7 +1810,6 @@ fig <- best_total_performers |>
 figsaver(fig)
 
 ```
-
 
 ```{r}
 message("add in and color be depletion level")
@@ -1773,7 +1886,6 @@ ca_rr_ind_plot <- sigh |>
 figsaver(ca_rr_ind_plot)
 ```
 
-
 Include a table of the performance of all the indicators.
 
 ```{r}
@@ -1796,14 +1908,24 @@ indicator_performance |>
 
 ```
 
-We lastly tested the ability of a multi-indicator ensemble to predict the quadrant. Trained random forest to predict MPA outcome quadrant as a function of all indicators. Trained on 50% of simulated states of nature, tested on the remaining 50%
+We lastly tested the ability of a multi-indicator ensemble to predict
+the quadrant. Trained random forest to predict MPA outcome quadrant as a
+function of all indicators. Trained on 50% of simulated states of
+nature, tested on the remaining 50%
 
 ```{r}
 #| label: fig-quadrant-prediction 
 #| fig-cap: Confusion matrix of indicaotr-based ensemble model of quadrant outcomes of MPA.
   
+
+state_fishing <- inds_and_outs |> 
+  select(state_id, difficulty, critter, f_v_m) |> 
+  unique()
+
 predictors <- quadrant_outcomes |> 
-  select(quadrant, ends_with("raw"), state_id) |> 
+  left_join(state_fishing,by = join_by(state_id, critter, difficulty)) |> 
+  left_join(state_depletions,by = join_by(state_id, critter, difficulty)) |> 
+  select(quadrant, ends_with("raw"), state_id, f_v_m, depletion) |> 
   na.omit() |> 
   mutate(quadrant = as.factor(quadrant))
 
@@ -1823,6 +1945,8 @@ testing_split <- testing(quadrant_split)
 #   set_engine("ranger") %>%
 #   set_mode("classification")
 
+
+  
 model_spec <-
   rand_forest(mtry = tune(),
               min_n = tune(),
@@ -1831,13 +1955,44 @@ model_spec <-
   set_mode("classification")
 
 model_recipe <- recipe(quadrant ~ ., data = training_split) |> 
-  step_rm(state_id) |> 
-  step_smote(over_ratio = 0.5)
+  step_rm(state_id,f_v_m, depletion) |> 
+  step_smote(quadrant,over_ratio = 0.5) 
+
+# |> 
+#   prep()
+# 
+# d = bake(a, new_data = NULL) |> 
+#   count(quadrant, name = "training")
+
+
+model_recipe_f <- recipe(quadrant ~ ., data = training_split) |> 
+  step_rm(state_id, depletion) |> 
+  step_smote(quadrant,over_ratio = 0.5) 
+
+
+model_recipe_dep <- recipe(quadrant ~ ., data = training_split) |> 
+  step_rm(state_id, f_v_m) |> 
+  step_smote(quadrant,over_ratio = 0.5)
+
+model_f_only <- recipe(quadrant ~ ., data = training_split) |> 
+  step_select(quadrant, f_v_m) |> 
+  step_smote(quadrant,over_ratio = 0.5)
+
+
 
 model_workflow <- 
   workflow() %>% 
   add_model(model_spec) %>% 
   add_recipe(model_recipe)
+
+model_workflow_f <- model_workflow |> 
+  update_recipe(model_recipe_f)
+
+model_workflow_dep <- model_workflow |> 
+  update_recipe(model_recipe_dep)
+
+model_workflow_fonly <- model_workflow |> 
+  update_recipe(model_f_only)
 
 if (tune_grids | !file.exists(file.path(results_dir,"tuned_quant_grid.rds"))){
   future::plan(future::multisession, workers = 8)
@@ -1860,8 +2015,6 @@ write_rds(tuned_quant_grid, file.path(results_dir,"tuned_quant_grid.rds"))
   
 }
 
-best_params <- tune::select_best(tuned_quant_grid, metric = "accuracy")
-
 model_spec <-
   rand_forest(mtry = tune(),
               min_n = tune(),
@@ -1869,19 +2022,34 @@ model_spec <-
   set_engine("ranger", importance = "permutation") %>%
   set_mode("classification")
 
-model_recipe <- recipe(quadrant ~ ., data = training_split) |> 
-  step_rm(state_id) |> 
-  step_smote(over_ratio = 0.5)
 
 model_workflow <- 
   workflow() %>% 
   add_model(model_spec) %>% 
   add_recipe(model_recipe)
 
+
+best_params <- tune::select_best(tuned_quant_grid, metric = "accuracy")
+
 tuned_model_workflow <- model_workflow |> 
   finalize_workflow(best_params)
 
+tuned_model_workflow_f <- model_workflow_f |> 
+  finalize_workflow(best_params)
+
+tuned_model_workflow_dep <- model_workflow_dep |> 
+  finalize_workflow(best_params)
+
+tuned_model_workflow_fonly <- model_workflow_fonly |> 
+  finalize_workflow(best_params)
+
 tuned_fit <- parsnip::fit(tuned_model_workflow, training_split)
+
+tuned_fit_f <- parsnip::fit(tuned_model_workflow_f, training_split)
+
+tuned_fit_dep <- parsnip::fit(tuned_model_workflow_dep, training_split)
+
+tuned_fit_fonly <- parsnip::fit(tuned_model_workflow_fonly, training_split)
 
 quadrant_vip_plot <- tuned_fit %>% 
   extract_fit_parsnip() %>% 
@@ -1961,53 +2129,200 @@ figsaver(fig)
 
 ### Discussion
 
-Potential negaitve imapcts are not unique to MPAs, a quota could also have leakage into a non-quota species 
+1.  MPAs are expanding
+
+2.  Despite this, lots of questions around what exactly we can expect
+    from no-take MPAs
+
+3.  Let's not overthink it: theory says that well-enforced no-take MPAs
+    increase biomass inside their boders, often by a lot, though scale
+    depending mostly on movement and fishing pressure
+
+4.  MPAs also generally have positive effects on total biomass, but not
+    always
+
+5.  Effects on fished areas are more mixed, generally positive but often
+    a tradeoff between more fish inside less fish outside, with net
+    generally being positive
+
+6.  Catch is the most variable, with both positive and negative effects
+    possible, even controlling for fishing pressure.
+
+7.  These effects happen whether we measure them or not.
+
+8.  But, effects are variable enough that measurement is useful (can't
+    take effects for granted), for a few purposes
+
+9.  Given that negative impacts (catch, fished area, total biomass) are
+    possible, if we weren't planning on them clearly want to measure
+    outcomes to see if they happen and correct them if possible
+
+10. Even in the case of positive benefits, helpful to know "how
+    positive", for example market-based programs, or to consider
+    opportunity cost, or to adapt future management (how big does an MPA
+    have to be to achieve X amount of conservation)
+
+11. Going to back to "let's not overthink it"; obvious that inside vs.
+    outside is ripe for statistical problems. However, simulation
+    testing says that it's a perfectly fine, in fact good, indicator of
+    the core purpose of an MPA: increase biomass inside the MPA.
+
+12. However, common indicators performed very badly as indicators of
+    "outside" effects, either total biomass or catch. At extreme levels,
+    they tended to be associated with positive conservation outcomes.
+    However, at lower values, almost no signal between response ratio /
+    BACI and degree of MPA effects. At higher values, an effect popped
+    up, indicating massive BACI / RR tends to equal postive total
+    population effect. But, also tended to mean negative catch effect.
+    Runs contrary to conventional wisdom in papers of "clear response
+    ratio is evidence for positive fishery effect". Seems to more often
+    mean that the MPA was able to reduce fishing pressure so much that
+    it resulted in a massive buildup inside but loss outside.
+
+13. So what? Link to @ban2019 . Case and empirics of MPAs often based on
+    these indicators. We show that while these can be good indicators of
+    "MPA was big enough to achieve positive effects inside", they are
+    basically useless as indicators of outside processes
+
+14. Need new models and ideas for these broder effects
+
+Caveats
+
+Unbiased observation error is a little hard to say much about since impact depends on sample size, which you can simulate away here.  But, tactical papers should think about what can actually be collected and then simulate test based around actual sampling process
+
+No complexities like layered fisheres management or external economic shocks 
+
+Potential negaitve imapcts are not unique to MPAs, a quota could also
+have leakage into a non-quota species
 
 xx push back on mark costello no redustribution claim @costello2024
 
-emphasize scale of response ratio axes: a response ratio value of 100%, meaning that there being roughly 100% more biomass inside the reserve than outside could have anything from a negative effect to a 300% effect.
+emphasize scale of response ratio axes: a response ratio value of 100%,
+meaning that there being roughly 100% more biomass inside the reserve
+than outside could have anything from a negative effect to a 300%
+effect.
 
-Coming years will see large increases in design and evaluation of MPAs. Urgent need to design monitoring programs that are able to track performance of relevant metrics so that we can learn appropiately, etc.
+Coming years will see large increases in design and evaluation of MPAs.
+Urgent need to design monitoring programs that are able to track
+performance of relevant metrics so that we can learn appropiately, etc.
 
-Results show that MPA performance is variable enough to warrant investment in monitoring. Unintended consequences are possible, more ways for positive conservation effects, but effect sizes are highly variable holding MPA size constant, so important to measure how effective if MPAs are being used to guide management.
+Results show that MPA performance is variable enough to warrant
+investment in monitoring. Unintended consequences are possible, more
+ways for positive conservation effects, but effect sizes are highly
+variable holding MPA size constant, so important to measure how
+effective if MPAs are being used to guide management.
 
-What drives negative conservation effects when they do happen? One or more of heterogeneous and negatively correlated habitat, effort displacement, open access dynamics, and the "avoid fishing" placement strategy. The last is interesting, as it under the most control of MPA planners, and is certainly an outcome that can happen (place the MPAs in marginal fishing grounds that are less likely to cause conflict). Examples?
+What drives negative conservation effects when they do happen? One or
+more of heterogeneous and negatively correlated habitat, effort
+displacement, open access dynamics, and the "avoid fishing" placement
+strategy. The last is interesting, as it under the most control of MPA
+planners, and is certainly an outcome that can happen (place the MPAs in
+marginal fishing grounds that are less likely to cause conflict).
+Examples?
 
-Heavy fishing correlated with positive catch outcomes, particularly in simple scenarios, but not deterministic. Plenty of cases, particularly under the more complex scenario, where catch goes down even when overfishing present.
+Heavy fishing correlated with positive catch outcomes, particularly in
+simple scenarios, but not deterministic. Plenty of cases, particularly
+under the more complex scenario, where catch goes down even when
+overfishing present.
 
-Depletion was generally most important important predictor of MPA effects, followed by measures of the correlation across species, adult movement, and sensitivity of the species to fishing (steepness). This is interesting for a few reasons, namely that suggests that models that don't take into account the ways that fleets interact with multiple species across hetergenous habitats can miss the mark (ovando et al. 2024 in review). Also interesting that factors such as recruit diffusion had very little importance?
+Depletion was generally most important important predictor of MPA
+effects, followed by measures of the correlation across species, adult
+movement, and sensitivity of the species to fishing (steepness). This is
+interesting for a few reasons, namely that suggests that models that
+don't take into account the ways that fleets interact with multiple
+species across hetergenous habitats can miss the mark (ovando et al.
+2024 in review). Also interesting that factors such as recruit diffusion
+had very little importance?
 
-Bioimass BACI / response ratio best predictors of MPA biomass, and both performed reasonably well, though not perfect. Plenty of simulations, particularly in more complex world, where MPA had a positive effect inside the reserve but BACI showed no effect. But, outcomes were correlated and very high BACI / response ratio values tended to correspond to high effect sizes, even in cases where the core assumptions of BACI / response ratio are violated. Compare effect sizes to ratio values reported in lester et al.
+Bioimass BACI / response ratio best predictors of MPA biomass, and both
+performed reasonably well, though not perfect. Plenty of simulations,
+particularly in more complex world, where MPA had a positive effect
+inside the reserve but BACI showed no effect. But, outcomes were
+correlated and very high BACI / response ratio values tended to
+correspond to high effect sizes, even in cases where the core
+assumptions of BACI / response ratio are violated. Compare effect sizes
+to ratio values reported in lester et al.
 
-Population effect messier. Little directional disagreement (very high indicator, negative population effects, and negative effects associated with lower indicator values. But, wide variability, with very high indicator values corresponing with a very wide range of outcomes, ranging from 0 to 400%. So, to some extent, doesn't tell you much more than "had a positive effect", up until massive values. Massive values might be an artifact of confined nature of simulation space though.
+Population effect messier. Little directional disagreement (very high
+indicator, negative population effects, and negative effects associated
+with lower indicator values. But, wide variability, with very high
+indicator values corresponing with a very wide range of outcomes,
+ranging from 0 to 400%. So, to some extent, doesn't tell you much more
+than "had a positive effect", up until massive values. Massive values
+might be an artifact of confined nature of simulation space though.
 
-The story with catch is much worse. None of the evaluated indicators had any meaningful ability on their own to predict catch outcomes. While @medoff2022 did not claim a catch increase in their paper, media coverage of said paper attributed higher CPUE near vs. far as a fishery benefit, whereas these results show that there is no relationship between the two, and indeed some bimodality where high values could either correspond to a massive benefit or a near 100% loss in the fishery (though that would presumably be noticed in the real world).
+The story with catch is much worse. None of the evaluated indicators had
+any meaningful ability on their own to predict catch outcomes. While
+@medoff2022 did not claim a catch increase in their paper, media
+coverage of said paper attributed higher CPUE near vs. far as a fishery
+benefit, whereas these results show that there is no relationship
+between the two, and indeed some bimodality where high values could
+either correspond to a massive benefit or a near 100% loss in the
+fishery (though that would presumably be noticed in the real world).
 
-Ensemble shows possible to make some predictions in quadrants, but highly uncertain. Goes back to basics of "simualted MPAs generally improved biomass, but how much was highly variable, and no indicator mapped onto catch".
+Ensemble shows possible to make some predictions in quadrants, but
+highly uncertain. Goes back to basics of "simualted MPAs generally
+improved biomass, but how much was highly variable, and no indicator
+mapped onto catch".
 
-Very important to note. This all assumes perfectly measured information. Clearly, uncertain and/or biased sampling will make any relationships between indicators and outcomes more uncertain. Further research needed to consider reliability of indicators taking into account reasonable observation error.
+Very important to note. This all assumes perfectly measured information.
+Clearly, uncertain and/or biased sampling will make any relationships
+between indicators and outcomes more uncertain. Further research needed
+to consider reliability of indicators taking into account reasonable
+observation error.
 
-So what does this suggest for MPA monitoring going forward? Conditional on quality of monitoring program always. Reality is often complicated, conceptual model important in thinking through how real is real enough. Results suggest that response ratio works best for MPA biomass, not bad for population biomass but very imprecise, and absolutely terribly for catch. No tested indicator was a reliable indicator of fishery outcomes. So, current indicators may be suitable for "are we succeeding inside the borders", could be used with caution for population level effects (no guarantee, see @ovando2021), and should not be used as evidence for fishery outcomes.
+So what does this suggest for MPA monitoring going forward? Conditional
+on quality of monitoring program always. Reality is often complicated,
+conceptual model important in thinking through how real is real enough.
+Results suggest that response ratio works best for MPA biomass, not bad
+for population biomass but very imprecise, and absolutely terribly for
+catch. No tested indicator was a reliable indicator of fishery outcomes.
+So, current indicators may be suitable for "are we succeeding inside the
+borders", could be used with caution for population level effects (no
+guarantee, see @ovando2021), and should not be used as evidence for
+fishery outcomes.
 
-What does the future suggest? Better integration with spatial stock assessment literature, linking process-based models to indicators rather than pure statistical outcomes (e.g. leveraging basic life history in terms of time to effects etc) @punt201 @nickols2019. Also, lots of advances in spatial-temporal modeling @thorson2024a. At the same time, collaborations with field biologists and the like critical to getting the conceptual model right. Need better integration with social science to figure out how do we effectively monitor socio-economic impacts.
+What does the future suggest? Better integration with spatial stock
+assessment literature, linking process-based models to indicators rather
+than pure statistical outcomes (e.g. leveraging basic life history in
+terms of time to effects etc) @punt201 @nickols2019. Also, lots of
+advances in spatial-temporal modeling @thorson2024a. At the same time,
+collaborations with field biologists and the like critical to getting
+the conceptual model right. Need better integration with social science
+to figure out how do we effectively monitor socio-economic impacts.
 
 Snappy concluding thing.
 
 ### Discussion phrases parking lot
 
-high percent variability in catch at low exploitation since catch is close to zero
+high percent variability in catch at low exploitation since catch is
+close to zero
 
-Indicators worked best for MPA conservation, then biomass. Biomass was uncertain, but positive was that generally speaking "high" indicator values corresponded to "high" conservation outcomes. But, those are really extreme values, map onto @lester2009. For smaller values, very uncertain, range from negative to positive.
+Indicators worked best for MPA conservation, then biomass. Biomass was
+uncertain, but positive was that generally speaking "high" indicator
+values corresponded to "high" conservation outcomes. But, those are
+really extreme values, map onto @lester2009. For smaller values, very
+uncertain, range from negative to positive.
 
 For catch, no indicator performed well.
 
-Note that this is all assuming equilibrium! NPV is important too, communities aren't happy if they go through 50 years of loss for benefits in the 51st year @ovando2016
+Note that this is all assuming equilibrium! NPV is important too,
+communities aren't happy if they go through 50 years of loss for
+benefits in the 51st year @ovando2016
 
-Just as a quota for one species can have unintended consequences on another, so can MPAs.
+Just as a quota for one species can have unintended consequences on
+another, so can MPAs.
 
-Let us be clear. The simulation results presented here indicate that clearly MPAs are capable of benefiting biomass and catch. However, they are also capable of harming both.
+Let us be clear. The simulation results presented here indicate that
+clearly MPAs are capable of benefiting biomass and catch. However, they
+are also capable of harming both.
 
-We implement size limits all the time without needing complex causal inference. Part of the reason for that is that it's a more direct lever, but still. But, if the movement of the coming yeasr was "No Undersized by 2035", resulting in a massive global investment in the design and roll of out size limit programs, a deeper look at measuring the performance of size limits might be warranted.
+We implement size limits all the time without needing complex causal
+inference. Part of the reason for that is that it's a more direct lever,
+but still. But, if the movement of the coming yeasr was "No Undersized
+by 2035", resulting in a massive global investment in the design and
+roll of out size limit programs, a deeper look at measuring the
+performance of size limits might be warranted.
 
 @halpern2004
 
