@@ -1,0 +1,805 @@
+---
+title: "Untitled"
+format: html
+---
+
+```{r}
+#|label: setup
+#|include: false
+
+foos <- list.files(here::here("R"))
+
+purrr::walk(foos, ~ source(here::here("R", .x)))
+
+library(gt)
+
+prep_run(run_name = "indicators_v0.2",figure_text_size = 8) # loads packages and creates and returns some global variables for the analysis
+
+project <- "indicators"
+
+resolution <- c(rx, ry)
+
+mpa_years <- 24
+
+# clean up figures generated in the report to ensure that all figures come from a fresh state
+paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_detect("fig_")])
+
+unlink(paper_figs)
+
+min_depletion <- 0.01
+
+tune_grids <- FALSE
+```
+
+```{r}
+#| label: load-results
+#| include: false
+
+
+results <- list.files(results_dir)
+
+results <- results[str_detect(results,"(processed_sims.rds$)|(emulated_experiment_results.rds)|(placement_experiments.rds)|(state_experiments.rds)")]
+
+
+
+purrr::walk(results, ~ assign(str_remove_all(.x,"\\.rds$"), read_rds(here(results_dir,.x)), envir = .GlobalEnv))
+
+critter_namer <- function(x){
+  
+  y <- forcats::fct_recode(x,shark = "carcharhinus amblyrhynchos",grouper = "epinephelus fuscoguttatus",snapper = "lutjanus malabaricus", "deep-snapper" = "pristipomoides filamentosus")
+  
+}
+
+# process marlin simulations
+
+## get MPA sizes
+
+simple <- simple_state_experiments |>
+  select(state_id, depletion) |>
+  unnest(cols = depletion) |>
+  mutate(difficulty = "simple")
+
+medium <- medium_state_experiments |>
+  select(state_id, depletion) |>
+  unnest(cols = depletion) |>
+  mutate(difficulty = "medium")
+
+complex <- complex_state_experiments |>
+  select(state_id, depletion) |>
+  unnest(cols = depletion) |>
+  mutate(difficulty = "complex")
+
+state_depletions <- simple |>
+  bind_rows(medium) |>
+  bind_rows(complex) |>
+  mutate(state_id = glue("{difficulty}_{state_id}"))
+  
+valid_state_depletions <- state_depletions |>
+  filter(depletion >= min_depletion)
+
+simple <- simple_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "simple")
+
+medium <- medium_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "medium")
+
+complex <- complex_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "complex")
+
+# results of all marlin simulations
+inds_and_outs <- simple |> 
+  bind_rows(medium) |> 
+  bind_rows(complex) |> 
+  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
+  mutate(id = glue("{difficulty}-{id}")) |> 
+  mutate(prop_mpa = as_factor(prop_mpa)) |> 
+  mutate(difficulty = fct_relevel(difficulty,"simple", "medium")) |> 
+  filter(step == max(step)) |> 
+  left_join(state_depletions, by = c("critter", "state_id", "difficulty"))
+
+rm(list = c("simple", "medium", "complex"))
+
+
+fleet_outcomes <- inds_and_outs |>
+  select(
+    depletion,
+    placement_strategy,
+    percent_mpa_effect,
+    fleet,
+    state_id,
+    placement_id,
+    critter,
+    prop_mpa,
+    name,
+    f_v_m,
+    difficulty,
+    sigma_rec,
+    observation_error
+  ) |>
+  filter(fleet != "nature") |>
+  pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
+
+total_state_depletions <- inds_and_outs |> 
+  select(critter, state_id, difficulty, depletion, b0) |> 
+  unique() |> 
+  group_by(state_id, difficulty) |> 
+  summarise(mean_depletion = weighted.mean(depletion, b0)) |> 
+  ungroup()
+
+nature_outcomes <- inds_and_outs |>
+  filter(fleet == "nature") |>
+  select(ends_with("id"),
+         critter,
+         prop_mpa,
+         name,
+         percent_mpa_effect,
+         difficulty) |>
+  pivot_wider(names_from = "name", values_from = "percent_mpa_effect")
+
+mpa_outcomes <- fleet_outcomes |>
+  left_join(nature_outcomes,
+            by = join_by(state_id, placement_id, critter, prop_mpa, difficulty)) |>
+  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
+
+
+total_mpa_outcomes <- inds_and_outs |>
+  group_by(state_id,
+           placement_id,
+           prop_mpa,
+           difficulty,
+           name,
+           observation_error) |>
+  summarise(total_value = sum(value),
+            total_control_value = sum(control_value),
+            depletion = weighted.mean(depletion, b0)) |>
+  mutate(percent_mpa_effect = total_value / total_control_value - 1) |>
+  select(-starts_with("total")) |>
+  pivot_wider(names_from = name, values_from = percent_mpa_effect) |>
+  ungroup() |>
+  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
+
+
+
+indicators <- inds_and_outs |>
+  select(critter,
+         prop_mpa,
+         state_id,
+         placement_id,
+         difficulty,
+         prop_mpa,
+         observation_error,
+         starts_with("ind")) |>
+  pivot_longer(starts_with("ind_"),
+               names_to = "indicator",
+               values_to = "indicator_value") |>
+  filter(!is.na(indicator_value),
+         !str_detect(indicator, "_raw"))
+
+outcomes <- inds_and_outs |>
+  select(
+    state_id,
+    placement_id,
+    critter,
+    fleet,
+    prop_mpa,
+    difficulty,
+    percent_mpa_effect,
+    name) |> 
+  filter(name %in% c("biomass", "mpa_biomass", "catch"))
+
+quadrant_outcomes <- fleet_outcomes |>
+  select(state_id, prop_mpa, placement_id, critter, fleet, difficulty, catch) |>
+  left_join(nature_outcomes |> select(state_id, prop_mpa, placement_id, critter, biomass, difficulty),by = join_by(state_id, prop_mpa, placement_id, critter, difficulty)) |>
+  pivot_longer(c(catch,biomass)) |>
+  mutate(tag = paste(
+    name,
+    case_when(value > 0.025 ~ "positive", value < -0.025 ~ "negative", .default = "unaffected"),
+    sep = ":"
+  )) |>
+  select(-value) |>
+  pivot_wider(names_from = name, values_from = tag) |>
+  mutate(quadrant = paste(catch, biomass, sep = " & ")) |>
+  left_join(
+    inds_and_outs |>
+  select(critter,
+         prop_mpa,
+         state_id,
+         placement_id,
+         difficulty,
+         prop_mpa,
+         starts_with("ind")),
+    by = c(
+      "critter",
+      "state_id",
+      "placement_id",
+      "prop_mpa",
+      "difficulty"
+    ),
+    relationship = "many-to-many"
+  )
+
+
+comparison <- outcomes |> 
+  left_join(indicators, by = c("critter", "state_id", "placement_id", "prop_mpa", "difficulty"), relationship = "many-to-many") |> 
+  mutate(prop_mpa = as.numeric(as.character(prop_mpa)))
+
+
+# repeat but for totals
+
+complex <- complex_total_processed_sims$mpa_outcomes |> 
+  mutate(difficulty = "complex")
+
+# results of all marlin simulations
+total_inds_and_outs <- complex |> 
+  mutate(state_id = glue("{difficulty}_{state_id}")) |> 
+  mutate(id = glue("{difficulty}-{id}")) |> 
+  mutate(prop_mpa = as_factor(prop_mpa)) |> 
+  mutate(difficulty = fct_relevel(difficulty,"simple", "medium")) |> 
+  filter(step == max(step)) |> 
+  left_join(state_depletions, by = c("critter", "state_id", "difficulty")) |> 
+  mutate(numeric_prop_mpa = as.numeric(as.character(prop_mpa)))
+
+
+total_outcomes <- total_inds_and_outs |>
+  select(
+    state_id,
+    placement_id,
+    critter,
+    fleet,
+    prop_mpa,
+    difficulty,
+    percent_mpa_effect,
+    name) |> 
+  filter(name %in% c("biomass", "mpa_biomass", "catch"))
+
+
+total_indicators <- total_inds_and_outs |>
+  select(
+    critter,
+    prop_mpa,
+    state_id,
+    placement_id,
+    difficulty,
+    prop_mpa,
+    observation_error,
+    starts_with("ind")
+  ) |>
+  pivot_longer(starts_with("ind_"),
+               names_to = "indicator",
+               values_to = "indicator_value") |>
+  filter(!is.na(indicator_value), !str_detect(indicator, "_raw"))
+
+
+total_comparison <- total_outcomes |>
+  left_join(
+    total_indicators,
+    by = c(
+      "critter",
+      "state_id",
+      "placement_id",
+      "prop_mpa",
+      "difficulty"
+    ),
+    relationship = "many-to-many"
+  ) |>
+  mutate(prop_mpa = as.numeric(as.character(prop_mpa))) |> 
+  left_join(total_state_depletions,by = join_by(state_id, difficulty))
+
+
+```
+
+```{r}
+#|label: fig-mpa-cs
+#| fig-cap: "Example trajectories of bioimass / unfished biomass and catch by species and fleet as a function of MPA size and placement strategy."
+#| eval: false
+
+
+i <- as.integer(sample(unique(simple_processed_sims$mpa_outcomes$state_id),1))
+
+reality <- complex_processed_sims$mpa_outcomes |> 
+  mutate(state_id = as.integer(state_id)) |> 
+  filter(state_id == i, step == max(step)) |> 
+  mutate(critter = critter_namer(critter))
+
+# reality |> 
+#   filter(name %in% c("catch", "biomass")) |> 
+#   ggplot(aes(prop_mpa, percent_mpa_effect,color = name )) + 
+#   geom_point() + 
+#   facet_grid(critter~placement_strategy)
+
+
+a = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "biomass"),
+    aes(
+      prop_mpa,
+      value / b0,
+      color = critter
+    )
+  ) +
+  scale_y_continuous(limits = c(0, NA), name = "~B/B0") +
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  scale_color_viridis_d(name = '') +
+  facet_wrap( ~ placement_strategy) + 
+  guides(color = guide_legend(nrow = 2))
+
+b = ggplot() +
+  geom_line(
+    data = reality |> filter(name == "catch") |> mutate(fleet = paste0("High-definition Fleet ",fleet)),
+    aes(prop_mpa, value, color = fleet)
+  ) +
+  scale_y_continuous(limits = c(0, NA), name = "Catch") + 
+  scale_x_continuous(name = "MPA Size", labels = scales::percent, guide = guide_axis(n.dodge = 2)) +
+  facet_grid(critter~placement_strategy,scales = "free") + 
+  scale_color_brewer(name = '',palette = "Accent") +
+  guides(color = guide_legend(nrow = 2)) + 
+  theme(strip.text.y = element_text(size = 6))
+
+fig <- (a | b)  + plot_layout(guides = "collect") & theme(legend.position = "bottom", axis.text.x = element_text(size = 8), strip.text = element_text(size = 7))
+
+
+fig
+#figsaver(fig)
+```
+
+We ran a random forest predicting percent MPA effect and estimated the
+variable importance score of the simulated attributes. This allows us to
+examine which simulation attributes seem to be the most important in
+determining the percent MPA effect, being clear that importance does not
+equal effect size.
+
+```{r}
+drivers_and_outs <- inds_and_outs |> 
+  mutate(percent_mpa = as.numeric(as.character(prop_mpa))) |> 
+  filter(percent_mpa <= 0.4) |> 
+  select(-starts_with("ind_")) |> 
+  group_by(name) |> 
+  nest()
+
+
+get_vips <- function(drivers_and_out, trees = 200){
+
+drivers_and_out <- drivers_and_out |> 
+  select(percent_mpa_effect, critter, kiss:depletion) |> 
+  mutate(rando = rnorm(n())) |> 
+  select(-f_v_m,-placement_error,-critters_considered,-kiss,-min_cor,-max_cor, -mean_abs_cor,-max_abs_cor)
+
+has_nas <- map_lgl(drivers_and_out, ~any(is.na(.x)))
+
+drivers_and_out <- drivers_and_out[,!has_nas]
+
+model_spec <-
+  rand_forest(trees = trees) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("regression") 
+
+model_recipe <- recipe(percent_mpa_effect ~ ., data = drivers_and_out) |> 
+  step_filter_missing(threshold = 0) |> 
+  step_mutate(percent_mpa_effect = percent_mpa_effect + 1) |> 
+  step_log(all_outcomes())
+
+model_workflow <-
+  workflow() %>%
+  add_model(model_spec) %>%
+  add_recipe(model_recipe)
+
+tuned_fit <- parsnip::fit(model_workflow, drivers_and_out)
+
+vips <- tuned_fit %>% 
+  extract_fit_parsnip() %>% 
+  vi()
+
+random_vip <- vips$Importance[vips$Variable == "rando"]
+
+vips <- vips |> 
+  filter(Importance > random_vip)
+
+return(vips)
+}
+
+drivers_and_outs <- drivers_and_outs |> 
+  mutate(vips = map(data,get_vips, .progress = "estimating vips"))
+```
+
+```{r}
+#| label: fig-vips
+#| fig-cap: A) Permutation-based variable importance score of included covariates on log percent MPA effects.
+
+
+fig <- drivers_and_outs |> 
+  filter(name %in% c("biomass", "catch", "mpa_biomass")) |> 
+  select(name, vips) |> 
+  unnest(cols = vips) |> 
+  ggplot(aes(reorder(Variable, Importance), Importance, color = name)) +
+  ggalt::geom_lollipop(show.legend = FALSE) + 
+  facet_wrap(~name) + 
+  coord_flip() + 
+  scale_color_brewer(palette = "Accent") + 
+  scale_x_discrete(name ="")
+
+figsaver(fig)
+
+```
+
+
+```{r}
+#| label: fig-scs-3
+#| fig-cap: "Values of indicators (biomass, mean length, effort) inside and outside of MPAs as example of indicator data. Each point is a different patch."
+#| eval: false
+
+
+alpha <- fauna_results |> 
+  filter(step == max(step)) |> 
+  group_by(critter, x,y,mpa) |> 
+  summarise(b = sum(b), distance_to_mpa_edge = unique(distance_to_mpa_edge)) |> 
+  group_by(critter) |> 
+  mutate(sb = as.numeric(scale(b))) |> 
+  ggplot(aes(distance_to_mpa_edge, b, color = mpa)) + 
+  geom_vline(xintercept =0) +
+  geom_point() + 
+  facet_wrap(~critter, scales = "free_y") + 
+   scale_y_continuous(name = "Biomass") + 
+  scale_x_continuous(name = "Linear distance to nearest MPA edge")
+
+
+
+beta <- fleet_results |> 
+  filter(step == max(step)) |> 
+   group_by(fleet, x,y,mpa) |> 
+  summarise(effort = unique(effort), distance_to_mpa_edge = unique(distance_to_mpa_edge)) |> 
+  group_by(fleet) |> 
+  mutate(se = as.numeric(scale(effort))) |> 
+  ggplot(aes(distance_to_mpa_edge, effort, color = mpa)) + 
+  geom_vline(xintercept =0) +
+  geom_point() + 
+  facet_wrap(~fleet, labeller = label_both) + 
+  scale_y_continuous(name = "Effort") + 
+  scale_x_continuous(name = "Linear distance to nearest MPA edge")
+
+kappa <- fauna_results |> 
+  filter(step == max(step)) |> 
+   group_by(critter, x,y,mpa) |> 
+  summarise(mean_length = weighted.mean(mean_length, n), distance_to_mpa_edge = unique(distance_to_mpa_edge)) |> 
+  group_by(critter) |> 
+  ggplot(aes(distance_to_mpa_edge, mean_length, color = mpa)) + 
+  geom_vline(xintercept =0) +
+  geom_point() + 
+  facet_wrap(~critter, scales = "free_y") + 
+   scale_y_continuous(name = "Mean length") + 
+  scale_x_continuous(name = "Linear distance to nearest MPA edge")
+
+
+
+
+fig <- ((alpha / kappa /beta) + plot_layout(guides = "collect"))
+
+figsaver(fig)
+
+```
+
+
+
+```{r}
+#|label: fig-total-outcomes
+#|fig-cap: Distribution of total outcomes across all fleets and species contained by a simulation.
+outcome_labeller <- c(
+  fished_biomass = "Biomass Outside",
+  mpa_biomass = "Biomass Inside",
+  biomass = "Total Biomass",
+  catch = "Catch"
+)
+
+total_mpa_outcomes |>
+  select(depletion,
+         numeric_prop_mpa,
+         difficulty,
+         fished_biomass,
+         mpa_biomass,
+         biomass,
+         catch) |>
+  pivot_longer(-(depletion:difficulty)) |>
+  mutate(mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.33, 0.66, 1)),
+         name = fct_relevel(name, "fished_biomass","mpa_biomass", "biomass"),
+         difficulty = fct_relevel(difficulty,"simple", "medium")) |>
+    filter(numeric_prop_mpa < 0.66, numeric_prop_mpa > 0.1) |> 
+  ggplot(aes(x = difficulty, y = value)) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  stat_interval(aes(color_ramp = after_stat(level),color = difficulty), .width = c(0.5,0.8,1)) +
+  # stat_interval(aes(difficulty, value)) +
+  # geom_density(aes(value, after_stat(scaled),fill = difficulty, color = difficulty),alpha = 0.25) +
+  facet_grid(mpa_bin ~ name, scales = "free_y", labeller = labeller(name = outcome_labeller)) + 
+  scale_x_discrete(name = '') +
+  scale_y_continuous(name= "% Change",limits = c(NA,2), oob = squish, labels = scales::percent) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1, vjust = 1),
+        axis.text.y = element_text(size = 8),
+        panel.spacing.x = unit(2, "lines"))
+
+```
+
+
+
+
+```{r}
+#| label: fig-total-outcomes
+#| fig-cap: "Distribution of MPA effects on total biomass (x-axis) and total catch (y-axis) as a function of simulation complexity (columns) and MPA size (rows). Color indicates simulated depletion (biomass relative to unfished biomass) in the absence of the MPA."
+  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
+
+
+  
+  # quad_labels <- data.frame(
+  #   x = c(50, 50, -24, -24),
+  #   y = c(50, -50, 50, -50),
+  #   label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
+  # )
+
+  thirty_protected_plot <- total_mpa_outcomes |>
+    filter(numeric_prop_mpa <= 0.66) |> 
+    mutate(mpa_bin = cut(numeric_prop_mpa, breaks = c(0,0.33,0.66,1))) |> 
+    # filter(numeric_prop_mpa <= 0.4) |>
+    # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
+    ggplot(aes(biomass, catch)) +
+    geom_vline(xintercept = 0, color = "black", linetype = 2) +
+    geom_hline(yintercept = 0, color = "black",linetype = 2) +
+    geom_point(aes(color = pmin(1,depletion)), alpha = 0.25) +
+    # geom_text(
+    #   data = quad_labels,
+    #   aes(x, y, label = label),
+    #   size = 6,
+    #   color = "red"
+    # ) +
+    scale_color_viridis_c(
+      "BAU B/B0",
+      limits = c(0, 1),
+      option = "plasma",
+      guide = guide_colorbar(
+        frame.colour = "black",
+        ticks.colour = "black",
+        barwidth =  unit(11, "lines")
+      )
+    )  +
+    scale_x_continuous(name = "Change in Species Biomass",
+                       oob = squish,
+                       limits = c(NA, 2), 
+                       labels = scales::percent) +
+    scale_y_continuous(name = "Change in Species Catch",
+                       oob = squish,
+                       limits = c(NA, 2), 
+                       labels = scales::percent) +
+    theme(legend.position = "bottom") +
+    labs(caption = "20-40% of area in MPA") + 
+    facet_grid(mpa_bin~fct_rev(difficulty))
+  
+  
+  # thirty_protected_plot <- ggMarginal(thirty_protected_plot,
+  #                                     type = "histogram",
+  #                                     fill = "steelblue")
+  
+  
+  
+  figsaver(thirty_protected_plot)
+
+  #ggplotly(thirty_protected_plot)
+```
+
+
+
+```{r}
+#| label: fig-perfomance
+#| fig-cap: Indicator value (x-axis) and outcome value (y-axis) for the best performing indicator for the outcome in question (row label) broken out by simulation complexity (rows). Candidate indicators limited to only "after" MPA data.
+#| eval: false
+
+
+tmp <- best_performers_noncausal |>
+  left_join(state_depletions) |>
+  ungroup() |>
+  slice_sample(prop = 0.25) |> 
+  mutate(combo = str_remove_all(combo, "biomass_")) |>
+  mutate(combo = fct_relevel(combo, "mpa_biomass ~ rr", "biomass ~ rr"))
+
+model_summary <- difficulty_indicator_performance |>
+  ungroup() |> 
+  mutate(combo = str_remove_all(combo, "biomass_")) |>
+  mutate(combo = fct_relevel(combo, "mpa_biomass ~ rr", "biomass ~ rr")) |>
+  filter(combo %in% tmp$combo)
+
+
+fig <- tmp |>
+  ggplot(aes(indicator_value, percent_mpa_effect)) +
+  geom_point(aes(color = depletion)) +
+  geom_rug() +
+  # geom_hex(bins = 10) +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+    geom_richtext(data = model_summary, aes(
+    x = 2,
+    y = 1,
+    label = glue("R<sup>2</sup> = {round(adj.r.squared,2)}")
+  )) +
+  facet_grid(fct_rev(difficulty) ~ combo, scales = "free_x") +
+  scale_y_continuous(
+    limits = c(-1, 2.5),
+    oob = squish,
+    labels = scales::percent,
+    name = "MPA Effect"
+  ) +
+  scale_x_continuous(name = "BACI Estimate") +
+  scale_color_viridis_c(
+    "BAU B/B0",
+    limits = c(0, 1),
+    option = "plasma",
+    guide = guide_colorbar(
+      frame.colour = "black",
+      ticks.colour = "black",
+      barwidth =  unit(11, "lines")
+    )
+  )  +    theme(legend.position = "bottom")
+
+figsaver(fig)
+
+```
+
+
+```{r}
+#| label: fig-biomass-tradeoffs
+#| fig-cap: "Distribution of MPA effects on biomass inside (x-axis) and outside (y-axis) as a function of simulation complexity (columns) and MPA size (rows). Color indicates simulated depletion (biomass relative to unfished biomass) in the absence of the MPA."
+#| eval: false
+  # mutate(percent_mpa_effect = pmin(100, 100 * percent_mpa_effect))
+
+
+  
+  # quad_labels <- data.frame(
+  #   x = c(50, 50, -24, -24),
+  #   y = c(50, -50, 50, -50),
+  #   label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
+  # )
+
+  thirty_protected_plot <- mpa_outcomes |>
+    filter(numeric_prop_mpa <= 0.66) |> 
+    mutate(mpa_bin = cut(numeric_prop_mpa, breaks = c(0,0.33,0.66,1))) |> 
+    # filter(numeric_prop_mpa <= 0.4) |>
+    # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
+    ggplot(aes(mpa_biomass, fished_biomass)) +
+    geom_vline(xintercept = 0, color = "black", linetype = 2) +
+    geom_hline(yintercept = 0, color = "black",linetype = 2) +
+    geom_point(aes(color = pmin(1,depletion)), alpha = 0.25) +
+    # geom_text(
+    #   data = quad_labels,
+    #   aes(x, y, label = label),
+    #   size = 6,
+    #   color = "red"
+    # ) +
+    scale_color_viridis_c(
+      "BAU B/B0",
+      limits = c(0, 1),
+      option = "plasma",
+      guide = guide_colorbar(
+        frame.colour = "black",
+        ticks.colour = "black",
+        barwidth =  unit(11, "lines")
+      )
+    )  +
+    scale_x_continuous(name = "Change in Biomass Inside",
+                       oob = squish,
+                       limits = c(NA, 2), 
+                       labels = scales::percent) +
+    scale_y_continuous(name = "Change in Biomass Outside",
+                       oob = squish,
+                       limits = c(NA, 2), 
+                       labels = scales::percent) +
+    theme(legend.position = "bottom") +
+    labs(caption = "20-40% of area in MPA") + 
+    facet_grid(mpa_bin~fct_rev(difficulty))
+  
+  
+  # thirty_protected_plot <- ggMarginal(thirty_protected_plot,
+  #                                     type = "histogram",
+  #                                     fill = "steelblue")
+  
+  
+  
+  figsaver(thirty_protected_plot)
+
+  rm(mpa_outcomes)
+  gc()
+  #ggplotly(thirty_protected_plot)
+```
+
+
+```{r}
+#| label: fig-perfomance
+#| fig-cap: Indicator value (x-axis) and outcome value (y-axis) for the best performing indicator for the outcome in question (row label) broken out by simulation complexity (rows). Candidate indicators limited to only "after" MPA data.
+
+fig <- best_performers_noncausal |> 
+  left_join(state_depletions) |>
+  slice_sample(prop = 0.25) |>
+  mutate(combo = str_remove_all(combo, "biomass_")) |>
+  mutate(combo = fct_relevel(combo, "mpa_biomass ~ rr", "biomass ~ rr")) |>
+  filter(between(prop_mpa, 0.05, 0.4)) |>
+  group_by(indicator) |>
+  mutate(indicator_value = indicator_value) |>
+  ggplot(aes(indicator_value, percent_mpa_effect)) +
+  geom_point(aes(color = depletion)) +
+  geom_rug() +
+  # geom_hex(bins = 10) +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  facet_grid(fct_rev(difficulty) ~ combo, scales = "free_x") +
+  scale_y_continuous(
+    limits = c(-1, 2.5),
+    oob = squish,
+    labels = scales::percent,
+    name = "MPA Effect"
+  ) +
+  scale_x_continuous(name = "BACI Estimate") +
+  scale_color_viridis_c(
+    "BAU B/B0",
+    limits = c(0, 1),
+    option = "plasma",
+    guide = guide_colorbar(
+      frame.colour = "black",
+      ticks.colour = "black",
+      barwidth =  unit(11, "lines")
+    )
+  )  +    theme(legend.position = "bottom")
+
+figsaver(fig)
+
+```
+
+
+
+```{r}
+#| label: fig-total-perfomance-baci
+#| fig-cap: Indicator value (x-axis) and outcome value (y-axis) for the best performing indicator for the outcome in question (row label) broken out by simulation complexity (rows).
+#| eval: false
+
+fig <- best_total_performers |>
+  ungroup() |>
+  slice_sample(prop = 0.25) |>
+  mutate(combo = str_remove_all(combo, "biomass_")) |>
+  mutate(combo = fct_relevel(combo, "mpa_biomass ~ baci", "biomass ~ baci")) |>
+  filter(between(prop_mpa, 0.05, 0.4)) |>
+  group_by(indicator) |>
+  mutate(indicator_value = indicator_value) |>
+  ggplot(aes(indicator_value, percent_mpa_effect, color = mean_depletion)) +
+  geom_point(aes()) +
+  geom_rug() +
+  # geom_hex(bins = 10) +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             color = "tomato") +
+  facet_wrap(~ combo, scales = "free") +
+  scale_y_continuous(
+    limits = c(NA, NA),
+    oob = squish,
+    labels = scales::percent,
+    name = "MPA Effect"
+  ) +
+  scale_x_continuous(name = "BACI Estimate") +
+  scale_color_viridis_c(
+    "BAU B/B0",
+    limits = c(0, 1),
+    option = "plasma",
+    guide = guide_colorbar(
+      frame.colour = "black",
+      ticks.colour = "black",
+      barwidth =  unit(11, "lines")
+    )
+  )  +    theme(legend.position = "bottom")
+
+figsaver(fig)
+
+```
+

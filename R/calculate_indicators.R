@@ -1,5 +1,6 @@
 calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate = FALSE) {
-  
+
+  # get rid of age structure
   fauna <-  x$fauna[[1]] |>
     ungroup() |> 
     mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
@@ -9,7 +10,8 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       mean_length = weighted.mean(mean_length, w = n),
       mpa = unique(mpa),
       distance_to_mpa_edge = unique(distance_to_mpa_edge),
-      ssb0_p =  ifelse(aggregate,sum(unique(ssb0_p)),unique(ssb0_p))
+      ssb0_p =  ifelse(aggregate,sum(unique(ssb0_p)),unique(ssb0_p)),
+      b0_p =  ifelse(aggregate,sum(unique(b0_p)),unique(b0_p))
     ) |>
     ungroup() |>
     mutate(
@@ -39,7 +41,8 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       effort = sum(effort),
       mpa = unique(mpa),
       distance_to_mpa_edge = unique(distance_to_mpa_edge),
-      ssb0_p =  ifelse(aggregate,sum(unique(ssb0_p)),unique(ssb0_p))
+      ssb0_p =  ifelse(aggregate,sum(unique(ssb0_p)),unique(ssb0_p)),
+      b0_p =  ifelse(aggregate,sum(unique(b0_p)),unique(b0_p))
     ) |>
     mutate(cpue = catch / effort) |>
     ungroup() |>
@@ -108,7 +111,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
     group_by(critter, step) |>
     nest() |>
     mutate(canary = map(data, ~ (
-      safelm(seffort ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))
+      safelm(seffort ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))
     ))) |>
     mutate(canary = map(canary, "error")) |>
     mutate(canary = map_lgl(canary, is.null))
@@ -124,7 +127,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       nest() |>
       mutate(ind_biomass_rr = map_dbl(data, ~ as.numeric(
         lm(
-          log(biomass) ~ mpa + ssb0_p,
+          log(biomass) ~ mpa + b0_p,
           data = .x,
           weights = weight
         )$coefficients["mpaTRUE"]
@@ -141,32 +144,31 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       ))) |>
       mutate(ind_length_rr = map_dbl(data, ~ as.numeric(
         lm(
-          log(mean_length) ~ mpa + ssb0_p,
+          log(mean_length) ~ mpa + b0_p,
           data = .x,
           weights = weight
         )$coefficients["mpaTRUE"]
       ))) |>
       mutate(ind_biomass_gradient = map_dbl(data, ~ as.numeric(
-        lm(sbiomass ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(sbiomass ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_biomass_gradient_raw = map_dbl(data, ~ as.numeric(
         lm(sbiomass ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       select(-data)
     
-    
     fishery_indicators <- fleets |>
       filter(mpa_proximity != "nomans") |>
       group_by(critter, step) |>
       nest() |>
       mutate(ind_effort_gradient = map_dbl(data, ~ as.numeric(
-        lm(seffort ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(seffort ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_effort_gradient_raw = map_dbl(data, ~ as.numeric(
         lm(seffort ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_cpue_gradient = map_dbl(data, ~ as.numeric(
-        lm(scpue ~ mpa_proximity + ssb0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(scpue ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_cpue_gradient_raw = map_dbl(data, ~ as.numeric(
         lm(scpue ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
@@ -189,7 +191,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       ))) |>
       mutate(ind_biomass_baci = map_dbl(data, ~ as.numeric(
         lm(
-          log(biomass) ~ mpa + after + baci + ssb0_p,
+          log(biomass) ~ mpa + after + baci + b0_p,
           data = .x,
           weights = weight
         )$coefficients["baciTRUE"]
@@ -215,7 +217,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       ))) |>
       mutate(ind_biomass_bag = map_dbl(data, ~ as.numeric(
         lm(
-          log(biomass) ~ gradient + after + bag + ssb0_p,
+          log(biomass) ~ gradient + after + bag + b0_p,
           data = .x,
           weights = weight
         )$coefficients["bagTRUE"]
@@ -233,7 +235,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
         lm(log(catch) ~ after, data = .x, )$coefficients["afterTRUE"]
       ))) |>
       mutate(ind_catch_ba = map_dbl(data, ~ as.numeric(
-        lm(log(catch) ~ after + ssb0_p, data = .x, )$coefficients["afterTRUE"]
+        lm(log(catch) ~ after + b0_p, data = .x, )$coefficients["afterTRUE"]
       ))) |>
       ungroup() |>
       select(-data)
