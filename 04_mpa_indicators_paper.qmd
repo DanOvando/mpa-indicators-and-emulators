@@ -69,7 +69,7 @@ unlink(paper_figs)
 
 tune_grids <- FALSE
 
-default_observation_error = 0.1
+default_observation_error = 0
 ```
 
 ```{r}
@@ -2004,8 +2004,6 @@ fit_performance |>
 
 ```
 
-
-
 ```{r}
 #| label: fig-quadrant-prediction 
 #| fig-cap: Confusion matrix of indicator based ensemble model of quadrant outcomes of MPAs.
@@ -2038,8 +2036,6 @@ figsaver(fig)
 
   
 ```
-
-
 
 ## Discussion
 

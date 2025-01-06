@@ -425,7 +425,7 @@ figsaver(fig)
 ```{r}
 #| label: fig-scs-3
 #| fig-cap: "Values of indicators (biomass, mean length, effort) inside and outside of MPAs as example of indicator data. Each point is a different patch."
-#| eval: false
+#| eval: true
 
 
 alpha <- fauna_results |> 
@@ -476,6 +476,8 @@ fig <- ((alpha / kappa /beta) + plot_layout(guides = "collect"))
 figsaver(fig)
 
 ```
+
+
 
 
 
