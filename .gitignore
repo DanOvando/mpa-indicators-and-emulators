@@ -14,6 +14,7 @@ data/*
 results/*
 !results/README
 presentations/imgs/*
+r1_submitted/
 *.html
 *.js
 *.o

@@ -167,11 +167,12 @@ run_mpa_experiment <-
     } else {
       mpa_locs <- -999
     }
-    
-    ssb0s <- map(fauna, ~tibble(ssb0_p = as.numeric(.x$ssb0_p), patch = 1:length(.x$ssb0_p))) |> 
+
+    ssb0s <- map(fauna, ~tibble(ssb0_p = as.numeric(.x$ssb0_p), patch = 1:length(.x$ssb0_p),b0_p = as.numeric(.x$b0_p))) |> 
       list_rbind(names_to = "critter") |> 
       group_by(patch) |> 
-      mutate(ssb0_p_total = sum(ssb0_p)) |> 
+      mutate(ssb0_p_total = sum(ssb0_p),
+             b0_p_total = sum(b0_p)) |> 
       ungroup()
 
     mpas <- expand_grid(x = 1:resolution[1], y = 1:resolution[2]) %>%

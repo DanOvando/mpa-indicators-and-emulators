@@ -7,8 +7,8 @@ foos <- list.files(here::here("R"))
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
-  n_states = 84,
-  run_name = "indicators_v0.11",
+  n_states = 4,
+  run_name = "indicators_test",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
@@ -54,6 +54,13 @@ difficulty_species <- list(
           "carcharhinus longimanus")
 )
 
+
+critter_templates <- map(unique(list_c(difficulty_species)),
+                         ~ marlin::create_critter(scientific_name = .x, seasons = seasons)) |>
+  set_names(unique(list_c(difficulty_species)))
+
+
+
 # if ("epo" %in% difficulties){
 #   
 #   sdmsish <- read_rds(here("data","epo_sdmsish.rds"))
@@ -66,7 +73,7 @@ baseline_state_experiments <-
   tibble(
     kiss = sample(c(FALSE, TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
-    habitat_patchiness = runif(n_states, 1e-3, .2),
+    habitat_patchiness = runif(n_states, 1e-3, .1),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
@@ -145,7 +152,6 @@ for (difficulty in difficulties) {
   
   message("finished habitats")
   
-  
   message("creating critters")
   state_experiments <- state_experiments %>%
     rename(scientific_name = critter) |>
@@ -169,6 +175,7 @@ for (difficulty in difficulties) {
           sigma_rec = sigma_rec
         ),
         create_experiment_critters,
+        critter_templates = critter_templates,
         resolution = resolution,
         seasons = seasons,
         .progress = TRUE,
@@ -178,34 +185,47 @@ for (difficulty in difficulties) {
   message("finished critters")
   
   
-  # aggregate into lists of fauna
+  # function to randomize selectivity parameters
+  selfoo <- function(x,i){
+    out <-   list(
+      sel_start = runif(i, .05, 2),
+      # proportion of length 50% mature at 50% selectivity
+      sel_delta = runif(i, 1e-3, .25),
+      # offset for 95% selectivity
+      sel05_anchor = runif(i, 0, 0.9),
+      sel_at_linf = runif(i, 0, 1)
+    )
+    
+    out$sel05_anchor <- out$sel05_anchor * out$sel_start # must be smaller than length at 50% selectivity
+    
+    return(out)
+    
+  }
   state_experiments <- state_experiments %>%
     group_by(state_id) %>%
     nest() %>%
     mutate(
       fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
-      sels = map(fauna, ~ runif(length(.x), 0.1, 1.25)),
-      prices = map(fauna, ~ runif(length(.x), 1, 10))
-    )
-  
+      sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
+      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
+      prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
+      use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
+    ) |> 
+    ungroup()
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
   
   # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
   
   # state_experiments$fauna[[1]][[4]]$b0
   # stop()
-  
-    message("making fleets")
   state_experiments <- state_experiments %>%
-    ungroup() %>%
-    mutate(use_ports = sample(c(TRUE, FALSE), n(), replace = TRUE),
-           max_abs_cor_rec = sample(c(0,.66), n(), replace = TRUE)) %>%
     mutate(
-      fleet = future_pmap(
+      fleet = pmap(
         list(
           fauna = fauna,
           state = data,
           sels = sels,
+          sel_form = sel_form,
           prices = prices,
           use_ports = use_ports
         ),
@@ -213,13 +233,18 @@ for (difficulty in difficulties) {
         difficulty = difficulty,
         port_locations = port_locations,
         resolution = resolution,
-        .progress = TRUE,
-        .options = furrr_options(seed = TRUE)
-      ),
-      rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
+        .progress = "making fleets"
+      )
     )
-  message("finished making fleets")
   
+    # prepare recruitment deviate generator
+    state_experiments <- state_experiments |>
+      mutate(
+        max_abs_cor_rec = sample(c(0, .66), n(), replace = TRUE),
+        rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
+      )
+    
+ 
 
   # add in starting conditions
   init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
@@ -329,13 +354,14 @@ state_experiments <- state_experiments |>
 
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "area", "avoid_fishing"),
-    prop_mpa = seq(0, 0.75, by = 0.05),
+    prop_mpa = seq(0, 0.6, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
       length(state_experiments$fauna[[1]]),
       by = 1
     ),
-    placement_error = c(0)
+    placement_error = c(0),
+    observation_error =c(0,.1)
   ) %>%
     group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
     nest() %>%
@@ -359,7 +385,7 @@ state_experiments <- state_experiments |>
   experiment_results <-
     vector(mode = "list", length = 2) # for memory-concious mode, only save reference and the current MPA size
   
-  processed_sims <-
+  processed_sims <- total_processed_sims <-
     vector(mode = "list", length = nrow(placement_experiments) - 1) # for memory-concious mode, only save reference and the current MPA size
   
   pb <- progress_bar$new(
@@ -424,9 +450,23 @@ state_experiments <- state_experiments |>
         experiment_results = experiment_results,
         placement_experiments = placement_experiments[c(zerofinder,p), ],
         state_experiments = state_experiments,
-        load_results = save_experiments
+        load_results = save_experiments,
+        observation_error = placement_experiments$observation_error[p],
+        aggregate = FALSE
       )
-      
+
+      total_processed_sims[[p-1]] <- process_sims(
+        difficulty_level = difficulty,
+        results_dir = results_dir,
+        drop_patches = drop_patches,
+        project = project,
+        experiment_results = experiment_results,
+        placement_experiments = placement_experiments[c(zerofinder,p), ],
+        state_experiments = state_experiments,
+        load_results = save_experiments,
+        observation_error = placement_experiments$observation_error[p],
+        aggregate = TRUE
+      )
       
     } else {
       # store baseline case with no MPA
@@ -468,10 +508,9 @@ state_experiments <- state_experiments |>
 
  # combine each component of the placement experiemnts into one dataframe per metric, in some way that may not be pretty but works
    
- flat_processed_sims <- vector(mode = "list", length = length(components)) |> 
+ flat_processed_sims <- flat_total_processed_sims <-  vector(mode = "list", length = length(components)) |> 
    set_names(components)
- 
- 
+
 
  for (i in components){
    
@@ -479,6 +518,11 @@ state_experiments <- state_experiments |>
      list_rbind()
      
    flat_processed_sims[[i]] <- tmp
+   
+   tmp <-  map(total_processed_sims,i) |> 
+     list_rbind()
+   
+   flat_total_processed_sims[[i]] <- tmp
    
  }
  
@@ -488,9 +532,15 @@ state_experiments <- state_experiments |>
  
  flat_processed_sims$difficulty <- difficulty
  
+ flat_total_processed_sims$difficulty <- difficulty
+ 
   rm(processed_sims)
-
+  
+  rm(total_processed_sims)
+  
   write_rds(flat_processed_sims, file = file.path(results_dir, glue("{difficulty}_processed_sims.rds")))
+  
+  write_rds(flat_total_processed_sims, file = file.path(results_dir, glue("{difficulty}_total_processed_sims.rds")))
   
   tmp <- flat_processed_sims$mpa_outcomes |>
     filter(step == max(step)) |> 
