@@ -6,9 +6,10 @@ foos <- list.files(here::here("R"))
 
 purrr::walk(foos, ~ source(here::here("R", .x)))
 
+
 prep_run(
-  n_states = 4,
-  run_name = "indicators_test",
+  n_states = 84,
+  run_name = "indicators_v0.3",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
@@ -16,6 +17,7 @@ prep_run(
   patch_area = 5
 ) # loads packages and creates and returns some global variables for the analysis
 
+Rcpp::sourceCpp(here("src", "select_contiguous_mpa.cpp"))
 
 save_experiments <- FALSE
 
@@ -124,8 +126,8 @@ for (difficulty in difficulties) {
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
       f_v_m = runif(length(state_id), 0.01, 0.24),
-      adult_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
-      recruit_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
+      adult_home_range = sample(c(1, 50, 500), length(state_id), replace = TRUE),
+      recruit_home_range = sample(c(1, 50, 500), length(state_id), replace = TRUE),
       steepness = runif(length(state_id), min = 0.6, max = 1),
       b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
@@ -164,8 +166,8 @@ for (difficulty in difficulties) {
           spawning_aggregation = spawning_aggregation,
           spawning_season = spawning_season,
           f_v_m = f_v_m,
-          adult_diffusion = adult_diffusion,
-          recruit_diffusion = recruit_diffusion,
+          adult_home_range = adult_home_range,
+          recruit_home_range = recruit_home_range,
           density_dependence = density_dependence,
           hyper = hyperallometry,
           ontogenetic_shift = ontogenetic_shift,
@@ -183,7 +185,7 @@ for (difficulty in difficulties) {
       )
     )
   message("finished critters")
-  
+
   
   # function to randomize selectivity parameters
   selfoo <- function(x,i){
@@ -351,9 +353,11 @@ state_experiments <- state_experiments |>
   mutate(log_rec_devs = map2(fauna, rec_dev_cov_and_cor, generate_rec_devs, years = mpa_years))
   
 # generate placement experiments
+# placement_strategy = c("target_fishing", "area", "avoid_fishing"),
 
   placement_experiments <- expand_grid(
-    placement_strategy = c("target_fishing", "area", "avoid_fishing"),
+    placement_strategy = c("target_fishing", "avoid_fishing"),
+    mosaic = c(TRUE, FALSE),
     prop_mpa = seq(0, 0.6, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
@@ -361,7 +365,7 @@ state_experiments <- state_experiments |>
       by = 1
     ),
     placement_error = c(0),
-    observation_error =c(0,.1)
+    observation_error = c(0)
   ) %>%
     group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
     nest() %>%
@@ -416,6 +420,7 @@ state_experiments <- state_experiments |>
           run_mpa_experiment,
           placement_strategy = placement_experiments$placement_strategy[p],
           prop_mpa = placement_experiments$prop_mpa[p],
+          mosaic = placement_experiments$mosaic[p],
           critters_considered = placement_experiments$critters_considered[p],
           placement_error = placement_experiments$placement_error[p],
           resolution = resolution,

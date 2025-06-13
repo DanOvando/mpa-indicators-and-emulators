@@ -53,6 +53,8 @@ prep_run <- function(run_name = "test",
   
   library(ggtext)
   
+  library(workflowsets)
+  
   Rcpp::sourceCpp(here('src', "sim_pt_mpa.cpp"))
   
   options(dplyr.summarise.inform = FALSE)

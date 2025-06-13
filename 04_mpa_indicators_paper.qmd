@@ -54,7 +54,9 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 library(gt)
 
-prep_run(run_name = "indicators_v0.2",figure_text_size = 8) # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_v0.3",figure_text_size = 11) # loads packages and creates and returns some global variables for the analysis
+
+Rcpp::sourceCpp(here("src", "select_contiguous_mpa.cpp"))
 
 project <- "indicators"
 
@@ -67,7 +69,7 @@ paper_figs <- file.path(fig_dir,list.files(fig_dir)[list.files(fig_dir) |> str_d
 
 unlink(paper_figs)
 
-tune_grids <- FALSE
+tune_grids <- TRUE
 
 default_observation_error = 0
 ```
@@ -614,7 +616,7 @@ simulated data.
 
 
 # set.seed(1234321)
-set.seed(42424)
+set.seed(424242)
 
 difficulties <- c("complex")
 n_states <- 1
@@ -679,8 +681,8 @@ state_experiments <- baseline_state_experiments %>%
     spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
     spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
     f_v_m = runif(length(state_id), 0.01, 0.24),
-    adult_diffusion = sample(c(1, 5, 20), length(state_id), replace = TRUE),
-    recruit_diffusion = sample(c(1, 10, 100), length(state_id), replace = TRUE),
+    adult_home_range = sample(c(1, 5, 20), length(state_id), replace = TRUE),
+    recruit_home_range = sample(c(1, 10, 100), length(state_id), replace = TRUE),
     steepness = runif(length(state_id), min = 0.6, max = 1),
     b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
     hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
@@ -729,8 +731,8 @@ state_experiments <- state_experiments %>%
         spawning_aggregation = spawning_aggregation,
         spawning_season = spawning_season,
         f_v_m = f_v_m,
-        adult_diffusion = adult_diffusion,
-        recruit_diffusion = recruit_diffusion,
+        adult_home_range = adult_home_range,
+        recruit_home_range = recruit_home_range,
         density_dependence = density_dependence,
         hyper = hyperallometry,
         ontogenetic_shift = ontogenetic_shift,
@@ -750,60 +752,66 @@ state_experiments <- state_experiments %>%
 message("finished critters")
 
 
-selfoo <- function(x, i) {
-  out <-   list(
-    sel_start = runif(i, .5, 1),
-    # proportion of length 50% mature at 50% selectivity
-    sel_delta = runif(i, 1e-3, .25),
-    # offset for 95% selectivity
-    sel05_anchor = runif(i, 0, .01),
-    sel_at_linf = runif(i, 0.5, 1)
-  )
+ # function to randomize selectivity parameters
+  selfoo <- function(x,i){
+    out <-   list(
+      sel_start = runif(i, .05, 2),
+      # proportion of length 50% mature at 50% selectivity
+      sel_delta = runif(i, 1e-3, .25),
+      # offset for 95% selectivity
+      sel05_anchor = runif(i, 0, 0.9),
+      sel_at_linf = runif(i, 0, 1)
+    )
+    
+    out$sel05_anchor <- out$sel05_anchor * out$sel_start # must be smaller than length at 50% selectivity
+    
+    return(out)
+    
+  }
+  state_experiments <- state_experiments %>%
+    group_by(state_id) %>%
+    nest() %>%
+    mutate(
+      fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
+      sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
+      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
+      prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
+      use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
+    ) |> 
+    ungroup()
+  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
   
-  out$sel05_anchor <- out$sel05_anchor * out$sel_start # must be smaller than length at 50% selectivity
+  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
   
-  return(out)
+  # state_experiments$fauna[[1]][[4]]$b0
+  # stop()
+  state_experiments <- state_experiments %>%
+    mutate(
+      fleet = pmap(
+        list(
+          fauna = fauna,
+          state = data,
+          sels = sels,
+          sel_form = sel_form,
+          prices = prices,
+          use_ports = use_ports
+        ),
+        create_fleets,
+        difficulty = difficulty,
+        port_locations = port_locations,
+        resolution = resolution,
+        .progress = "making fleets"
+      )
+    )
+
+      # prepare recruitment deviate generator
+    state_experiments <- state_experiments |>
+      mutate(
+        max_abs_cor_rec = sample(c(0, .66), n(), replace = TRUE),
+        rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
+      )
+    
   
-}
-
-# aggregate into lists of fauna
-state_experiments <- state_experiments %>%
-  group_by(state_id) %>%
-  nest() %>%
-  mutate(
-    fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
-    sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
-    prices = map(fauna, ~ runif(length(.x), 1, 10))
-  )
-
-
-message("making fleets")
-state_experiments <- state_experiments %>%
-  ungroup() %>%
-  mutate(use_ports = sample(c(TRUE, FALSE), n(), replace = TRUE),
-         max_abs_cor_rec = sample(c(0,.66), n(), replace = TRUE)) %>%
-  mutate(
-    fleet = future_pmap(
-      list(
-        fauna = fauna,
-        state = data,
-        sels = sels,
-        prices = prices,
-        use_ports = use_ports
-      ),
-      create_fleets,
-      sel_form = list(rep("double_normal",4), rep("logistic",4)),
-      difficulty = difficulty,
-      port_locations = port_locations,
-      resolution = resolution,
-      .progress = TRUE,
-      .options = furrr_options(seed = TRUE)
-    ),
-    rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
-  )
-message("finished making fleets")
-
-
 # add in starting conditions
 init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
   starting_trajectory <-
@@ -869,6 +877,7 @@ state_experiments <- state_experiments |>
 placement_experiments <- expand_grid(
   placement_strategy = c("target_fishing"),
   prop_mpa = c(0,0.3),
+  mosaic = FALSE,
   critters_considered = seq(
     length(state_experiments$fauna[[1]]),
     length(state_experiments$fauna[[1]]),
@@ -899,6 +908,7 @@ placement_experiments$sigh[[p]] <- state_experiments |>
       run_mpa_experiment,
       placement_strategy = placement_experiments$placement_strategy[p],
       prop_mpa = placement_experiments$prop_mpa[p],
+      mosaic = placement_experiments$mosaic[p],
       critters_considered = placement_experiments$critters_considered[p],
       placement_error = placement_experiments$placement_error[p],
       resolution = resolution,
@@ -1032,6 +1042,12 @@ kappa <- fleet_experiment |>
   labs(subtitle = "D) Catch per species per fleet over time")
 
 
+# fleet_experiment |> 
+#   group_by(fleet, step) |> 
+#   summarise(effort = sum(effort)) |> 
+#   ggplot(aes(step, effort, color = fleet)) + 
+#   geom_line()
+
 # kappa <- fleet_results |> 
 #   group_by(step, critter, fleet) |> 
 #   summarise(catch = sum(catch, na.rm = TRUE)) |> 
@@ -1145,12 +1161,48 @@ fig <- mpa_outcomes |>
   scale_x_discrete(name = '') +
   scale_y_continuous(name= "% Change",limits = c(NA,2), oob = squish, labels = scales::percent) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 8, angle = 45, hjust = 1, vjust = 1),
+        axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
         axis.text.y = element_text(size = 8),
         panel.spacing.x = unit(2, "lines"))
 
-  figsaver(fig)
+ # figsaver(fig)
+  
+  sighbreaks <- seq(-1,2, by = .5)
+  sighlabs <- paste0(sighbreaks * 100, "%")
+  sighlabs[length(sighlabs)] <- "≥200%"
 
+  fig <- mpa_outcomes |>
+  filter(observation_error == default_observation_error) |>
+  select(depletion,
+         numeric_prop_mpa,
+         difficulty,
+         fished_biomass,
+         mpa_biomass,
+         biomass,
+         catch) |>
+  pivot_longer(-(depletion:difficulty)) |>
+  mutate(mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6)),
+         name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass"),
+         difficulty = fct_relevel(difficulty,"simple", "medium")) |>
+        mutate(mpa_bin = as_factor(case_when(mpa_bin == "(0,0.15]" ~ "0-15%", mpa_bin =="(0.15,0.3]" ~ "15-30%", .default = "30-60%"))) |>
+    filter(difficulty == "complex",
+           mpa_bin == "15-30%") |>
+    # filter(numeric_prop_mpa < 0.66, numeric_prop_mpa > 0.1) |>
+  ggplot(aes(x = name, y = value)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  stat_interval(aes(color_ramp = after_stat(level),color = name), .width = c(0.5,0.8,1)) +
+  # stat_interval(aes(difficulty, value)) +
+  # geom_density(aes(value, after_stat(scaled),fill = difficulty, color = difficulty),alpha = 0.25) +
+  facet_wrap(~mpa_bin, scales = "free_y") +
+  scale_x_discrete(name = '', labels = c("Biomass Inside", "Biomass Outside", "Total Biomass", "Catch") ) +
+  scale_y_continuous(name= "% Change",limits = c(NA,2), oob = squish, breaks = sighbreaks, labels = sighlabs) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 12, angle = 55, hjust = 1, vjust = 1),
+        axis.text.y = element_text(size = 8),
+        panel.spacing.x = unit(2, "lines")) +
+    guides(color = "none")
+fig
+figsaver(fig)
 
 ```
 
@@ -1202,16 +1254,23 @@ simulations, but some in only a few edge case (@fig-quadrant-freq).
   #   label = c("Win-Win", "Win-Lose", "Lose-Win", "Lose-Lose")
   # )
 
+
+  sighbreaks <- seq(-1,2, by = 1)
+  sighlabs <- paste0(sighbreaks * 100, "%")
+  sighlabs[length(sighlabs)] <- "≥200%"
+
+
   thirty_protected_plot <- mpa_outcomes |>
     filter(observation_error == default_observation_error) |> 
-    mutate(mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6))) |> 
+    mutate(mpa_bin = as.character(cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6)))) |> 
+    mutate(mpa_bin = as_factor(case_when(mpa_bin == "(0,0.15]" ~ "0-15%", mpa_bin =="(0.15,0.3]" ~ "15-30%", .default = "30-60%"))) |> 
     # filter(numeric_prop_mpa <= 0.4) |>
     # filter(between(numeric_prop_mpa, 0.2, 0.4)) |>
     ggplot(aes(biomass, catch)) +
     geom_vline(xintercept = 0, color = "black", linetype = 2) +
     geom_hline(yintercept = 0, color = "black",linetype = 2) +
     geom_point(aes(color = pmin(1,depletion)), alpha = 0.25) +
-    geom_rug(alpha = 1/4) +
+    # geom_rug(alpha = 1/4) +
     # geom_text(
     #   data = quad_labels,
     #   aes(x, y, label = label),
@@ -1235,7 +1294,8 @@ simulations, but some in only a few edge case (@fig-quadrant-freq).
     scale_y_continuous(name = "Change in Species Catch",
                        oob = squish,
                        limits = c(NA, 2), 
-                       labels = scales::percent) +
+                       breaks = sighbreaks,
+                       labels = sighlabs) +
     theme(legend.position = "bottom") +
     facet_grid(mpa_bin~fct_rev(difficulty))
   
@@ -2040,6 +2100,10 @@ figsaver(fig)
 ```
 
 ## Discussion
+
+There are three problems, two statistical and one epistomological. For indicators lacking a clear causal identification strategy, the core problem is simply omitted variable bias (e.g. failing to control for background trends in the outcome of interest). For indicators with a causal identification strategy (e.g. BACI), the problem is SUTVA, i.e. that what is labeled as a control is fact affected by the treatment. 
+
+However, even when these statistical problems are resolved, there remains an epistimological problem, namely that what is measured, even if it is being measuerd correctl, does not always map on to the outcome of interest. 
 
 1.  MPAs are expanding. Despite this, lots of questions around what
     exactly we can expect from no-take MPAs

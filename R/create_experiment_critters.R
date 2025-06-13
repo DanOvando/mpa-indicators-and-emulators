@@ -2,8 +2,8 @@ create_experiment_critters <-
   function(sciname,
            habitat,
            seasons = 1,
-           adult_diffusion = 10,
-           recruit_diffusion = 20,
+           adult_home_range = 50,
+           recruit_home_range = 500,
            seasonal_movement = FALSE,
            ontogenetic_shift = FALSE,
            spawning_aggregation = FALSE,
@@ -90,8 +90,8 @@ create_experiment_critters <-
         scientific_name = sciname,
         habitat = hab,
         recruit_habitat = recruit_habitat,
-        adult_diffusion = adult_diffusion,
-        recruit_diffusion = recruit_diffusion,
+        adult_home_range = adult_home_range,
+        recruit_home_range = recruit_home_range,
         density_dependence = density_dependence,
         fec_form = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),"pups","weight"),
         pups = 6,
@@ -123,13 +123,13 @@ create_experiment_critters <-
         weight_b = critter_template$weight_b,
         habitat = hab,
         recruit_habitat = recruit_habitat,
-        adult_diffusion = adult_diffusion,
-        recruit_diffusion = recruit_diffusion,
+        adult_home_range = adult_home_range,
+        recruit_home_range = recruit_home_range,
         density_dependence = density_dependence,
         fec_form = ifelse(str_detect(
           sciname, ("carcharhinus|sphyrna|prionace")
         ), "pups", "weight"),
-        pups = 6,
+        pups = 8,
         seasons = seasons,
         fec_expo = hyper,
         steepness =  steepness,
@@ -145,7 +145,7 @@ create_experiment_critters <-
     
 
     
-    critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.8
+    critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.5
     
     return(critter)
     
