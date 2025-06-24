@@ -9,12 +9,12 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
   n_states = 84,
-  run_name = "indicators_v0.3",
+  run_name = "indicators_v0.31",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
   ry = 20,
-  patch_area = 5
+  patch_area = 5^2
 ) # loads packages and creates and returns some global variables for the analysis
 
 Rcpp::sourceCpp(here("src", "select_contiguous_mpa.cpp"))
@@ -29,6 +29,8 @@ project <- "indicators"
 resolution <- c(rx, ry)
 
 mpa_years <- 20
+
+# difficulties <- c("medium")
 
 difficulties <- c("complex", "medium", "simple")
 # difficulties <- c("epo")
@@ -125,9 +127,9 @@ for (difficulty in difficulties) {
       seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-      f_v_m = runif(length(state_id), 0.01, 0.24),
-      adult_home_range = sample(c(1, 50, 500), length(state_id), replace = TRUE),
-      recruit_home_range = sample(c(1, 50, 500), length(state_id), replace = TRUE),
+      f_v_m = runif(length(state_id), 0.05, 0.33),
+      adult_home_range = sample(c(2.5, 25, 250), length(state_id), replace = TRUE),
+      recruit_home_range = sample(c(2.5, 25, 250), length(state_id), replace = TRUE),
       steepness = runif(length(state_id), min = 0.6, max = 1),
       b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
@@ -144,7 +146,7 @@ for (difficulty in difficulties) {
       )
     ) %>%
     mutate(
-      spawning_season = ifelse(spawning_aggregation, NA, NA),
+      spawning_season = if_else(spawning_aggregation, NA, NA),
       ontogenetic_shift = sample(c(TRUE, FALSE), length(state_id), replace = TRUE)
     ) |>
     mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
@@ -358,7 +360,7 @@ state_experiments <- state_experiments |>
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "avoid_fishing"),
     mosaic = c(TRUE, FALSE),
-    prop_mpa = seq(0, 0.6, by = 0.05),
+    prop_mpa = seq(0,.6, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
       length(state_experiments$fauna[[1]]),
@@ -455,7 +457,7 @@ state_experiments <- state_experiments |>
         experiment_results = experiment_results,
         placement_experiments = placement_experiments[c(zerofinder,p), ],
         state_experiments = state_experiments,
-        load_results = save_experiments,
+        load_results = FALSE,
         observation_error = placement_experiments$observation_error[p],
         aggregate = FALSE
       )
@@ -468,7 +470,7 @@ state_experiments <- state_experiments |>
         experiment_results = experiment_results,
         placement_experiments = placement_experiments[c(zerofinder,p), ],
         state_experiments = state_experiments,
-        load_results = save_experiments,
+        load_results = FALSE,
         observation_error = placement_experiments$observation_error[p],
         aggregate = TRUE
       )
@@ -586,12 +588,6 @@ state_experiments <- state_experiments |>
     geom_vline(xintercept = 0, color = "black") +
     geom_hline(yintercept = 0, color = "black") +
     geom_point(aes(color = f_v_m), alpha = 0.25, size = 3) +
-    # geom_text(
-    #   data = quad_labels,
-    #   aes(x, y, label = label),
-    #   size = 6,
-    #   color = "red"
-    # ) +
     scale_color_viridis_c(
       "BAU Fishing Mortality",
       breaks = c(0, .5),

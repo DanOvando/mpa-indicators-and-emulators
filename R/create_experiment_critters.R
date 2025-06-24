@@ -145,7 +145,7 @@ create_experiment_critters <-
     
 
     
-    critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.5
+    critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.66
     
     return(critter)
     

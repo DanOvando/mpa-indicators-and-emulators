@@ -3,7 +3,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
   # get rid of age structure
   fauna <-  x$fauna[[1]] |>
     ungroup() |> 
-    mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
+    mutate(critter = case_when(aggregate ~ "all_critters", !aggregate ~ critter)) |> 
     group_by(step, critter, patch, x, y, patch_name) |>
     summarise(
       biomass = sum(b),
@@ -32,8 +32,8 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
   fleets <-  x$fleets[[1]] |>
     rename(tmpcatch = catch) |>
     filter(!is.na(tmpcatch)) |>
-    mutate(fleet = ifelse(aggregate, "all_fleets", fleet)) |> 
-    mutate(critter = ifelse(aggregate, "all_critters", critter)) |> 
+    mutate(fleet = case_when(aggregate ~ "all_fleets", !aggregate ~ fleet)) |> 
+    mutate(critter = case_when(aggregate ~ "all_critters", !aggregate ~ critter)) |> 
     group_by(step, critter, patch, x, y, patch_name) |>
     summarise(
       catch = sum(tmpcatch),
@@ -150,10 +150,10 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
         )$coefficients["mpaTRUE"]
       ))) |>
       mutate(ind_biomass_gradient = map_dbl(data, ~ as.numeric(
-        lm(sbiomass ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(log(biomass) ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_biomass_gradient_raw = map_dbl(data, ~ as.numeric(
-        lm(sbiomass ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(log(biomass) ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       select(-data)
     
@@ -162,16 +162,16 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       group_by(critter, step) |>
       nest() |>
       mutate(ind_effort_gradient = map_dbl(data, ~ as.numeric(
-        lm(seffort ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(log(effort) ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_effort_gradient_raw = map_dbl(data, ~ as.numeric(
-        lm(seffort ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(log(effort) ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_cpue_gradient = map_dbl(data, ~ as.numeric(
-        lm(scpue ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(log(cpue) ~ mpa_proximity + b0_p, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       mutate(ind_cpue_gradient_raw = map_dbl(data, ~ as.numeric(
-        lm(scpue ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
+        lm(log(cpue) ~ mpa_proximity, data = .x |> filter(!mpa))$coefficients["mpa_proximitynear"]
       ))) |>
       select(-data)
     
@@ -225,7 +225,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
       ungroup() |>
       select(-data)
     
-    catch_ba <- fleets |>
+  catch_ba <- fleets |>
       filter(step == min(step) | step == max(step), !mpa) |>
       mutate(after = case_when(step == max(step) ~ TRUE, .default = FALSE)) |>
       mutate(baci = after & mpa) |>
@@ -254,7 +254,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
     #                   fleet = NA)
   }
   
-  
+
   return(out)
   
 }
