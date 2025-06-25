@@ -289,11 +289,10 @@ create_fleets <-
       )
       
       
-    } else if (difficulty == "simple"){
-      
+    } else if (str_detect(difficulty, "simple")){
       if (all(state$spatial_q == TRUE)) {
         a_spatial_q <-
-          state$habitat[state$scientific_name == "lutjanus malabaricus"][[1]] %>%
+          state$habitat[[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
@@ -302,28 +301,25 @@ create_fleets <-
       } else {
         a_spatial_q <- NA
       }
-      # 
-      # if (use_ports == TRUE){
-      #   ports <- port_locations
-      # } else {
-      #   ports <- NULL
-      # }
-      # 
+      
+      tmp <-   list(
+        tmp = Metier$new(
+          critter = fauna[[1]],
+          price = prices[[1]][1],
+          sel_form = sel_form[[1]][1],
+          sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
+          sel_delta =  fauna[[1]]$length_50_mature* sels[[1]]$sel_delta[1],
+          sel05_anchor = fauna[[1]]$length_50_mature* sels[[1]]$sel05_anchor[[1]],
+          sel_at_linf = sels[[1]]$sel_at_linf[[1]],
+          catchability = .1,
+          p_explt = 1,
+          sel_unit = "length",
+          spatial_catchability = a_spatial_q))
+      
+      names(tmp) = names(fauna)
+      
       fleets <- list(
-        "longline" = create_fleet(
-          list(
-            "lutjanus malabaricus" = Metier$new(
-              critter = fauna$`lutjanus malabaricus`,
-              price = prices[[1]][1],
-              sel_form = sel_form[[1]][1],
-              sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
-              sel_delta =  fauna[[1]]$length_50_mature* sels[[1]]$sel_delta[1],
-              sel05_anchor = fauna[[1]]$length_50_mature* sels[[1]]$sel05_anchor[[1]],
-              sel_at_linf = sels[[1]]$sel_at_linf[[1]],
-              catchability = .1,
-              p_explt = 1,
-              sel_unit = "length",
-              spatial_catchability = a_spatial_q)),
+        "longline" = create_fleet(tmp,
           base_effort = prod(resolution) + effort_int,
           cost_per_unit_effort = 20,
           cost_per_distance = 200,
@@ -334,7 +330,9 @@ create_fleets <-
           mpa_response = state$mpa_response[1],
           ports = ports[[1]][1,]
         ))
-  
+      
+      
+     
       
       
     } else if (difficulty == "epo"){

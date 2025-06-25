@@ -56,7 +56,7 @@ library(gt)
 
 library(corrr)
 
-prep_run(run_name = "indicators_v0.31",figure_text_size = 11, rx = 20, ry = 20, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_v0.32",figure_text_size = 11, rx = 20, ry = 20, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
 
 Rcpp::sourceCpp(here("src", "select_contiguous_mpa.cpp"))
 
@@ -594,7 +594,7 @@ any given iteration of the model.
 
 ::: {#tbl-states}
 | Name | Description |
-|-------------------------|----------------------------------------------|
+|--------------------------|----------------------------------------------|
 | KISS | Keep it Simple Stupid. When TRUE, sets habitat equal in all patches for all species |
 | MPA response | Dictates whether effort that used to fish inside MPAs "stays" and is redistributed or "leaves" the fishery |
 | Habitat patchiness ($\kappa$) | Low values create smooth habitat, higher values patchy habitat |
@@ -687,8 +687,6 @@ This is analogous to
 $$
 log \left(\frac{B_{protected}}{B_{reference}}  \right) = log(B_{protected}) - log(B_{reference})
 $$
-
-
 
 We calculate a length-based response ratio which operates the same as
 the biomass response ratio but measure mean length inside versus outside
@@ -806,7 +804,6 @@ need to augment these to address statistical smapling issues as needed
 xx.
 
 ## Results
-
 
 ### Case Study
 
@@ -1173,7 +1170,7 @@ effort ({@fig-case-study}-B). The total biomass by species
 ({@fig-case-study}-D), are calcualted over time, and compared between
 the state of the world with the MPA (solid lines) relative to the world
 without the MPA (dashed lines). Values from the simulated world with the
-MPA would be used to calcualte relevant indicators such as response
+MPA would be used to calculate relevant indicators such as response
 ratios.
 
 ```{r}
@@ -1321,23 +1318,26 @@ asymptotic effect of MPA size (closing 100% of the ocean) has to be a
 size could increase catch the effects of closures on catch has to become
 negative at some point once the MPA size becomes large enough. Our
 result that MPA can have a negative effect on total biomass outside,
-inside, and in total is less intuitive. This unintended and unintuitive
-consequence occurs in our model due to fleet dynamics. MPA can reduce
-biomass outside their borders by concentrating effort in the remaining
-fishing grounds to a level that cannot be compensated for by spillover
-from the MPA. Beyond this, if an MPA results in displacement of a
-fishing fleet from a relatively low biomass area for a given species to
-a high biomass area for that species, the net result can be net increase
-in the total fishing mortality on that species, and as a result a net
-decrease in the total biomass of that species, potentially both inside
-and outside the MPA. These negative effects on *Total* or *Inside*
-biomass were relatively rare, but are possible when species have
-heterogeneous and in cases negatively correlated distributions, and have
-heterogeneous vulnerability to different fishing fleets.
+inside, and in total is less intuitive. This unintended consequence
+occurs in our model due to fleet dynamics. MPA can reduce biomass
+outside their borders by concentrating effort in the remaining fishing
+grounds to a level that cannot be compensated for by spillover from the
+MPA. Beyond this, if an MPA results in displacement of a fishing fleet
+from a relatively low biomass area for a given species to a high biomass
+area for that species, the net result can be net increase in the total
+fishing mortality on that species, and as a result a net decrease in the
+total biomass of that species, potentially both inside and outside the
+MPA since fish move across the borders. These negative effects on
+*Total* or *Inside* biomass were relatively rare, but are possible when
+species have heterogeneous and in cases negatively correlated
+distributions, and have heterogeneous vulnerability to different fishing
+fleets.
+
+xx make SI version broken up by depletion level not difficulty
 
 ```{r}
 #| label: fig-outcomes
-#| fig-cap: Distribution of simulation outcomes across metrics (columns), proportion of seascape in MPA (rows), and scenario complexity (colors). Y-axis shows the percent change in the outcome in question caused by the MPA. Biomass Inside refers to total biomass of individual species inside MPA borders. Biomass Outside refers to total biomass of individual species outside MPA borders. Total Biomass refers to total biomass of individual species inside and outsiide MPA borders. Catch refers to catch per species and fleet outside the MPA. 
+#| fig-cap: Distribution of simulation outcomes across metrics (columns), proportion of seascape in MPA (rows), and scenario complexity (colors). Y-axis shows the percent change in the outcome in question caused by the MPA. Biomass Inside refers to total biomass of individual species inside MPA borders. Biomass Outside refers to total biomass of individual species outside MPA borders. Total Biomass refers to total biomass of individual species inside and outside MPA borders. Catch refers to catch per species and fleet outside the MPA. 
 
 outcome_labeller <- c(
   fished_biomass = "Biomass Outside",
@@ -1385,23 +1385,29 @@ figsaver(fig)
 
 ```
 
+xx move to methods
+
 Along with outcome-specific effects, our model allows us to examine
 joint effects on biomass and catch. We broke our simulated outcomes into
 quadrants defined by *unaffected* (effect size less than \|5%\|),
 *positive* (effect size greater than 5%) and *negative* (effect size
-less than -5%), assigned the change in total catch and total biomass in
-each simulation to their appropriate quadrant, and then calculated the
-frequency of factorial combinations of each quadrant for each metric
-(@fig-quadrant-freq). At MPA sizes between 0-15% of the seascape the
-most common result was *catch:unaffected & biomass:unaffected*,
-following by *catch:negative & biomass:unaffected*. Increasing MPA size
-largely resulted in a decrease in the percent of simulations under
-*catch:unaffected & biomass:unaffected* and an increase in
-*catch:negative & biomass:positive* (\>30% of simulations with MPA sizes
-between 30-60% of the seascape)*.* The "win-win" quadrant of
-*catch:positive & biomass:positive* was consistently the 4th most common
-outcome, representing up to 15% of simulations with MPA sizes between
-30-60% of the seascape (@fig-quadrant-freq).
+less than -5%), assigned the change in total catch and total biomass per
+species and fleet in each simulation to their appropriate quadrant, and
+then calculated the frequency of factorial combinations of each quadrant
+for each metric (@fig-quadrant-freq).
+
+XX
+
+At MPA sizes between 0-15% of the seascape the most common result was
+*catch:unaffected & biomass:unaffected*, following by *catch:negative &
+biomass:unaffected*. Increasing MPA size largely resulted in a decrease
+in the percent of simulations under *catch:unaffected &
+biomass:unaffected* and an increase in *catch:negative &
+biomass:positive* (\>30% of simulations with MPA sizes between 30-60% of
+the seascape xx)*.* The "win-win" quadrant of *catch:positive &
+biomass:positive* was consistently the 4th most common outcome,
+representing up to 15% of simulations with MPA sizes between 30-60% of
+the seascape (@fig-quadrant-freq).
 
 ```{r}
 #| label: fig-quadrant-freq
@@ -1433,61 +1439,24 @@ figsaver(fig)
 
 ### How Detectable are MPA Effects?
 
-
 Our simulation results show that MPA effects can be highly variable in
-both their direction and magnitude, and while MPA size and degree of
-fishing pressure play important roles, particularly under the more
-realistic complex scenarios simply knowing these variables would not be
-enough to accurately predict the effects of an MPA across various
-objectives (xx quantify this, take complex scenarios, check performance
-of model with only species MPA size and depletion as covariates xx).
+both their direction and magnitude, and as such cannot be reliably
+predicted *a priori* based solely on say MPA size. As a result, it is
+important to be able to empirically measure effects of MPAs on biomass
+and catch
 
-Since the magnitude, and for some metrics direction, of MPA outcomes
-cannot be reliably predicted *a priori*, there is value in monitoring
-the effects of MPAs empirically. This brings us to our second question,
-how detectable are MPA effects? To address this we measured how well
-common indicators used to measure MPA effects correlate with actual
-simulated MPA outcomes, given that the outcomes in question often cannot
-be directly observed. XX Methods section will describe all of these.
+The indicators evaluated in this paper had a range of correlations with
+the causal effects of MPAs. The strongest positive correlation was ...
+The strongest negative correlation was... Indicators X,Y,X had
+effectively zero correlation with outcomes A,B,C. Strength of
+correlation (and subsequent pseudo-R2) generally decreased with model
+complexity.
 
-For each combination of effect (e.g. MPA biomass, total biomass, catch)
-and indicator (response ratio, BACI, spillover gradient), we fit a
-linear model of the form
+xx explain value in correlations, RMSE, and ME individually xx
 
-$$
-Effect \sim N(\beta_0 + \beta_1Indicator,\sigma)
-$$ Where *Effect* is the effect in question (MPA biomass, total catch,
-etc) and "indicator" is the estimator obtained from a given indicator
-(see methods XX). For example, an "effect" might be percent increase in
-total catch for a given species and fleet, and "indicator" might be the
-simulated biomass response ratio (biomass inside the MPA relative to
-biomass outside the MPA, controlling for distance to MPA border and
-baseline habitat effects). Our expectation is a linear model linking a
-given indicator with a given effect should be better predictor the
-better that indicator explains the effect in question, with a 1:1
-relationship between the ideal case (indicator equals effect). We
-quantified performance both by R^2^ and by RMSE.
+Indicator X had the lowest RMSE and bias, relationship to correlation...
 
-For visualization, we picked the top performing, as quantified as the
-model with the lowest RMSE, indicator for each MPA effect
-(@fig-top-performers). Other metrics might produce slightly different
-rankings, but we feel that selecting by minimizing the error in the
-predicted percent effect size is a reasonable method. The predictive
-power of the best-performing indicators varied greatly by both
-difficulty and metric. BACI performed extremely well as an indicator of
-the change in biomass inside MPAs under the "simple" difficulty, with an
-R^2^ of over 0.7 . However, under the "complex" scenarios the R^2^
-between the BACI estimator and the MPA effect on biomass inside the
-reserve fell to 0.26; the BACI indicator is still capturing a
-relationship, but captures less of the variability in the outcome. The
-next best performing indicator and outcome combination was BACI and
-total biomass, with a similar but slightly lower predictive power to
-biomass inside the MPA. The R^2^ values of even the best performing
-indicators for Biomass Outside (BACI) and Total Catch (Catch before and
-after) were extremely poor, with R^2^ values approaching 0 under the
-complex scenarios.
-
-XX because things are already in percent points, makes more sense to report things in percentage points difference, not in percents of percents (off by 10 percentage points, not percent error in percent effect) XX
+xx color code text by whether it's a direct or implicit indicators?
 
 ```{r}
 #| eval: true
@@ -1570,8 +1539,6 @@ a / b + plot_layout(guides = "collect") & theme(legend.position = "top")
 
 ```
 
-
-
 ```{r}
 
 
@@ -1580,10 +1547,10 @@ a / b + plot_layout(guides = "collect") & theme(legend.position = "top")
 
 ```
 
+fter data are often not available for MPA impact studies
 
-BACI was the top indicator for both Biomass Inside and Total Biomass,
-and before and after data were the best indicator for catch. However,
-before-and-after data are often not available for MPA impact studies
+@hopf2024
+
 [@ban2019]. As such, we conducted a second test, limiting the candidate
 indicators to only response ratios. In addition, we selected a set of
 simulation results to match the distribution of response ratios observed
@@ -1592,20 +1559,13 @@ name xx). We only selected simulation scenarios with MPA sizes between
 10 and 40% of the seascape and depletion values between 0.2 and 0.8, to
 roughly mirror potential conditions represented by the California MPAs
 
-Under this set of constrained scenarios, the distribution of response
-ratios observed in the California MPAs were positively correlated (R^2^
-0.1) with simulated biomass changes inside MPA borders; in other words,
-higher response ratios tended to be correlated with of higher simulated
-MPA effects inside the protected area borders. However, response ratios
-had almost no correlation with any other outcome, including total
-biomass, biomass outside, and catch.
+These scenarios help visualize the range of causal MPA effects that are
+capable of producing the distribution of response ratios observed in the
+selected California MPAs. Simulated response ratios were positively
+correlated with *Biomass Inside*... explain the range of correlation
+outcomes
 
-xx Goddamn it all this is hard to explain, so should probably think of a
-better way to do it. What this is telling us is simulations say that the
-distribution of response ratios we observed in the CA MPAs seem to be
-associated with higher inside MPA effects, but could be indicative of
-positive but who knows by how much total biomass effects, and positive
-or negative outside MPA and catch effects (@fig-rr-performance). xx
+(@fig-rr-performance).
 
 ```{r}
 #| label: fig-rr-performance
@@ -1703,38 +1663,16 @@ ca_rr_ind_plot <- sigh |>
 figsaver(ca_rr_ind_plot)
 ```
 
-Include a table of the performance of all the indicators.
-
-
-The previous exercises quantified the ability of linear models of
-individual indicators to estimate MPA effects measured as a percent
-change in the trait in question. However, users may be more interested
-in the ability of indicators to track outcomes at the level of broad
-quadrants (biomass improved and catch improved, biomass improved and
-catch loss, etc). We then trained a random forest model (xx) to predict
-this quadrant as a function of all possible indicator values, with or
-without auxiliary information on depletion or fishing mortality.
-
-The model was on 50% of simulated states of nature, and then tested on
-the remaining 50%.
-
-TLDR results, after balancing outcome
-
--   Out of sample predictive accuracy of F only was about 17%, 22% for
-    indicator onle, almost 25% for indicators plus depletion. Overall,
-    model not good at predicting, adding indicators adds a bit above
-    knowing F alone, but even knowing all of them doesn't get you above
-    25% accuracy
-
--   Good news, best performing quadrants were catch negative and biomass
-    positive and no effect, so better chance of being able to detect
-    that it either did nothing, or that catch was harmed. But still not
-    great
-
-
 ## Discussion
 
-All else being equal, bigger conservation outcomes equal bigger ratios, but bigger conservation outcomes mean lower fishing all else being equal
+That MPAs produce spillover is not really a question; animals move to
+some degree, the question of interest then is how much, and we would
+aregue that the sheer magnitude of spillover itself is not really of
+interest, it is the net effect, in terms of conservatino or fishery
+gains outside, and that is what these things do not tell us.
+
+All else being equal, bigger conservation outcomes equal bigger ratios,
+but bigger conservation outcomes mean lower fishing all else being equal
 
 Why not CPUE?
 
@@ -2010,11 +1948,63 @@ performance of size limits might be warranted.
 
 \newpage
 
-## References 
+## References
+
 ::: {#refs}
 :::
 
 # SI
+
+```{r}
+
+outcome_labeller <- c(
+  fished_biomass = "Biomass Outside",
+  mpa_biomass = "Biomass Inside",
+  biomass = "Total Biomass",
+  catch = "Catch"
+)
+
+sighbreaks <- seq(-1,2, by = .5)
+sighlabs <- paste0(sighbreaks * 100, "%")
+sighlabs[length(sighlabs)] <- "≥200%"
+
+fig <- mpa_outcomes |>
+  filter(observation_error == default_observation_error) |>
+  select(depletion,
+         numeric_prop_mpa,
+         difficulty,
+         fished_biomass,
+         mpa_biomass,
+         biomass,
+         catch) |>
+  pivot_longer(-(depletion:difficulty)) |>
+  mutate(
+    depletion_bin = cut(pmin(1.19,depletion), breaks = c(0 ,.25, 0.5,1.2)),
+  mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6)),
+         name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass"),
+         difficulty = fct_relevel(difficulty,"simple", "medium")) |>
+  mutate(mpa_bin = as_factor(case_when(mpa_bin == "(0,0.15]" ~ "0-15%", mpa_bin =="(0.15,0.3]" ~ "15-30%", .default = "30-60%"))) |>
+   mutate(depletion_bin = as_factor(case_when(depletion_bin == "(0,0.25]" ~ "0-25%", depletion_bin =="(0.25,0.5]" ~ "25-50%", .default = ">50%"))) |>
+  mutate(depletion_bin = fct_relevel(depletion_bin, "0-25%","25-50%" )) |> 
+  # filter(numeric_prop_mpa < 0.66, numeric_prop_mpa > 0.1) |> 
+  ggplot(aes(x = depletion_bin, y = value)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  stat_interval(aes(color_ramp = after_stat(level),color = depletion_bin), .width = c(0.5,0.8,1)) +
+  # stat_interval(aes(difficulty, value)) +
+  # geom_density(aes(value, after_stat(scaled),fill = difficulty, color = difficulty),alpha = 0.25) +
+  facet_grid(mpa_bin ~ name, scales = "free_y", labeller = labeller(name = outcome_labeller)) + 
+  scale_x_discrete(name = '') +
+  scale_y_continuous(name= "MPA Effect",limits = c(NA,2), oob = squish, breaks = sighbreaks, labels = sighlabs) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
+        axis.text.y = element_text(size = 8),
+        panel.spacing.x = unit(2, "lines")) + 
+  ggdist::scale_colour_ramp_discrete(name = "Quantile Range", labels = c("100%","80%", "50%")) + 
+  guides(color = "none")
+
+
+figsaver(fig)
+```
 
 ```{r}
 state_depletions |> 
@@ -2022,8 +2012,6 @@ state_depletions |>
   geom_histogram() + 
   facet_grid(difficulty ~ critter)
 ```
-
-
 
 ```{r}
 #| eval: true
@@ -2106,8 +2094,6 @@ a / b + plot_layout(guides = "collect") & theme(legend.position = "top")
 
 
 ```
-
-
 
 ```{r}
 #| label: fig-total-rr-performance
@@ -2205,7 +2191,6 @@ ca_rr_ind_plot <- sigh |>
 figsaver(ca_rr_ind_plot)
 ```
 
-
 # Scraps
 
 MPAs are increasingly being looked to to achieve a range of objectives
@@ -2258,7 +2243,6 @@ to track performance of MPAs are actually poor predictors of real
 outcomes.
 
 We suggest some solutions.
-
 
 ```{r}
 #| eval: false
@@ -2505,7 +2489,6 @@ figsaver(fig)
   
 ```
 
-
 ```{r}
 #| label: fig-tradeoffs
 #| fig-cap: Distribution of simulation outcomes for total biomass (x-axis) and catch (y-axis), by proportion of seascape in MPA (rows), and scenario complexity (columns). Color indicates the business as usual degree of depletion (Biomass divided by unfished biomass) in the absence of the MPA. 
@@ -2722,7 +2705,6 @@ best_performers_noncausal <- comparison |>
   mutate(combo = str_remove_all(combo, "ind_"))
 ```
 
-
 ```{r}
 #|label: total-ind-performance
 #|
@@ -2779,7 +2761,6 @@ best_total_performers_noncausal <- total_comparison |>
     mutate(combo = str_remove_all(combo, "ind_"))
 
 ```
-
 
 ```{r}
 #| label: fig-top-performers
@@ -2891,4 +2872,3 @@ metric_table |>
   tab_caption("R2 and RMSE of each tested indicator as a predictor of each considered outcome. Will clean this up xx.")
  
 ```
-

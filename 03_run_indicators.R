@@ -9,7 +9,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
   n_states = 84,
-  run_name = "indicators_v0.31",
+  run_name = "indicators_v0.32",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
@@ -31,12 +31,18 @@ resolution <- c(rx, ry)
 mpa_years <- 20
 
 # difficulties <- c("medium")
+difficulties <- c("simple", "medium", "complex")
 
-difficulties <- c("complex", "medium", "simple")
+# difficulties <- c("complex", "medium", "simple")
 # difficulties <- c("epo")
 
 difficulty_species <- list(
-  simple = c("lutjanus malabaricus"),
+  simple = c(
+    "lutjanus malabaricus",
+    "pristipomoides filamentosus",
+    "epinephelus fuscoguttatus",
+    "carcharhinus amblyrhynchos"
+  ),
   medium = c(
     "lutjanus malabaricus",
     "pristipomoides filamentosus",
@@ -87,8 +93,9 @@ baseline_state_experiments <-
     ),
     spatial_allocation = sample(c("ppue", "rpue", "revenue"), n_states, replace = TRUE),
     fleet_model = sample(c("constant_effort", "open_access"), n_states, replace = TRUE)
-  ) %>%
-  mutate(state_id = 1:nrow(.))
+  ) |> 
+  ungroup() |> 
+  mutate(state_id = 1:n())
 
 port_locations <-
   tibble(x = c(1, resolution[1]), y = c(1, resolution[2])) # coordinates to test impact of highly disparate ports
@@ -205,24 +212,30 @@ for (difficulty in difficulties) {
     return(out)
     
   }
-  state_experiments <- state_experiments %>%
-    group_by(state_id) %>%
-    nest() %>%
+
+  # if difficulty is simple, run each species as an independent simulation rather than collectively
+  if (difficulty == "simple") {
+    
+    # state_experiments$state_id <- paste0("simple_", 1:nrow(state_experiments))
+    
+    state_experiments$state_id <- 1:nrow(state_experiments)
+    
+    
+  }
+  
+  state_experiments <- state_experiments |> 
+    group_by(state_id) |> 
+    nest()  |> 
     mutate(
-      fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
+      fauna = map(data, ~ .x$critter |> set_names(.x$scientific_name)),
       sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
       sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
       prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
       use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
     ) |> 
     ungroup()
-  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
-  
-  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
-  
-  # state_experiments$fauna[[1]][[4]]$b0
-  # stop()
-  state_experiments <- state_experiments %>%
+
+  state_experiments <- state_experiments  |> 
     mutate(
       fleet = pmap(
         list(
@@ -300,7 +313,8 @@ for (difficulty in difficulties) {
     pivot_longer(-state_id, names_to = "critter", values_to = "step_depletion") |>
     group_by(state_id, critter) |>
     summarise(depletion = mean(step_depletion)) |>
-    mutate(state_id = as.integer(state_id))
+    mutate(state_id = as.integer(state_id)) |> 
+    filter(!is.na(depletion))
   
   state_experiments <- state_experiments |>
     left_join(state_depletions |> group_by(state_id) |> nest(.key = "depletion"),
