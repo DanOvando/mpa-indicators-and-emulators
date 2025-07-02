@@ -24,25 +24,25 @@ create_fleets <-
     
       if (all(state$spatial_q == TRUE)) {
         a_spatial_q <-
-          state$habitat[state$scientific_name == "lutjanus malabaricus"][[1]] %>%
+          state$habitat[state$scientific_name == "reef_fish"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
         
         b_spatial_q <-
-          state$habitat[state$scientific_name == "pristipomoides filamentosus"][[1]] %>%
+          state$habitat[state$scientific_name == "tuna"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
         
         c_spatial_q <-
-          state$habitat[state$scientific_name == "epinephelus fuscoguttatus"][[1]] %>%
+          state$habitat[state$scientific_name == "grouper"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
         
         d_spatial_q <-
-          state$habitat[state$scientific_name == "carcharhinus amblyrhynchos"][[1]] %>%
+          state$habitat[state$scientific_name == "shark"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
@@ -54,8 +54,8 @@ create_fleets <-
     fleets <- list(
       "alpha" = create_fleet(
         list(
-          "lutjanus malabaricus" = Metier$new(
-            critter = fauna$`lutjanus malabaricus`,
+          "reef_fish" = Metier$new(
+            critter = fauna$reef_fish,
             price = prices[[1]][1],
             sel_form = sel_form[[1]][1],
             sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
@@ -68,8 +68,8 @@ create_fleets <-
             spatial_catchability = a_spatial_q
             
           ),
-          "pristipomoides filamentosus" = Metier$new(
-            critter = fauna$`pristipomoides filamentosus`,
+          "tuna" = Metier$new(
+            critter = fauna$tuna,
             price = prices[[1]][2],
             sel_form = sel_form[[1]][2],
             sel_start = fauna[[2]]$length_50_mature * sels[[1]]$sel_start[2],
@@ -82,8 +82,8 @@ create_fleets <-
             spatial_catchability = b_spatial_q
             
           ),
-          "epinephelus fuscoguttatus" = Metier$new(
-            critter = fauna$`epinephelus fuscoguttatus`,
+          "grouper" = Metier$new(
+            critter = fauna$grouper,
             price = prices[[1]][3],
             sel_form = sel_form[[1]][3],
             sel_start = fauna[[3]]$length_50_mature * sels[[1]]$sel_start[3],
@@ -95,8 +95,8 @@ create_fleets <-
             sel_unit = "length",
             spatial_catchability = c_spatial_q
           ),
-          "carcharhinus amblyrhynchos" = Metier$new(
-            critter = fauna$`carcharhinus amblyrhynchos`,
+          "shark" = Metier$new(
+            critter = fauna$shark,
             price = prices[[1]][4],
             sel_form = sel_form[[1]][4],
             sel_start = fauna[[4]]$length_50_mature * sels[[1]]$sel_start[4],
@@ -124,25 +124,25 @@ create_fleets <-
       
       if (all(state$spatial_q == TRUE)) {
         a_spatial_q <-
-          state$habitat[state$scientific_name == "lutjanus malabaricus"][[1]] %>%
+          state$habitat[state$scientific_name == "reef_fish"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
         
         b_spatial_q <-
-          state$habitat[state$scientific_name == "pristipomoides filamentosus"][[1]] %>%
+          state$habitat[state$scientific_name == "tuna"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
         
         c_spatial_q <-
-          state$habitat[state$scientific_name == "epinephelus fuscoguttatus"][[1]] %>%
+          state$habitat[state$scientific_name == "grouper"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
         
         d_spatial_q <-
-          state$habitat[state$scientific_name == "carcharhinus amblyrhynchos"][[1]] %>%
+          state$habitat[state$scientific_name == "shark"][[1]] %>%
           pivot_wider(names_from = y, values_from = habitat) %>%
           select(-x) %>%
           as.matrix()
@@ -154,8 +154,8 @@ create_fleets <-
       fleets <- list(
         "alpha" = create_fleet(
           list(
-            "lutjanus malabaricus" = Metier$new(
-              critter = fauna$`lutjanus malabaricus`,
+            "reef_fish" = Metier$new(
+              critter = fauna$reef_fish,
               price = prices[[1]][1],
               sel_form = sel_form[[1]][1],
               sel_start = fauna[[1]]$length_50_mature * sels[[1]]$sel_start[1],
@@ -163,13 +163,13 @@ create_fleets <-
               sel05_anchor = fauna[[1]]$length_50_mature* sels[[1]]$sel05_anchor[[1]],
               sel_at_linf = sels[[1]]$sel_at_linf[[1]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = .8,
               sel_unit = "length",
               spatial_catchability = a_spatial_q
               
             ),
-            "pristipomoides filamentosus" = Metier$new(
-              critter = fauna$`pristipomoides filamentosus`,
+            "tuna" = Metier$new(
+              critter = fauna$tuna,
               price = prices[[1]][2],
               sel_form = sel_form[[1]][2],
               sel_start = fauna[[2]]$length_50_mature * sels[[1]]$sel_start[2],
@@ -177,13 +177,13 @@ create_fleets <-
               sel05_anchor = fauna[[2]]$length_50_mature* sels[[1]]$sel05_anchor[[2]],
               sel_at_linf = sels[[1]]$sel_at_linf[[2]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = 0.1,
               sel_unit = "length",
               spatial_catchability = b_spatial_q
               
             ),
-            "epinephelus fuscoguttatus" = Metier$new(
-              critter = fauna$`epinephelus fuscoguttatus`,
+            "grouper" = Metier$new(
+              critter = fauna$grouper,
               price = prices[[1]][3],
               sel_form = sel_form[[1]][3],
               sel_start = fauna[[3]]$length_50_mature * sels[[1]]$sel_start[3],
@@ -195,8 +195,8 @@ create_fleets <-
               sel_unit = "length",
               spatial_catchability = c_spatial_q
             ),
-            "carcharhinus amblyrhynchos" = Metier$new(
-              critter = fauna$`carcharhinus amblyrhynchos`,
+            "shark" = Metier$new(
+              critter = fauna$shark,
               price = prices[[1]][4],
               sel_form = sel_form[[1]][4],
               sel_start = fauna[[4]]$length_50_mature * sels[[1]]$sel_start[4],
@@ -204,7 +204,7 @@ create_fleets <-
               sel05_anchor = fauna[[4]]$length_50_mature* sels[[1]]$sel05_anchor[[4]],
               sel_at_linf = sels[[1]]$sel_at_linf[[4]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = 0.5,
               sel_unit = "length",
               spatial_catchability = d_spatial_q
             )
@@ -221,8 +221,8 @@ create_fleets <-
         ),
         "beta" = create_fleet(
           list(
-            "lutjanus malabaricus" = Metier$new(
-              critter = fauna$`lutjanus malabaricus`,
+            "reef_fish" = Metier$new(
+              critter = fauna$reef_fish,
               price = prices[[2]][1],
               sel_form = sel_form[[2]][1],
               sel_start = fauna[[1]]$length_50_mature * sels[[2]]$sel_start[1],
@@ -230,13 +230,13 @@ create_fleets <-
               sel05_anchor = fauna[[1]]$length_50_mature* sels[[2]]$sel05_anchor[[1]],
               sel_at_linf = sels[[2]]$sel_at_linf[[1]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = .2,
               sel_unit = "length",
               spatial_catchability = a_spatial_q
               
             ),
-            "pristipomoides filamentosus" = Metier$new(
-              critter = fauna$`pristipomoides filamentosus`,
+            "tuna" = Metier$new(
+              critter = fauna$tuna,
               price = prices[[2]][2],
               sel_form = sel_form[[2]][2],
               sel_start = fauna[[2]]$length_50_mature * sels[[2]]$sel_start[2],
@@ -244,13 +244,13 @@ create_fleets <-
               sel05_anchor = fauna[[2]]$length_50_mature* sels[[2]]$sel05_anchor[[2]],
               sel_at_linf = sels[[2]]$sel_at_linf[[2]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = 0.9,
               sel_unit = "length",
               spatial_catchability = b_spatial_q
               
             ),
-            "epinephelus fuscoguttatus" = Metier$new(
-              critter = fauna$`epinephelus fuscoguttatus`,
+            "grouper" = Metier$new(
+              critter = fauna$grouper,
               price = prices[[2]][3],
               sel_form = sel_form[[2]][3],
               sel_start = fauna[[3]]$length_50_mature * sels[[2]]$sel_start[3],
@@ -258,12 +258,12 @@ create_fleets <-
               sel05_anchor = fauna[[3]]$length_50_mature* sels[[2]]$sel05_anchor[[3]],
               sel_at_linf = sels[[2]]$sel_at_linf[[3]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = 0,
               sel_unit = "length",
               spatial_catchability = c_spatial_q
             ),
-            "carcharhinus amblyrhynchos" = Metier$new(
-              critter = fauna$`carcharhinus amblyrhynchos`,
+            "shark" = Metier$new(
+              critter = fauna$shark,
               price = prices[[2]][4],
               sel_form = sel_form[[2]][4],
               sel_start = fauna[[4]]$length_50_mature * sels[[2]]$sel_start[4],
@@ -271,7 +271,7 @@ create_fleets <-
               sel05_anchor = fauna[[4]]$length_50_mature* sels[[2]]$sel05_anchor[[4]],
               sel_at_linf = sels[[2]]$sel_at_linf[[4]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = 0.5,
               sel_unit = "length",
               spatial_catchability = d_spatial_q
             )

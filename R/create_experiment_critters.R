@@ -1,15 +1,12 @@
 create_experiment_critters <-
-  function(sciname,
+  function(critter_name,
            habitat,
            seasons = 1,
-           adult_home_range = 50,
-           recruit_home_range = 500,
            seasonal_movement = FALSE,
            ontogenetic_shift = FALSE,
            spawning_aggregation = FALSE,
            spawning_seasons = NA,
            steepness = 0.7,
-           ssb0 = NA,
            b0 = 100,
            f_v_m,
            hyper = 1,
@@ -18,7 +15,8 @@ create_experiment_critters <-
            kiss = FALSE,
            sigma_rec = 0,
            ac_rec = 0,
-           critter_templates = NULL) {
+           critter_templates = NULL,
+           home_ranges = c("low" = 2.5, "medium" = 25, "high" = 250)) {
     
     hab <- habitat %>%
       pivot_wider(names_from = y, values_from = habitat) %>%
@@ -85,67 +83,166 @@ create_experiment_critters <-
       recruit_habitat <- list()
     }
     
-    if (is.null(critter_templates)){
+    
+    if (critter_name == "shark"){
+      
+      #Oshitani, Shungo, Hideki Nakano, and Sho Tanaka. “Age and Growth of the Silky Shark Carcharhinus Falciformis from the Pacific Ocean.” Fisheries Science 69, no. 3 (2003): 456–64. https://doi.org/10.1046/j.1444-2906.2003.00645.x.
+      # Neubauer, P, K Kim, K Large, and S Brouwer. “Stock Assessment of Silky Shark in the Western and Central Pacific Ocean.” Report to the Western and Central Pacific Fisheries Commission Scientific Committee. Twentieth Regular Session, 2024.
+      
+      
+      max_shark_age <- 25
+      ages <- seq(0, 25, by = 1 / seasons)
+      
+      length_at_age <- 216.4 * (1 - exp(-0.148 * ((ages) - -1.778991)))
+      
+      pups_at_age <- pmax(0,-8.6 + 0.098 * length_at_age)
       critter <- marlin::create_critter(
-        scientific_name = sciname,
-        habitat = hab,
-        recruit_habitat = recruit_habitat,
-        adult_home_range = adult_home_range,
-        recruit_home_range = recruit_home_range,
-        density_dependence = density_dependence,
-        fec_form = ifelse(str_detect(sciname,("carcharhinus|sphyrna|prionace")),"pups","weight"),
-        pups = 6,
-        seasons = seasons,
-        fec_expo = hyper,
-        steepness =  steepness,
-        ssb0 = ssb0,
-        b0 = b0, 
+        query_fishlife = FALSE,
+        scientific_name = "Carcharhinus falciformis",
+        common_name = "silky shark",
+        m = 0.21,
+        lorenzen_c = -.5,
+        linf = 216.4,
+        vbk = 0.148,
+        t0 = -1.778991, # 50cm at birth
+        min_age = 0,
+        max_age = 25,
+        age_mature = 6,
+        weight_a = 0.0000273,
+        weight_b = 2.86,
+        steepness = 0.3,
+        b0 = b0,
+        fec_at_age = pups_at_age,
+        adult_home_range = home_ranges["high"],
+        recruit_home_range = home_ranges["low"],
         spawning_seasons = spawning_seasons,
         resolution = resolution,
+        seasons = seasons,
+        habitat = hab,
+        recruit_habitat = recruit_habitat,
+        density_dependence = "post_dispersal",
+        fec_expo = hyper,
         sigma_rec = sigma_rec,
-        ac_rec = ac_rec
-      )
-    } else {
-      
-      critter_template <- critter_templates[[sciname]]
+        ac_rec = ac_rec)
+
+    } else if (critter_name == "tuna"){
       
       critter <- marlin::create_critter(
         query_fishlife = FALSE,
-        scientific_name = sciname,
-        m_at_age = critter_template$m_at_age,
-        linf = critter_template$linf,
-        vbk = critter_template$vbk,
-        t0 = critter_template$t0,
-        min_age = critter_template$min_age,
-        max_age = critter_template$max_age,
-        age_mature = critter_template$age_mature,
-        weight_a = critter_template$weight_a,
-        weight_b = critter_template$weight_b,
+        scientific_name = "Thunnus albacares",
+        common_name = "yellowfin tuna",
+        m = 0.4,
+        growth_model = "growth_cessation",
+        lorenzen_c = -1,
+        l0 = 18.85,
+        rmax = 37.24,
+        k =  0.89,
+        t50 = 4.57,
+        min_age = 0,
+        max_age = 15,
+        age_mature = 3,
+        weight_a = 0.00004,
+        weight_b = 2.86,
         habitat = hab,
         recruit_habitat = recruit_habitat,
-        adult_home_range = adult_home_range,
-        recruit_home_range = recruit_home_range,
+        adult_home_range = home_ranges["high"],
+        recruit_home_range = home_ranges["high"],
         density_dependence = density_dependence,
-        fec_form = ifelse(str_detect(
-          sciname, ("carcharhinus|sphyrna|prionace")
-        ), "pups", "weight"),
-        pups = 8,
         seasons = seasons,
         fec_expo = hyper,
-        steepness =  steepness,
-        ssb0 = ssb0,
+        steepness =  0.9,
         b0 = b0,
         spawning_seasons = spawning_seasons,
         resolution = resolution,
         sigma_rec = sigma_rec,
-        ac_rec = ac_rec
-      )
+        ac_rec = ac_rec)
       
-    }
-    
+      
+      
+    } else if (critter_name == "grouper"){
+      # https://sedarweb.org/assessments/sedar-47/
+      critter <- marlin::create_critter(
+        query_fishlife = FALSE,
+        scientific_name = "Epinephelus fuscoguttatus",
+        common_name = "goliath grouper",
+        m = 0.16464,
+        lorenzen_c = -.5746,
+        linf = 222.11,
+        vbk = 0.0937,
+        t0 = -.68, 
+        min_age = 0,
+        max_age = 35,
+        age_mature = 6,
+        weight_a = 1e-5,
+        weight_b = 3.151,
+        b0 = b0,
+        spawning_seasons = spawning_seasons,
+        resolution = resolution,
+        seasons = seasons,
+        habitat = hab,
+        recruit_habitat = recruit_habitat,
+        adult_home_range = home_ranges["low"],
+        recruit_home_range = home_ranges["high"],
+        density_dependence = density_dependence,
+        fec_expo = hyper,
+        steepness =  0.6,
+        sigma_rec = sigma_rec,
+        ac_rec = ac_rec)
+      
+      
+    } else if (critter_name == "reef_fish"){
+      
+      
+      
+      # library(FishLife)
+      # 
+      # edge_names = c( FishLife::FishBase_and_Morphometrics$tree$tip.label,
+      #                 FishLife::FishBase_and_Morphometrics$tree$node.label[-1] ) # Removing root
+      # 
+      # #
+      # which_g = match( "Seriola quinqueradiata", edge_names )
+      # Table2023 = cbind(
+      #   Mean = FishBase_and_Morphometrics$beta_gv[which_g,],
+      #   SE = sqrt(diag(FishBase_and_Morphometrics$Cov_gvv[which_g,,]))
+      # ) |>
+      #   as.data.frame() |>
+      #   rownames_to_column() |>
+      #   mutate(across(-rowname, exp))
+      # 
+      # 
+      # Table2023
+      
+      critter <- marlin::create_critter(
+        query_fishlife = FALSE,
+        scientific_name = "Seriola quinqueradiata",
+        common_name = "reef fish",
+        m = 2.462636e-01,
+        lorenzen_c = -1,
+        linf = 104,
+        vbk = 2.090865e-01,
+        t0 = -.5, 
+        min_age = 0,
+        max_age = 15,
+        age_mature = 2,
+        weight_a = 3e-4,
+        weight_b = 2.6,
+        spawning_seasons = spawning_seasons,
+        resolution = resolution,
+        seasons = seasons,
+        habitat = hab,
+        adult_home_range = home_ranges["medium"],
+        recruit_home_range = home_ranges["medium"],
+        density_dependence = density_dependence,
+        fec_expo = hyper,
+        steepness =  0.8,
+        b0 = b0,
+        sigma_rec = sigma_rec,
+        ac_rec = ac_rec)
 
-    
-    critter$init_explt = max(critter$m_at_age) * f_v_m * critter$steepness * 0.66
+    }
+  
+
+    critter$init_explt = max(critter$m_at_age) * f_v_m
     
     return(critter)
     

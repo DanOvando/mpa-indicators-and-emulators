@@ -9,7 +9,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
   n_states = 84,
-  run_name = "indicators_v0.32",
+  run_name = "indicators_v0.5",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 20,
@@ -30,30 +30,30 @@ resolution <- c(rx, ry)
 
 mpa_years <- 20
 
-# difficulties <- c("medium")
-difficulties <- c("simple", "medium", "complex")
+# difficulties <- c("simple")
+# difficulties <- c("simple", "medium", "complex")
 
-# difficulties <- c("complex", "medium", "simple")
+difficulties <- c("complex", "medium", "simple")
 # difficulties <- c("epo")
 
 difficulty_species <- list(
   simple = c(
-    "lutjanus malabaricus",
-    "pristipomoides filamentosus",
-    "epinephelus fuscoguttatus",
-    "carcharhinus amblyrhynchos"
+    "reef_fish",
+    "shark",
+    "tuna", 
+    "grouper"
   ),
   medium = c(
-    "lutjanus malabaricus",
-    "pristipomoides filamentosus",
-    "epinephelus fuscoguttatus",
-    "carcharhinus amblyrhynchos"
+    "reef_fish",
+    "shark",
+    "tuna",
+    "grouper"
   ),
   complex = c(
-    "lutjanus malabaricus",
-    "pristipomoides filamentosus",
-    "epinephelus fuscoguttatus",
-    "carcharhinus amblyrhynchos"
+    "reef_fish",
+    "shark",
+    "tuna",
+    "grouper"
   ),
   epo = c("thunnus albacares",
           "katsuwonus pelamis",
@@ -65,9 +65,9 @@ difficulty_species <- list(
 )
 
 
-critter_templates <- map(unique(list_c(difficulty_species)),
-                         ~ marlin::create_critter(scientific_name = .x, seasons = seasons)) |>
-  set_names(unique(list_c(difficulty_species)))
+# critter_templates <- map(unique(list_c(difficulty_species)),
+#                          ~ marlin::create_critter(scientific_name = .x, seasons = seasons)) |>
+#   set_names(unique(list_c(difficulty_species)))
 
 
 
@@ -83,7 +83,7 @@ baseline_state_experiments <-
   tibble(
     kiss = sample(c(FALSE, TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
-    habitat_patchiness = runif(n_states, 1e-3, .1),
+    habitat_patchiness = runif(n_states, 1e-3, .084),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
@@ -134,11 +134,8 @@ for (difficulty in difficulties) {
       seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-      f_v_m = runif(length(state_id), 0.05, 0.33),
-      adult_home_range = sample(c(2.5, 25, 250), length(state_id), replace = TRUE),
-      recruit_home_range = sample(c(2.5, 25, 250), length(state_id), replace = TRUE),
+      f_v_m = runif(length(state_id), 0.025, 0.2),
       steepness = runif(length(state_id), min = 0.6, max = 1),
-      b0 = rlnorm(length(state_id), log(100 * patches), 0.6),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
       sigma_rec = sample(c(0, 0.2, 0.8), length(state_id), replace = TRUE),
       density_dependence = sample(
@@ -158,41 +155,44 @@ for (difficulty in difficulties) {
     ) |>
     mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
     mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
+ 
+  b0s <- tibble(critter = c("reef_fish", "shark", "tuna", "grouper"), b0 = c(4e6,1e6,6e6,3e6))
   
-  state_experiments$b0 <- ifelse(str_detect(state_experiments$critter,("carcharhinus|sphyrna|prionace")),state_experiments$b0 / 10,state_experiments$b0) # try and keep shark popsize on average smaller than others
-  
+  state_experiments <- state_experiments |> 
+    left_join(b0s, by = "critter")
+
   message("finished habitats")
   
   message("creating critters")
+
   state_experiments <- state_experiments %>%
-    rename(scientific_name = critter) |>
-    mutate(
-      critter = future_pmap(
-        list(
-          sciname = scientific_name,
-          habitat = habitat,
-          seasonal_movement = seasonal_movement,
-          spawning_aggregation = spawning_aggregation,
-          spawning_season = spawning_season,
-          f_v_m = f_v_m,
-          adult_home_range = adult_home_range,
-          recruit_home_range = recruit_home_range,
-          density_dependence = density_dependence,
-          hyper = hyperallometry,
-          ontogenetic_shift = ontogenetic_shift,
-          steepness = steepness,
-          b0 = b0,
-          kiss = kiss,
-          sigma_rec = sigma_rec
-        ),
-        create_experiment_critters,
-        critter_templates = critter_templates,
-        resolution = resolution,
-        seasons = seasons,
-        .progress = TRUE,
-        .options = furrr_options(seed = TRUE)
+      rename(scientific_name = critter) |>
+      mutate(
+        critter = future_pmap(
+          list(
+            critter_name = scientific_name,
+            habitat = habitat,
+            seasonal_movement = seasonal_movement,
+            spawning_aggregation = spawning_aggregation,
+            spawning_season = spawning_season,
+            f_v_m = f_v_m,
+            density_dependence = density_dependence,
+            hyper = hyperallometry,
+            ontogenetic_shift = ontogenetic_shift,
+            steepness = steepness,
+            b0 = b0,
+            kiss = kiss,
+            sigma_rec = sigma_rec
+          ),
+          create_experiment_critters,
+          resolution = resolution,
+          seasons = seasons,
+          .progress = TRUE,
+          .options = furrr_options(seed = TRUE)
+        )
       )
-    )
+    
+
   message("finished critters")
 
   
@@ -323,11 +323,11 @@ for (difficulty in difficulties) {
   init_dep_plot <-  state_depletions %>%
     ggplot(aes(depletion)) +
     geom_histogram() +
-    facet_wrap( ~ critter)
-  
+    facet_wrap( ~ critter) + 
+    scale_x_continuous(limits = c(0, 1.5))
+
   ggsave(file.path(fig_dir, glue::glue("{difficulty}_init_dep.pdf")), init_dep_plot)
-  
-  
+
   for (i in 1:nrow(state_experiments)) {
 
     tmp <- state_experiments$proc_starting_conditions[[i]]$fauna |>
@@ -373,7 +373,7 @@ state_experiments <- state_experiments |>
 
   placement_experiments <- expand_grid(
     placement_strategy = c("target_fishing", "avoid_fishing"),
-    mosaic = c(TRUE, FALSE),
+    mosaic = c(TRUE),
     prop_mpa = seq(0,.6, by = 0.05),
     critters_considered = seq(
       length(state_experiments$fauna[[1]]),
