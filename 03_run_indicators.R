@@ -9,11 +9,11 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
   n_states = 84,
-  run_name = "indicators_v0.5",
+  run_name = "indicators_v0.52",
   drop_patches = FALSE,
-  experiment_workers = 8,
-  rx = 20,
-  ry = 20,
+  experiment_workers = 4,
+  rx = 22,
+  ry = 22,
   patch_area = 5^2
 ) # loads packages and creates and returns some global variables for the analysis
 
@@ -83,7 +83,7 @@ baseline_state_experiments <-
   tibble(
     kiss = sample(c(FALSE, TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
-    habitat_patchiness = runif(n_states, 1e-3, .084),
+    habitat_patchiness = runif(n_states, 1e-3, .042),
     max_abs_cor = runif(n_states, 1e-3, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
@@ -108,6 +108,7 @@ for (difficulty in difficulties) {
   set.seed(42)
   critters <-
     tibble(scientific_name = difficulty_species[[difficulty]])
+
   message("creating habitats")
 
   state_experiments <- baseline_state_experiments %>%
@@ -138,6 +139,7 @@ for (difficulty in difficulties) {
       steepness = runif(length(state_id), min = 0.6, max = 1),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
       sigma_rec = sample(c(0, 0.2, 0.8), length(state_id), replace = TRUE),
+      ac_rec =sample(c(0, 0.2, 0.4), length(state_id), replace = TRUE),
       density_dependence = sample(
         c(
           "global_habitat",
@@ -182,7 +184,8 @@ for (difficulty in difficulties) {
             steepness = steepness,
             b0 = b0,
             kiss = kiss,
-            sigma_rec = sigma_rec
+            sigma_rec = sigma_rec,
+            ac_rec = ac_rec
           ),
           create_experiment_critters,
           resolution = resolution,
@@ -264,7 +267,7 @@ for (difficulty in difficulties) {
  
 
   # add in starting conditions
-  init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
+  init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 75) {
     starting_trajectory <-
       simmar(fauna = fauna,
              fleets = fleets,
@@ -504,6 +507,7 @@ state_experiments <- state_experiments |>
   
   
   if (save_experiments) {
+
     write_rds(experiment_results, file = file.path(
       results_dir,
       glue("{difficulty}_experiment_results.rds")
