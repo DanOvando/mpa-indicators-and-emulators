@@ -31,7 +31,8 @@ sim_habitat <-
            patch_area,
            rescale_habitat = TRUE,
            max_delta = 3,
-           max_abs_cor = 1) {
+           max_abs_cor = 1,
+           min_abs_cor = 0.2) {
     
     
     if (length(resolution) == 1){
@@ -91,7 +92,9 @@ sim_habitat <-
     core_matrix <- matrix(0, nrow = n_species, ncol = n_species)
     
     species_cores <-
-      runif(n_species_cores, min = -max_abs_cor, max = max_abs_cor) # randomly generate correlations among species
+      runif(n_species_cores, min = min_abs_cor, max = max_abs_cor) * sample(c(-1,1), n_species_cores, replace =  TRUE)
+    
+    # randomly generate correlations among species
     # Fill in the upper triangle of the matrix
     core_matrix[upper.tri(core_matrix)] <- species_cores
     
@@ -102,7 +105,6 @@ sim_habitat <-
     diag(critter_correlations) <- 1
     
     } 
-    
     species_x_space <-
       as.matrix(Matrix::nearPD(Matrix::kronecker(spatial_correlations, critter_correlations))$mat)
     

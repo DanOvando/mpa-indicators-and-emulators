@@ -11,9 +11,9 @@ prep_run(
   n_states = 84,
   run_name = "indicators_v0.52",
   drop_patches = FALSE,
-  experiment_workers = 4,
-  rx = 22,
-  ry = 22,
+  experiment_workers = 8,
+  rx = 21,
+  ry = 21,
   patch_area = 5^2
 ) # loads packages and creates and returns some global variables for the analysis
 
@@ -84,7 +84,7 @@ baseline_state_experiments <-
     kiss = sample(c(FALSE, TRUE), n_states, replace = TRUE),
     mpa_response = sample(c("stay", "leave"), n_states, replace = TRUE),
     habitat_patchiness = runif(n_states, 1e-3, .042),
-    max_abs_cor = runif(n_states, 1e-3, 1),
+    max_abs_cor = runif(n_states, 0.21, 1),
     spatial_q = sample(
       c(TRUE, FALSE),
       n_states,
