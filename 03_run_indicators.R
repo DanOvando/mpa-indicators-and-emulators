@@ -9,7 +9,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
   n_states = 84,
-  run_name = "indicators_v0.52",
+  run_name = "indicators_v0.53",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 21,
@@ -135,10 +135,10 @@ for (difficulty in difficulties) {
       seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
       spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
       spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-      f_v_m = runif(length(state_id), 0.025, 0.2),
+      f_v_m = runif(length(state_id), 0.025, 0.15),
       steepness = runif(length(state_id), min = 0.6, max = 1),
       hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
-      sigma_rec = sample(c(0, 0.2, 0.8), length(state_id), replace = TRUE),
+      sigma_rec = sample(c(0, 0.4, 0.8), length(state_id), replace = TRUE),
       ac_rec =sample(c(0, 0.2, 0.4), length(state_id), replace = TRUE),
       density_dependence = sample(
         c(
@@ -256,8 +256,8 @@ for (difficulty in difficulties) {
         .progress = "making fleets"
       )
     )
-  
-    # prepare recruitment deviate generator
+    
+  # prepare recruitment deviate generator
     state_experiments <- state_experiments |>
       mutate(
         max_abs_cor_rec = sample(c(0, .66), n(), replace = TRUE),

@@ -1,6 +1,6 @@
 run_mpa_experiment <-
   function(placement_strategy = "depletion",
-           fleet_model = "constant effort",
+           fleet_model = NULL,
            mosaic = TRUE,
            starting_conditions,
            proc_starting_conditions,
@@ -9,7 +9,7 @@ run_mpa_experiment <-
            fleets,
            log_rec_devs = NULL,
            placement_error = 0,
-           mpa_response = "stay",
+           mpa_response = NULL,
            critters_considered = NA,
            random_mpas = FALSE,
            max_delta = 1,
@@ -32,12 +32,12 @@ run_mpa_experiment <-
 
     patches <- prod(resolution)
 
-    fleets <- purrr::modify_in(fleets, list(1, "mpa_response"), ~mpa_response)
+        # fleets <- purrr::modify_in(fleets, list(1, "mpa_response"), ~mpa_response)
 
-    if (!is.na(fleet_model)) {
-      fleets <-
-        purrr::modify_in(fleets, list(1, "fleet_model"), ~fleet_model)
-    }
+    # if (!is.null(fleet_model)) {
+    #   fleets <-
+    #     purrr::modify_in(fleets, list(1, "fleet_model"), ~fleet_model)
+    # }
 
 
     mpas <- expand_grid(x = 1:resolution[1], y = 1:resolution[2]) |>
@@ -197,7 +197,7 @@ run_mpa_experiment <-
         b0_p_total = sum(b0_p)
       ) |>
       ungroup()
-
+    
     mpas <- mpas |>
       mutate(mpa = patch %in% mpa_locs)
 
@@ -208,7 +208,7 @@ run_mpa_experiment <-
     starting_step <- marlin::clean_steps(last(names(starting_conditions)))
 
     processed_step <- marlin::process_step(last(names(starting_conditions)))
-
+    
     mpa_sim <- simmar(
       fauna = fauna,
       fleets = fleets,

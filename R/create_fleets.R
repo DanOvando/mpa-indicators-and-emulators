@@ -9,7 +9,8 @@ create_fleets <-
            port_locations = NULL,
            tune_type = "explt",
            effort_cost_exponent = 1,
-           effort_int = 0,
+           responsiveness = 1,
+           effort_int = 1000,
            resolution) {
     
     ports <- vector( mode = "list", length = 2)
@@ -113,6 +114,7 @@ create_fleets <-
         cost_per_unit_effort = 20,
         cost_per_distance = 200,
         effort_cost_exponent = effort_cost_exponent,
+        responsiveness = responsiveness,
         spatial_allocation = state$spatial_allocation[1],
         resolution = resolution,
         fleet_model = state$fleet_model[1],
@@ -213,6 +215,7 @@ create_fleets <-
           cost_per_unit_effort = 20,
           cost_per_distance = 200,
           effort_cost_exponent = effort_cost_exponent,
+          responsiveness = responsiveness,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
           fleet_model = state$fleet_model[1],
@@ -280,6 +283,7 @@ create_fleets <-
           cost_per_unit_effort = 20,
           cost_per_distance = 100,
           effort_cost_exponent = effort_cost_exponent,
+          responsiveness = responsiveness,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
           fleet_model = state$fleet_model[1],
@@ -324,6 +328,7 @@ create_fleets <-
           cost_per_unit_effort = 20,
           cost_per_distance = 200,
           effort_cost_exponent = effort_cost_exponent,
+          responsiveness = responsiveness,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
           fleet_model = state$fleet_model[1],
@@ -418,6 +423,7 @@ create_fleets <-
             )
           ),
           effort_cost_exponent = effort_cost_exponent,
+          responsiveness = responsiveness,
           base_effort = resolution^2,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
@@ -510,6 +516,7 @@ create_fleets <-
           responsiveness = .5,
           cr_ratio = 1,
           effort_cost_exponent = effort_cost_exponent,
+          responsiveness = responsiveness,
           base_effort = resolution^2,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution
