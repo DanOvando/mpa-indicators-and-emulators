@@ -30,6 +30,7 @@ format:
     embed-resources: true
   pdf:
     toc: true
+    pdf-engine: pdflatex
   nature-pdf:
     keep-tex: true
     classoption: [lineno, referee]
@@ -44,6 +45,8 @@ execute:
   warning: false
 ---
 
+xx could you do a classification tree on the accuracy of the different metrics xx
+
 ```{r}
 #|label: setup
 #|include: false
@@ -57,6 +60,8 @@ library(gt)
 library(corrr)
 
 library(ggridges)
+
+library(ggtext)
 
 prep_run(run_name = "indicators_v0.53",figure_text_size = 10, rx = 21, ry = 21, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
 
@@ -1162,6 +1167,8 @@ mpa_step <- min(fauna_results$year) + 10 - 2
 
 ```
 
+XX this will probably get moved to SI XX
+
 @fig-case-study provides an illustration of the kinds of MPA scenarios
 included in this analysis. This selected scenario is from the "complex"
 set, meaning that there are four different species targeted by two
@@ -1457,7 +1464,8 @@ figsaver(fig)
 mape_meep_rho <- comparison |> 
   filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
          !str_detect(indicator, "cpue"),
-         !str_detect(indicator, "catch")) |> 
+         !str_detect(indicator, "catch"),
+         prop_mpa > 0.5) |> 
   group_by(name, indicator) |> 
   nest() |> 
   mutate(error = map(data, \(x) rmse_vec(x$percent_mpa_effect, x$indicator_value)),
@@ -1491,9 +1499,9 @@ Indicator performance varied widely across indicators, outcomes, and
 metrics (@fig-rho-error-bias A). All three *Inside vs. Outside*
 indicators had positive Spearman's $\rho$ with *Biomass Inside* and
 *Total Biomass*, with *Biomass Density BACI* having the highest $\rho$
-values for both ($\rho^2 = 0.69$ and $\rho^2 = 0.36$ respectively),
-followed by *Biomass Density Response Ratio* ($\rho^2 = 0.5$ and
-$\rho^2 = 0.28$ respectively). All three *Inside vs. Outside* indicators
+values for both ($\rho^2 = 0.41$ and $\rho^2 = 0.11$ respectively),
+followed by *Biomass Density Response Ratio* ($\rho^2 = 0.25$ and
+$\rho^2 = 0.06$ respectively). All three *Inside vs. Outside* indicators
 had negative Spearman's $\rho$ values with *Biomass Outside*, meaning
 that simulations with relatively higher response ratios were associated
 with simulations with relatively lower *Biomass Outside* outcomes.
@@ -1504,7 +1512,7 @@ negative Spearman's $\rho$ with catch outcomes. In summary, *Inside vs.
 Outside* indicators had relatively higher Spearman's $\rho$ with
 *Biomass* outcomes, *Gradient* based indicators explained almost none of
 the rank-level variation in any of the outcomes. None of the indicators
-explained any meaningful amount in the rank-level variation in *Catch*
+explained any meaningful amount in the rank-level variation in the simulated *Catch* outcomes.
 (@fig-rho-error-bias A).
 
 The $\rho$ values shown in @fig-rho-error-bias A. indicate how well a
@@ -1574,24 +1582,16 @@ a / b
 rm(list = c("a","b"))
 ```
 
-```{r}
-
-
-
-
-
-```
 
 Sub-setting our results to only *Biomass Density Response Ratio* values
 that match the distribution of response ratios for targeted species
 reported in @smith2024b allows us to visualize the concepts shown in
 @fig-rho-error-bias. Simulated response ratios was positively correlated
-with *Biomass Inside* and *Total Biomass* ($\rho = 0.59$,
-$\rho = 0.44$), and negatively correlated with *Biomass Outside* and
-*Catch* ($\rho = -0.38$, $\rho = -0.14$) (@fig-rr-performance). The
-*Biomass Density Response Ratio* indicator only explained a over 30% of
-the rank-level variation for one outcome, *Biomass Inside*, and
-explained almost none of the rank-level variation in *Catch*.
+with *Biomass Inside* and *Total Biomass* ($\rho = 0.74$,
+$\rho = 0.5$), and negatively correlated with *Biomass Outside* and
+*Catch* ($\rho = -0.53$, $\rho = -0.62$) (@fig-rr-performance). 
+
+xx need to provide a clear explanation for the higher correlation in this results than in the prior results. The reason is that these indicators work better for the subset of simulations with response ratios distributions that match the CA rrs. This highlights that all the simualtion results can tell us is the range of outcomes and which have more ways of happening, but if for example the true world looks more like Figure 4, then response ratios might work for catch, but not if it looks like some of the other sates. 
 
 ```{r}
 #| label: fig-rr-performance
@@ -1599,7 +1599,8 @@ explained almost none of the rank-level variation in *Catch*.
 #| fig-height: 6
 
 rr_performance <- comparison |>
-    filter(observation_error == default_observation_error) |> 
+    filter(observation_error == default_observation_error,
+           !is.na(percent_mpa_effect) & !is.na(indicator_value)) |> 
   filter(str_detect(indicator, ("biomass_rr"))) |>
   mutate(combo = paste(name, indicator, sep = " ~ ")) |>
   mutate(combo = str_remove_all(combo, "ind_"))
@@ -1607,7 +1608,7 @@ rr_performance <- comparison |>
 rrs <- rr_performance |>
   filter(name %in% c("mpa_biomass","biomass", "catch", "fished_biomass"),
          between(prop_mpa,0.1,0.4),
-         difficulty == "medium") |> 
+         difficulty != "simple") |> 
     mutate(approx_rr = round(indicator_value / 0.1) * 0.1)
 
 # rrs <- rr_performance |>
@@ -1644,7 +1645,7 @@ before <- rrs |>
 
 
 ca_indicator_performance <- before |> 
-  slice_sample(n = 10000,replace = TRUE, weight_by = weight) |> 
+  slice_sample(n = 2500,replace = TRUE, weight_by = weight) |> 
       left_join(rrs |> select(state_id, placement_id, prop_mpa, critter, name, percent_mpa_effect, indicator_value),
              by = join_by(state_id, placement_id, prop_mpa, critter),
             relationship = "many-to-many") |> 
