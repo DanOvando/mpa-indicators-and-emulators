@@ -121,6 +121,7 @@ calculate_indicators <- function(x, prop_mpa, observation_error = 0, aggregate =
   if (prop_mpa > 0 &
       prop_mpa < 1 & enough_distance & canary_alive) {
     
+    
     survey_indicators <- fauna |>
       mutate(weight = abs(distance_to_mpa_edge)) |>
       group_by(critter, step) |>
