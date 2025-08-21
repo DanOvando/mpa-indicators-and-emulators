@@ -22,7 +22,8 @@ author:
       equal-contributor: false
       corresponding: false
 format:
-  docx: default
+  docx: 
+    reference-doc: PNASTemplateforMainManuscript.docx
   html: 
     toc: true
     self-contained-math: true
@@ -62,7 +63,7 @@ library(ggridges)
 
 library(ggtext)
 
-prep_run(run_name = "indicators_v0.55",figure_text_size = 10, rx = 21, ry = 21, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
+prep_run(run_name = "indicators_v0.53",figure_text_size = 10, rx = 21, ry = 21, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
 
 Rcpp::sourceCpp(here("src", "select_contiguous_mpa.cpp"))
 
@@ -832,7 +833,7 @@ publicly available at XX.
 #| eval: true
 
 # set.seed(1234321)
-set.seed(4221)
+set.seed(422595)
 
 difficulties <- c("complex")
 n_states <- 1
@@ -858,7 +859,7 @@ baseline_state_experiments <-
       prob = c(1, 3)
     ),
     spatial_allocation = sample(c("ppue", "rpue", "revenue"), n_states, replace = TRUE),
-    fleet_model = sample(c("constant_effort"), n_states, replace = TRUE)
+    fleet_model = sample(c("open_access"), n_states, replace = TRUE)
   ) %>%
   mutate(state_id = 1:nrow(.))
 
@@ -891,10 +892,10 @@ state_experiments <- baseline_state_experiments %>%
   unnest(cols = habitats) %>%
   ungroup() |>
   mutate(
-    seasonal_movement = sample(c(FALSE), length(state_id), replace = TRUE),
-    spawning_aggregation = sample(c(FALSE), length(state_id), replace = TRUE),
+    seasonal_movement = sample(c(FALSE, TRUE), length(state_id), replace = TRUE),
+    spawning_aggregation = sample(c(TRUE, FALSE), length(state_id), replace = TRUE),
     spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-    f_v_m = c(0.1,0.05,0.025,0.1),
+    f_v_m = c(0.1,0.1,0.15,0.05),
     hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
     sigma_rec = sample(c(0.666), length(state_id), replace = TRUE),
     density_dependence = sample(
@@ -949,7 +950,6 @@ state_experiments <- state_experiments %>%
       ),
       create_experiment_critters,
       resolution = resolution,
-      patch_area = patch_area,
       seasons = seasons,
       .progress = TRUE,
       .options = furrr_options(seed = TRUE)
@@ -962,7 +962,7 @@ message("finished critters")
  # function to randomize selectivity parameters
   selfoo <- function(x,i){
     out <-   list(
-      sel_start = runif(i, .25, .5),
+      sel_start = runif(i, .05, 2),
       # proportion of length 50% mature at 50% selectivity
       sel_delta = runif(i, 1e-3, .25),
       # offset for 95% selectivity
@@ -981,7 +981,7 @@ message("finished critters")
     mutate(
       fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
       sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
-      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("logistic","double_normal"), .y, replace = TRUE))),
+      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("uniform","logistic","double_normal"), .y, replace = TRUE))),
       prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
       use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
     ) |> 
@@ -1007,7 +1007,6 @@ message("finished critters")
         difficulty = difficulty,
         port_locations = port_locations,
         resolution = resolution,
-        patch_area = patch_area,
         .progress = "making fleets"
       )
     )
@@ -1015,7 +1014,7 @@ message("finished critters")
       # prepare recruitment deviate generator
     state_experiments <- state_experiments |>
       mutate(
-        max_abs_cor_rec = sample(c(0,21, 0.6), n(), replace = TRUE),
+        max_abs_cor_rec = sample(c(0, 0.6), n(), replace = TRUE),
         rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
       )
     
@@ -1264,7 +1263,7 @@ delta <- fauna_experiment |>
   scale_linetype(name = "") + 
  scale_linetype(name = "") + 
   scale_x_continuous(name = "Time") +
-  scale_y_continuous(name = "B/B0",limits = c(0, 1.1), expand = c(0, NA)) +
+  scale_y_continuous(name = "B/B0",limits = c(0, 1), expand = c(0, NA)) +
   scale_color_discrete(name = '') +
   guides(color = guide_legend(nrow = 2)) + 
   labs(subtitle = "C) B/B0 per species over time") + 
@@ -2076,9 +2075,20 @@ tmp |>
 #| label: fig-reef-move
 #| fig-cap: Diffusion rate for reef fish archetype
 #| 
+adult_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$reef_fish$adult_home_range, mode = "plot") |> 
+  mutate(life_stage = "post-recruit")
 
-state_experiments$fauna[[1]]$reef_fish$plot_movement()
+   recruit_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$reef_fish$recruit_home_range, mode = "plot") |> 
+     mutate(life_stage = "recruit")
 
+    adult_diffusion_distance |>
+     bind_rows(recruit_diffusion_distance) |> 
+      ggplot(aes(distance_from_centroid, cdist, color = life_stage)) +
+      geom_jitter() +
+      geom_hline(yintercept = 0.95) +
+      geom_vline(aes(xintercept = home_range)) +
+      scale_y_continuous(limits = c(0, NA), name = "Cumulative Distribution Function") + 
+      scale_x_continuous(limits = c(0, 250), "Distance from initial location")
    
 
 ```
@@ -2110,8 +2120,20 @@ tmp |>
 #| label: fig-tuna-move
 #| fig-cap: Diffusion rate for tuna archetype
 #| 
-state_experiments$fauna[[1]]$tuna$plot_movement()
+adult_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$tuna$adult_home_range, mode = "plot") |> 
+  mutate(life_stage = "post-recruit")
 
+   recruit_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$tuna$recruit_home_range, mode = "plot") |> 
+     mutate(life_stage = "recruit")
+
+    adult_diffusion_distance |>
+     bind_rows(recruit_diffusion_distance) |> 
+      ggplot(aes(distance_from_centroid, cdist, color = life_stage)) +
+      geom_jitter() +
+      geom_hline(yintercept = 0.95) +
+      geom_vline(aes(xintercept = home_range)) +
+      scale_y_continuous(limits = c(0, NA), name = "Cumulative Distribution Function") + 
+      scale_x_continuous(limits = c(0, 250), "Distance from initial location")
    
 
 ```
@@ -2143,9 +2165,21 @@ tmp |>
 #| label: fig-shark-move
 #| fig-cap: Diffusion rate for shark archetype
 #| 
+adult_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$shark$adult_home_range, mode = "plot") |> 
+  mutate(life_stage = "post-recruit")
 
-state_experiments$fauna[[1]]$shark$plot_movement()
+   recruit_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$shark$recruit_home_range, mode = "plot") |> 
+     mutate(life_stage = "recruit")
 
+    adult_diffusion_distance |>
+     bind_rows(recruit_diffusion_distance) |> 
+      ggplot(aes(distance_from_centroid, cdist, color = life_stage)) +
+      geom_jitter() +
+      geom_hline(yintercept = 0.95) +
+      geom_vline(aes(xintercept = home_range)) +
+      scale_y_continuous(limits = c(0, NA), name = "Cumulative Distribution Function") + 
+      scale_x_continuous(limits = c(0, 250), "Distance from initial location")
+   
 
 ```
 
@@ -2175,25 +2209,22 @@ tmp |>
 ```{r}
 #| label: fig-grouper-move
 #| fig-cap: Diffusion rate for grouper archetype
+#| 
+adult_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$grouper$adult_home_range, mode = "plot") |> 
+  mutate(life_stage = "post-recruit")
 
+   recruit_diffusion_distance <- tune_diffusion(home_range = state_experiments$fauna[[1]]$grouper$recruit_home_range, mode = "plot") |> 
+     mutate(life_stage = "recruit")
 
-state_experiments$fauna[[1]]$grouper$plot_movement()
-
-
-
-```
-
-
-```{r}
-
-state_experiments$fleet[[1]]$alpha$metiers$reef_fish$plot_selectivity()
-
-state_experiments$fleet[[1]]$alpha$metiers$tuna$plot_selectivity()
-
-state_experiments$fleet[[1]]$alpha$metiers$shark$plot_selectivity()
-
-state_experiments$fleet[[1]]$alpha$metiers$grouper$plot_selectivity()
-
+    adult_diffusion_distance |>
+     bind_rows(recruit_diffusion_distance) |> 
+      ggplot(aes(distance_from_centroid, cdist, color = life_stage)) +
+      geom_jitter() +
+      geom_hline(yintercept = 0.95) +
+      geom_vline(aes(xintercept = home_range)) +
+      scale_y_continuous(limits = c(0, NA), name = "Cumulative Distribution Function") + 
+      scale_x_continuous(limits = c(0, 250), "Distance from initial location")
+   
 
 ```
 
@@ -2288,7 +2319,7 @@ no_age |>
   facet_wrap(~critter, scales = "free_y") + 
   scale_color_viridis_c(name = "Centered and Scaled Unfished Biomass") + 
   theme(legend.position = "top") + 
-  scale_y_continuous(name = "Biomass Density", limits = c(0, NA))
+  scale_y_continuous(name = "Biomass Density")
 
 
 ```

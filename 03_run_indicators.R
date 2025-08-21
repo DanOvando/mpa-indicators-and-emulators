@@ -8,8 +8,8 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 
 prep_run(
-  n_states = 84,
-  run_name = "indicators_v0.53",
+  n_states = 92,
+  run_name = "indicators_v0.55",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 21,
@@ -189,12 +189,12 @@ for (difficulty in difficulties) {
           ),
           create_experiment_critters,
           resolution = resolution,
+          patch_area = patch_area,
           seasons = seasons,
           .progress = TRUE,
           .options = furrr_options(seed = TRUE)
         )
       )
-    
 
   message("finished critters")
 
@@ -253,6 +253,7 @@ for (difficulty in difficulties) {
         difficulty = difficulty,
         port_locations = port_locations,
         resolution = resolution,
+        patch_area = patch_area,
         .progress = "making fleets"
       )
     )

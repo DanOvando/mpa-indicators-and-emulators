@@ -11,7 +11,8 @@ create_fleets <-
            effort_cost_exponent = 1,
            responsiveness = 1,
            effort_int = 1000,
-           resolution) {
+           resolution,
+           patch_area = 1) {
     
     ports <- vector( mode = "list", length = 2)
     for (i in seq_along(use_ports)){
@@ -50,7 +51,7 @@ create_fleets <-
         
         
       } else {
-        a_spatial_q <- b_spatial_q <-  c_spatial_q <- d_spatial_q <- NA
+        a_spatial_q <- b_spatial_q <-  c_spatial_q <- d_spatial_q <- NULL
       }
     fleets <- list(
       "alpha" = create_fleet(
@@ -117,6 +118,7 @@ create_fleets <-
         responsiveness = responsiveness,
         spatial_allocation = state$spatial_allocation[1],
         resolution = resolution,
+        patch_area = patch_area,
         fleet_model = state$fleet_model[1],
         mpa_response = state$mpa_response[1],
         ports =ports[[1]][1,]
@@ -151,7 +153,7 @@ create_fleets <-
         
         
       } else {
-        a_spatial_q <- b_spatial_q <-  c_spatial_q <- d_spatial_q <- NA
+        a_spatial_q <- b_spatial_q <-  c_spatial_q <- d_spatial_q <- NULL
       }
       fleets <- list(
         "alpha" = create_fleet(
@@ -218,6 +220,7 @@ create_fleets <-
           responsiveness = responsiveness,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
+          patch_area = patch_area,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
           ports = ports[[1]][1,]
@@ -286,6 +289,7 @@ create_fleets <-
           responsiveness = responsiveness,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
+          patch_area = patch_area,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
           ports = ports[[2]][2,]
@@ -303,7 +307,7 @@ create_fleets <-
         
         
       } else {
-        a_spatial_q <- NA
+        a_spatial_q <- NULL
       }
       
       tmp <-   list(
@@ -331,6 +335,7 @@ create_fleets <-
           responsiveness = responsiveness,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
+          patch_area = patch_area,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
           ports = ports[[1]][1,]
@@ -427,6 +432,7 @@ create_fleets <-
           base_effort = resolution^2,
           spatial_allocation = state$spatial_allocation[1],
           resolution = resolution,
+          patch_area = patch_area,
           fleet_model = state$fleet_model[1],
           mpa_response = state$mpa_response[1],
           ports = ports[2,]
@@ -519,7 +525,8 @@ create_fleets <-
           responsiveness = responsiveness,
           base_effort = resolution^2,
           spatial_allocation = state$spatial_allocation[1],
-          resolution = resolution
+          resolution = resolution,
+          patch_area = patch_area
         )
       )
       

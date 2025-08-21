@@ -11,12 +11,13 @@ create_experiment_critters <-
            f_v_m,
            hyper = 1,
            resolution,
+           patch_area,
            density_dependence,
            kiss = FALSE,
            sigma_rec = 0,
            ac_rec = 0,
            critter_templates = NULL,
-           home_ranges = c("low" = 2.5, "medium" = 25, "high" = 250)) {
+           home_ranges = c("low" = 2, "medium" = 20, "high" = 200)) {
     
     hab <- habitat %>%
       pivot_wider(names_from = y, values_from = habitat) %>%
@@ -117,6 +118,7 @@ create_experiment_critters <-
         recruit_home_range = home_ranges["low"],
         spawning_seasons = spawning_seasons,
         resolution = resolution,
+        patch_area = patch_area,
         seasons = seasons,
         habitat = hab,
         recruit_habitat = recruit_habitat,
@@ -154,6 +156,7 @@ create_experiment_critters <-
         b0 = b0,
         spawning_seasons = spawning_seasons,
         resolution = resolution,
+        patch_area = patch_area,
         sigma_rec = sigma_rec,
         ac_rec = ac_rec)
       
@@ -178,6 +181,7 @@ create_experiment_critters <-
         b0 = b0,
         spawning_seasons = spawning_seasons,
         resolution = resolution,
+        patch_area = patch_area,
         seasons = seasons,
         habitat = hab,
         recruit_habitat = recruit_habitat,
@@ -228,6 +232,7 @@ create_experiment_critters <-
         weight_b = 2.6,
         spawning_seasons = spawning_seasons,
         resolution = resolution,
+        patch_area = patch_area,
         seasons = seasons,
         habitat = hab,
         adult_home_range = home_ranges["medium"],
