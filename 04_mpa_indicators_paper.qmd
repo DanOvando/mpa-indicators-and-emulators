@@ -1724,8 +1724,8 @@ a / b
 rm(list = c("a","b"))
 ```
 
-xx Alternative Figure, can fix colors and labels and generally make look better if we agree on it. I
-think it's better. xx
+<<<<<<< HEAD
+xx Alternative Figure, can fix colors and labels and generally make look better if we agree on it. I think it's better. xx
 
 ```{r}
 #| label: fig-rho-error-bias-2
