@@ -181,7 +181,7 @@ create_fleets <-
               sel05_anchor = fauna[[2]]$length_50_mature* sels[[1]]$sel05_anchor[[2]],
               sel_at_linf = sels[[1]]$sel_at_linf[[2]],
               catchability = .1,
-              p_explt = 0.1,
+              p_explt = 0.25,
               sel_unit = "length",
               spatial_catchability = b_spatial_q
               
@@ -195,7 +195,7 @@ create_fleets <-
               sel05_anchor = fauna[[3]]$length_50_mature* sels[[1]]$sel05_anchor[[3]],
               sel_at_linf = sels[[1]]$sel_at_linf[[3]],
               catchability = .1,
-              p_explt = 1,
+              p_explt = .95,
               sel_unit = "length",
               spatial_catchability = c_spatial_q
             ),
@@ -264,7 +264,7 @@ create_fleets <-
               sel05_anchor = fauna[[3]]$length_50_mature* sels[[2]]$sel05_anchor[[3]],
               sel_at_linf = sels[[2]]$sel_at_linf[[3]],
               catchability = .1,
-              p_explt = 0,
+              p_explt = 0.05,
               sel_unit = "length",
               spatial_catchability = c_spatial_q
             ),

@@ -33,8 +33,8 @@ mpa_years <- 20
 # difficulties <- c("simple")
 # difficulties <- c("simple", "medium", "complex")
 
-difficulties <- c("complex", "medium", "simple")
-# difficulties <- c("epo")
+# difficulties <- c("complex", "medium", "simple")
+difficulties <- c("complex")
 
 difficulty_species <- list(
   simple = c(

@@ -102,7 +102,7 @@ create_experiment_critters <-
         scientific_name = "Carcharhinus falciformis",
         common_name = "silky shark",
         m = 0.21,
-        lorenzen_c = -.5,
+        lorenzen_c = -1,
         linf = 216.4,
         vbk = 0.148,
         t0 = -1.778991, # 50cm at birth
