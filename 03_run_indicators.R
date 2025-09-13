@@ -9,7 +9,7 @@ purrr::walk(foos, ~ source(here::here("R", .x)))
 
 prep_run(
   n_states = 92,
-  run_name = "indicators_v0.55",
+  run_name = "indicators_v0.56",
   drop_patches = FALSE,
   experiment_workers = 8,
   rx = 21,
@@ -33,8 +33,7 @@ mpa_years <- 20
 # difficulties <- c("simple")
 # difficulties <- c("simple", "medium", "complex")
 
-# difficulties <- c("complex", "medium", "simple")
-difficulties <- c("complex")
+difficulties <- c("complex", "medium", "simple")
 
 difficulty_species <- list(
   simple = c(
