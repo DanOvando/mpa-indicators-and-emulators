@@ -62,7 +62,15 @@ prep_run <- function(run_name = "test",
   
   # set up figures ----------------------------------------------------------
   
-  theme_set(theme_minimal(base_size = figure_text_size, base_line_size = figure_text_size / 44))
+  pick_font <- function(cands = c("Arial", "Helvetica", "Helvetica Neue",
+                                  "Liberation Sans", "DejaVu Sans", "Noto Sans")) {
+    for (f in cands) if (!is.na(systemfonts::match_fonts(f)$path)) return(f)
+    "sans"
+  }
+  FAM <- pick_font()
+  
+  
+  theme_set(theme_minimal(base_size = figure_text_size, base_line_size = figure_text_size / 44,base_family = ""))
   
   # prepare results location ---------------------------------------------------------
   

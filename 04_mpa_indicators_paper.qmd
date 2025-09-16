@@ -1,5 +1,5 @@
 ---
-title: "Variability and Detectability of the Effects of Marine Protected Areas on Conservation and Food Security"
+title: "Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security"
 author:
   - name: Daniel Ovando
     affiliation:
@@ -9,7 +9,6 @@ author:
         address: 8901 La Jolla Shores Drive
         city: La Jolla
         state: CA
-        postal-code: 92037
     email: dovando@iattc.org
     attributes:
       equal-contributor: true
@@ -34,13 +33,12 @@ format:
     self-contained-math: true
     embed-resources: true
   pdf:
+    geometry: margin=1in
     toc: true
-    pdf-engine: pdflatex
-  nature-pdf:
-    keep-tex: true
-    classoption: [lineno, referee]
-    toc: true
-    equal-margins: true
+    pdf-engine: lualatex
+    include-in-header: preamble.tex
+    documentclass: extarticle
+    classoption: 12pt
 bibliography: references.bib
 abstract: |
  Something
@@ -48,7 +46,12 @@ keywords: [MPA, Simulation Modeling, Model Selection, Conservation Planning, Foo
 execute: 
   echo: false
   warning: false
+knitr:
+  opts_chunk:
+    dev: "cairo_pdf"    # use Cairo for R figures (good Unicode embedding)
 ---
+
+XX add discussion of why bias matters so much more than error XX 
 
 ```{r}
 #|label: setup
@@ -66,7 +69,9 @@ library(ggridges)
 
 library(ggtext)
 
-prep_run(run_name = "indicators_v0.55",figure_text_size = 10, rx = 21, ry = 21, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
+# knitr::opts_chunk$set(dev = "cairo_pdf")  # ensures Unicode-safe PDF output
+
+prep_run(run_name = "indicators_v0.56",figure_text_size = 9, rx = 21, ry = 21, patch_area = 5^2) # loads packages and creates and returns some global variables for the analysis
 
 Rcpp::sourceCpp(here("src", "select_contiguous_mpa.cpp"))
 
@@ -412,6 +417,38 @@ total_mpa_outcomes <- total_inds_and_outs |>
 
 ```
 
+\newpage
+
+## Cover Letter
+
+Dear Editors of Ecological Applications, 
+
+Please find enclosed our manuscript entitled “Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security” for consideration in Ecological Applications.
+
+Marine Protected Areas (MPAs) are expanding rapidly worldwide, driven by international commitments such as the Montreal–Kunming Global Biodiversity Framework’s target to protect 30% of the oceans and the new High Seas Treaty (BBNJ). This growth reflects expectations that MPAs will deliver outcomes ranging from biodiversity protection to enhanced fishery yields. Yet both the capacity of MPAs to achieve these objectives and the ability of practitioners to detect such changes are less certain than conventional wisdom often suggests. This gap poses a critical challenge for the effective and equitable use of MPAs in ocean management.
+
+In this study, we simulated more than 10,000 MPA case studies to explore the range of conservation and food security outcomes that protected areas can provide. From these simulations, we calculated widely used empirical indicators—such as gradients in biomass densities inside versus outside or near versus far from MPA borders—and assessed how well these indicators reflected the true effects of MPAs. We show that while some indicators perform well, others have little to no correlation with the outcomes they are commonly assumed to represent.
+
+Our work builds on a rich literature on MPA effects and monitoring, including contributions previously published in Ecological Applications. To our knowledge, this is the first study to systematically test a broad suite of indicators against diverse MPA objectives using a large-scale bioeconomic simulation framework. We believe the results will inform both the science and practice of MPAs by helping decision-makers design monitoring programs and interpret empirical indicators more effectively—providing a stronger foundation for tracking the performance of global MPA networks.
+
+Thank you for your consideration.
+
+Dr. Dan Ovando & Dr. Cori Lopazanski
+
+
+## Title Page
+
+Short Title: Evaluating Common Indicators of MPA Outcomes
+
+Manuscript type: Article
+
+Manuscript title: Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security
+
+Open Research statement
+
+
+Key words/phrases: 
+
 ## Abstract (350 words max)
 
 Marine protected areas (MPAs) are spatial management tools implemented
@@ -425,7 +462,8 @@ even well-measured indicators may fail to reflect true causal effects.
 Using a simulation framework, we explore variability in MPA outcomes and
 assess whether common empirical indicators reliably track intended
 outcomes across a range of scenarios. We find that… xx \[add detail
-about results…\] xx. These findings… xx \[add detail about
+about results…\] xx. Our results show that many commonly used indicators of MPA performance in fact
+have very little correlation with actual outcomes of MPAs.xx \[add detail about
 implications\] xx
 
 ## Introduction
@@ -573,7 +611,7 @@ fishing fleets, all operating in a two-dimensional space. This spatial
 domain represents the surface area of the seascape, broken up into a
 series of "patches", each with a defined spatial area. For this paper,
 we modeled a 21 x 21 grid of discrete patches (441 total), where each
-patch measured 25KM^2^ (5 km x 5km).
+patch measured 25KM^2^ (5 km x 5km), for a total simulated seascape area of `r 25 * 21^2` KM^2^.
 
 xx The 'species template' language was confusing to me - It seems
 simpler that for each simulation there are species parameters that are
@@ -695,13 +733,13 @@ implementation.
 | $t_0$ | Theoretical age at length 0 | -0.5 | -.68 | -1.78 | N/A |
 | age_mature | Age at 50% maturity | 2 | 6 | 6 | 3 |
 | $w_a$ | Scalar for weight at length | 3e-4 | 1e-5 | 2e-5 | 4e-4 |
-| Exponent for weight at length | 2.6 | 3.15 | 2.86 | 2.86 |  |
+| $w_b$ | Exponent for weight at length | 2.6 | 3.15 | 2.86 | 2.86 |
 | *h* | Beverton-Holt Steepness | 0.8 | 0.6 | 0.3 | 0.9 |
 | $l_0$ | Mean length at age 0 in growth cessation model | N/A | N/A | N/A | 18.85 |
 | $r_{max}$ | Maximum growth rate scalar in growth cessation model | N/A | N/A | N/A | 37.24 |
 | *k* | Steepness of logistic function in growth cessation model | N/A | N/A | N/A | 0.89 |
-| $t\_{50}$ | Age of logistic function midpoint in growth cessation model | N/A | N/A | N/A | 4.57 |
-| $ B_0 $ | Total unfished biomass | 4e6 | 3e6 | 1e6 | 6e6 |
+| $t_{50}$ | Age of logistic function midpoint in growth cessation model | N/A | N/A | N/A | 4.57 |
+| $B_0$ | Total unfished biomass | 4e6 | 3e6 | 1e6 | 6e6 |
 | *D* | Post-recruit diffusion home range | $20km^2$ | $2km^2$ | $200km^2$ | $200km^2$ |
 | *R* | Recruit diffusion home rage | $20km^2$ | $200km^2$ | $2km^2$ | $200km^2$ |
 
@@ -879,16 +917,27 @@ model were N = 441. For models fit to multiple time steps of before and
 after, (e.g. *Biomass Density BACI*), the number of data points used to
 fit the model were N = 882.
 
-| Indicator | Group | Equation | Estimated Effect | Key Assumptions\* | Example Citations |
-|------------|------------|------------|------------|------------|------------|
-| Biomass Density Before-After -Control-Impact | Inside vs. Outside | $\begin{multline} log(B_{p,t})\sim\beta_0 + \\ \beta_1INSIDE_p + \beta_2AFTER_t \\ +\pmb{\beta_3}INSIDE_p \times AFTER_t \end{multline}$ | Ratio of change in B after MPA implementation inside MPA relative to outside MPA | Parallel trends in biomass density inside and outside MPA pre- and post-implementation. | @lester2009 |
-| Biomass Density Response Ratio | Inside vs. Outside | $log(B_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ | Post-MPA Ratio of biomass inside MPA relative to outside MPA | No pre-existing differences in *B* between inside and outside sites | @smith2024b |
-| Mean Length Response Ratio | Inside vs. Outside | $log(ML_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ | Post-MPA ratio of mean length inside MPA relative to outside MPA | No pre-existing differences in *ML* between inside and outside sites | @halpern2003 |
-| Effort Gradient | Near vs. Far | $log(E_p) \sim \beta_0 + \pmb{\beta_1}NEAR_p$ | Post-MPA ratio of fishing effort NEAR MPA relative to FAR | No pre-existing differences in *E* between NEAR and FAR sites | @goni2008 |
-| Biomass Density Gradient | Near vs. Far | $log(B_p) \sim \beta_0 + \pmb{\beta_1}NEAR_p$ | Post-MPA ratio of biomass density NEAR MPA relative to FAR | No pre-existing differences in *B* between NEAR and FAR sites | @halpern2009 |
-| Biomass Density Before-After Gradient | Near vs. Far | $ \begin{multline} log(B_{p,t})\sim\beta_0 + \\ \beta_1NEAR_p + \beta_2AFTER_t + \\ \pmb{\beta_3}NEAR_p \times AFTER_t \end{multline}$ | Ratio of change in B after MPA implementation near to MPA relative to far from MPA |  | @methratta2020 @lynham2024 @medoff2022 |
+| **Indicator** | **Estimated Effect and Key Assumptions** | **Example Citation** | **Equation** |
+|----------------|----------------|----------------|-----------------------|
+| Biomass Density Before-After -Control-Impact (*Inside vs. Outside*) | Ratio of change in *B* after MPA implementation inside MPA relative to outside MPA. Assumes Parallel trends in *B* inside and outside MPA pre- and post-implementation. | @lester2009 | $\begin{array}{l} log(B_{p,t})\sim\beta_0 + \\ \beta_1INSIDE_p + \beta_2AFTER_t \\ +\pmb{\beta_3}INSIDE_p \times AFTER_t \end{array}$ |
+| Biomass Density Response Ratio (*Inside vs. Outside*) | Post-MPA Ratio of *B* inside MPA relative to outside MPA. Assumes no pre-existing differences in *B* between inside and outside sites | @smith2024b | $log(B_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ |
+| Mean Length Response Ratio (*Inside vs. Outside*) | Post-MPA ratio of *ML* inside MPA relative to outside MPA. Assumes no pre-existing differences in *ML* between inside and outside patches. | @halpern2003 | $log(ML_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ |
+| Effort Gradient (*Near vs. Far*) | Post-MPA ratio of *E* near MPA relative to far. Assumes no pre-existing differences in *E* between near and far patches. | @goni2008 | $log(E_p) \sim \beta_0 + \pmb{\beta_1}NEAR_p$ |
+| Biomass Density Gradient (*Near vs. Far*) | Post-MPA ratio of *B* near MPA relative to far from MPA. Assumes no pre-existing differences in *B* between near and far patches. | @halpern2009 | $log(B_p) \sim \beta_0 + \pmb{\beta_1}NEAR_p$ |
+| Biomass Density Before-After Gradient (*Near vs. Far*) | Ratio of change in *B* after MPA implementation near to MPA relative to far from MPA. Assumes Parallel trends in *B* density near and far from MPA pre- and post-implementation. | @lynham2024 | $\begin{array}{l} log(B_{p,t})\sim \beta_0 + \\ \beta_1NEAR_p + \beta_2AFTER_t + \\ \pmb{\beta_3}NEAR_p \times AFTER_t \end{array}$ |
 
-: General structure of tested indicators of MPA effects.  {#tbl-indicators}
+: General structure of tested indicators of MPA effects. Bolded $\beta$
+parameter in **Equation** column indicates parameter interpreted as the
+effect of the MPA. *B* refers to biomass, *E* refers to effort, *ML*
+refers to mean length. *INSIDE* refers to patches *p* located inside MPA
+borders (whether before or after MPA implementation), *OUTSIDE* to
+patches outside. *AFTER* refers to time periods *t* after MPA
+implementation, *BEFORE* is before MPA implementation. *NEAR* are
+patches *p* outside but near the border of an MPA (whether before or
+after MPA implementation), FAR is outside and farther from the border of
+an MPA. Note that all regressions also include covariates for unfished total biomass
+across all species in each patch *p*, and weighting by absolute distance from MPA border. However we omit these ancillary terms from the table for clarity. {#tbl-indicators}
+
 
 We do not report uncertainty of estimates, as our primary objective is
 to evaluate relative performance across indicators rather than to make
@@ -925,9 +974,7 @@ XX, to more closely reflect plausible scenarios for the California
 system. This allowed us to examine what range simulated MPA outcomes
 could be associated with the distribution of response ratios measured in
 the California MPAs studied in @smith2024b. Note that we do not claim
-these as being simulations of the California MPA system itself, but XX
-words to make the case that we're just tyring to get things clsoer blah
-blah blah blah xx.
+these as being simulations of the California MPA system itself, but rather a set of simulations constrained to reproduce a distribution of *Biomass Density Response Ratios* seen in a real-world system. 
 
 ### Comparing MPA Outcomes and Indicators
 
@@ -1307,17 +1354,6 @@ mpa_step <- min(fauna_results$year) + 10 - 2
 
 ```
 
-XX this will probably get moved to SI XX
-
-xx I see why, but it would be nice to replace it somehow with a Figure 1
-that introduces the approach. How do you feel about workflow-type
-figures? That might also help with the methods clarity and seeing how
-the simulation components, outcomes, and indicators link together? I can
-make a quick mock up and see how it look xx
-
-xx Dan: Absolutely love your workflow figure, let's discuss details on a
-call xx
-
 @fig-case-study illustrates an example MPA scenarios included in this
 analysis. This example is from the "complex" set, with four different
 species targeted by two different fishing fleets. Each species has a
@@ -1558,9 +1594,12 @@ effects increased with the counterfactual degree of fishing pressure,
 but negative catch effects still occurred across all simulated levels of
 fishing pressure (@fig-outcomes).
 
+
+
 ```{r}
 #| label: fig-outcomes
 #| fig-cap: Distribution of simulation results across outcomes (panels), proportion of seascape in MPA (columns), and level of baseline depletion (colors, biomass *B* divided by unfished biomasss *B0*). Y-axis shows the "MPA effect", the percent change in the outcome in question caused by the MPA. Biomass Inside refers to total individual species biomass inside MPA borders. Biomass Outside refers to total individual species biomass outside MPA borders. Total Biomass refers to total individual species biomass both inside and outside MPA borders. Catch refers to catch per species and fleet outside the MPA. 
+#| fig-height: 6
 
 outcome_labeller <- c(
   fished_biomass = "Biomass Outside",
@@ -1569,9 +1608,9 @@ outcome_labeller <- c(
   catch = "Catch"
 )
 
-sighbreaks <- seq(-1,2, by = .5)
+sighbreaks <- seq(-1,2, by = 1)
 sighlabs <- paste0(sighbreaks * 100, "%")
-sighlabs[length(sighlabs)] <- "≥200%"
+sighlabs[length(sighlabs)] <- "<span style='font-weight:600'>&ge;</span> 200%"
 
 fig <- mpa_outcomes |>
   filter(observation_error == default_observation_error) |>
@@ -1602,8 +1641,8 @@ fig <- mpa_outcomes |>
   scale_x_discrete(name = 'Seascape in MPA') +
   scale_y_continuous(name= "MPA Effect",limits = c(NA,2), oob = squish, breaks = sighbreaks, labels = sighlabs) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
-        axis.text.y = element_text(size = 8),
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1, vjust = 1),
+        axis.text.y = element_markdown(size = 8),
         panel.spacing.x = unit(2, "lines")) + 
   ggdist::scale_colour_ramp_discrete(name = "Quantile Range", labels = c("100%","80%", "50%")) 
 
@@ -1653,7 +1692,7 @@ The ability of empirical indicators to track MPA outcomes varied widely
 (@fig-rho-error-bias A). All three *Inside vs. Outside* indicators had
 positive Spearman's $\rho$ with *Biomass Inside* and *Total Biomass*,
 with *Biomass Density BACI* having the highest $\rho$ values for both XX
-ignore specific numbers here for now, will update with the final draxt
+ignore specific numbers here for now, will update with the final draft
 XX ($\rho^2 = 0.53$ and $\rho^2 = 0.32$ respectively), followed by
 *Biomass Density Response Ratio* ($\rho^2 = 0.44$ and $\rho^2 = 0.27$
 respectively). All three *Inside vs. Outside* indicators had negative
@@ -1691,152 +1730,92 @@ for *Biomass Inside*.
 
 ```{r}
 #| label: fig-rho-error-bias
-#| fig-cap: "A) Spearman correlaions $\rho$ (color) and  $\rho^2$ (text) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. B) Root mean squared error (RMSE, text) and mean error (Bias, color) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Blue plain text indicats Inside vs. Outside indicators, red italic axis labels indicates a Near vs. Far indicator."
-#| fig-height: 7
-
-
- 
-a <- mape_meep_rho |> 
-  ggplot() + 
-  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = rho), color = "black") + 
-  geom_text(aes(name, reorder(indicator, abs(rho)), label = round(rho^2,2))) +
-  scale_fill_gradient2(name = expression(rho),limits = c(-1,1),
-                       low = "tomato", high = "steelblue", mid = "white",
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(1, "lines"),
-  legend.key.height = unit(8, "lines")),
-  direction = "vertical",
-  title.position = "top",
-  title.vjust = 0.75)) + 
-  scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
-  scale_y_discrete(expand = c(0,0), name = '') + 
-  theme(legend.position = "right",
-        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
-         axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
-                                    face = c(rep("italic",3), rep("plain",3)))) + 
-    labs(caption = "Text shows psuedo-R<sup>2</sup>", title = "A") +
-  theme(plot.caption = element_textbox())
-
-
-
-b <- mape_meep_rho |> 
-  ggplot() + 
-  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = bias * 100), color = "black") + 
-  geom_text(aes(name, reorder(indicator, abs(rho)), label = round(100 * error,0))) +
-  # ggtext::geom_richtext(aes(name, reorder(indicator, (rho)), label = round(100 * error,0)), size = 3, alpha = 0.75,color = "black") +
-    scale_fill_gradient2(name = "Bias",
-                       low = "blue", high = "gold", mid = "white",
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(1, "lines"),
-  legend.key.height = unit(8, "lines")),
-  direction = "vertical",
-  title.position = "top",
-  title.vjust = 0.75)) + 
-  scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
-  scale_y_discrete(expand = c(0,0), name = '') + 
-  theme(legend.position = "right",
-        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
-         axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
-                                    face = c(rep("italic",3), rep("plain",3)))) + 
-  labs(caption = "Text shows mean percentage-point RMSE", title = "B")
-
-a / b 
-rm(list = c("a","b"))
-```
-
-xx Alternative Figure, can fix colors and labels and generally make look
-better if we agree on it. I think it's better. xx
-
-```{r}
-#| label: fig-rho-error-bias-2
-#| fig-cap: "A) Spearman correlaions $\rho$ B) $\rho^2$ between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. C) Root mean squared error (RMSE) and  D) mean error (Bias) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Blue plain text indicats Inside vs. Outside indicators, red italic axis labels indicates a Near vs. Far indicator."
+#| fig-cap: 'Spearman correlations $\rho$ (A) and $\rho^2$ (B) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Root mean squared error (RMSE, C) and  mean error (Bias, D) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Blue plain text indicates *Inside vs. Outside* indicators, red italic axis labels indicates a *Near vs. Far* indicator. Text shows the value of the metric in question, also reflected in the background color of each cell according to the associated colorbar legend.'
 #| fig-height: 7
 
 a <- mape_meep_rho |> 
   ggplot() + 
   geom_tile(aes(name, reorder(indicator, abs(rho)), fill = rho), color = "black") + 
-  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(rho,2)),alpha = 0.75, size = 3) +
-  scale_fill_gradient2(name = expression(rho),limits = c(-1,1),
-                       low = "tomato", high = "steelblue", mid = "white",
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(1, "lines"),
-                                                                                                           legend.key.height = unit(8, "lines")),
-                                              direction = "vertical",
-                                              title.position = "top",
-                                              title.vjust = 0.75)) + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(rho,2)),alpha = 0.75, size = 2) +
+  scale_fill_gradient2(name = "A) Spearman's ρ",limits = c(-1,1),
+                       low = "tomato", high = "steelblue", mid = "white") + 
   scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
   scale_y_discrete(expand = c(0,0), name = '') + 
-  theme(legend.position = "right",
-        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
+  guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) + 
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
+        axis.text.x = element_blank(),
         axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
-                                   face = c(rep("italic",3), rep("plain",3)))) + 
-  labs(title = "A) Spearman's Rho") +
-  theme(plot.caption = element_textbox()) +
-  guides(fill = "none")
+                                   face = c(rep("italic",3), rep("plain",3))))
+
 
 b <- mape_meep_rho |> 
   ggplot() + 
   geom_tile(aes(name, reorder(indicator, abs(rho)), fill = rho^2), color = "black") + 
-  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(rho,2)),alpha = 0.75,size = 3) +
-  scale_fill_viridis_c(name = expression(rho^2),limits = c(0,1),
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(1, "lines"),
-                                                                                                           legend.key.height = unit(8, "lines")),
-                                              direction = "vertical",
-                                              title.position = "top",
-                                              title.vjust = 0.75)) + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(rho^2,2)),alpha = 0.75,size = 2) +
+  scale_fill_viridis_c(name = "B) Spearman's ρ²",limits = c(0,1)) + 
   scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
   scale_y_discrete(expand = c(0,0), name = '') + 
-  theme(legend.position = "right",
+  guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) + 
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank())
+
+
+
+
+
+dd <- mape_meep_rho |> 
+  ggplot() + 
+  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = bias * 100), color = "black") + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(100 * bias,0)), alpha = 0.75,size = 2) +
+  scale_fill_gradient2(name = "D) Bias",
+                       low = "blue", high = "gold", mid = "white") + 
+  scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
+  scale_y_discrete(expand = c(0,0), name = '') + 
+      guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) +
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
         axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
-        axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
-                                   face = c(rep("italic",3), rep("plain",3)))) + 
-  labs(title = "B) Pseudo-R2") +
-  theme(plot.caption = element_textbox()) + 
-  guides(fill = "none")
+        axis.text.y = element_blank())
 
 
 
 
 cc <- mape_meep_rho |> 
   ggplot() + 
-  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = bias * 100), color = "black") + 
-  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(100 * bias,0)), alpha = 0.75,size = 3) +
-  # ggtext::geom_richtext(aes(name, reorder(indicator, (rho)), label = round(100 * error,0)), size = 3, alpha = 0.75,color = "black") +
-  scale_fill_gradient2(name = "Bias",
-                       low = "blue", high = "gold", mid = "white",
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(1, "lines"),
-                                                                                                           legend.key.height = unit(8, "lines")),
-                                              direction = "vertical",
-                                              title.position = "top",
-                                              title.vjust = 0.75)) + 
-  scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
-  scale_y_discrete(expand = c(0,0), name = '') + 
-  theme(legend.position = "right",
-        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
-        axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
-                                   face = c(rep("italic",3), rep("plain",3)))) + 
-  labs(title = "C) Bias") + 
-  guides(fill = "none")
-
-
-dd <- mape_meep_rho |> 
-  ggplot() + 
   geom_tile(aes(name, reorder(indicator, abs(rho)), fill = error * 100), color = "black") + 
   geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(100 * error,0)),alpha = 0.75,size = 2) +
   # ggtext::geom_richtext(aes(name, reorder(indicator, (rho)), label = round(100 * error,0)), size = 3, alpha = 0.75,color = "black") +
-  scale_fill_viridis_c(option = "magma",name = "RMSE", limits = c(0, NA),guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(1, "lines"),
-                                                                                                           legend.key.height = unit(8, "lines")),
-                                              direction = "vertical",
-                                              title.position = "top",
-                                              title.vjust = 0.75)) + 
+  scale_fill_viridis_c(option = "magma",name = "C) RMSE", limits = c(0, NA)) + 
   scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
   scale_y_discrete(expand = c(0,0), name = '') + 
-  theme(legend.position = "right",
+      guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) +
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
         axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
         axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
-                                   face = c(rep("italic",3), rep("plain",3)))) + 
-  labs(title = "D) RMSE") + 
-  guides(fill = "none")
+                                   face = c(rep("italic",3), rep("plain",3))))
 
 
-(a | b) / (dd | cc) 
+(a | b) / (cc | dd) 
 rm(list = c("a","b", "dd","cc"))
 
 ```
@@ -1852,7 +1831,7 @@ $\rho = 0.56$), and negatively correlated with *Biomass Outside* and
 *Catch* ($\rho = -0.37$, $\rho = -0.29$) (@fig-rr-performance).
 
 
-Visualizing the raw relationship between  *Biomass Density Response Ratios* and various MPA outcomes helps place the summary statistics presented in @fig-rho-error-bias-2 into context. For example, while *Biomass Density Response Ratios* had a high $\rho$ value with *Biomass Inside*, there was substantial variation in this relationship, with low *Biomass Density Response Ratios* in fact being associated with large changes in  *Biomass Inside*, and *vice versa*. This is amplified for relationships with lower correlations, such as *Biomass Density Response Ratios* and *Catch*, in which *Biomass Density Response Ratios* of 0.5 could be produced by simulations with up to 100% increases in catch or 100% losses in catch (@fig-rr-performance). 
+Visualizing the raw relationship between  *Biomass Density Response Ratios* and various MPA outcomes helps place the summary statistics presented in @fig-rho-error-bias into context. For example, while *Biomass Density Response Ratios* had a high $\rho$ value with *Biomass Inside*, there was substantial variation in this relationship, with low *Biomass Density Response Ratios* in fact being associated with large changes in  *Biomass Inside*, and *vice versa*. This is amplified for relationships with lower correlations, such as *Biomass Density Response Ratios* and *Catch*, in which *Biomass Density Response Ratios* of 0.5 could be produced by simulations with up to 100% increases in catch or 100% losses in catch, or commonly with no meaningful change in catch at all (@fig-rr-performance). 
 
 
 ```{r}
@@ -1951,13 +1930,18 @@ ca_rr_ind_plot <- ca_indicator_performance  |>
       geom_richtext(data = rr_cores, aes(
     x = .75,
     y = max_y,
-    label = glue("&rho; = {round(x,2)}<br>&rho;² = {round(x^2,2)}")
+    label = glue("ρ = {round(x,2)}<br> ρ² = {round(x^2,2)}")
   ),
   fill = "white", label.color = NA, alpha = 0.75) +
 
   facet_wrap( ~ name, scales = "free_y", ncol = 2, labeller = labeller(name = outcome_labeller)) +
   scale_y_continuous(limits = c(NA, NA), oob = squish, name = "Simulated effect of MPA on..", labels = scales::percent, expand = expansion(mult = c(0,.5))) +
-  scale_x_continuous(limits = c(-.25,1.25), name = "Simulated Biomass Density Response Ratio") + scale_fill_viridis_c(option = "mako",name = "# of Simulations") +
+  scale_x_continuous(limits = c(-.25,1.25), name = "Simulated Biomass Density Response Ratio") + 
+  scale_fill_viridis_c(option = "mako",name = "# of Simulations",guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.height  = unit(1, "lines"),
+                                                                                                           legend.key.width = unit(8, "lines")),
+                                              direction = "horizontal",
+                                              title.position = "top",
+                                              title.vjust = 0.75)) +
   theme(legend.position = "top")
 
 
@@ -2097,10 +2081,12 @@ which requires monitoring programs to be in place prior to MPA
 implementation, or data from inside the reserve, which can be costly to
 collect as it usually depends on fishery-independent scientific surveys.
 Instead, they can in theory be calculated using only post-implementation
-fishery-dependent data. Early empirical use of gradient based methods
+fishery-dependent data. 
+
+Early empirical use of gradient based methods
 was focused on measuring the presence of "spillover" from the MPA to
 surrounding water [@halpern2009], which was under debate at the time. We
-argue that the question is in fact not really an open or particularly
+argue that the question "does spillover exist" is in fact not really an open or particularly
 relevant question anymore; simulation modeling and empirical evidence
 has confirmed that for almost any reasonable case the movement dynamics
 of marine organisms are such some level of spillover will almost always
@@ -2314,6 +2300,11 @@ of achieving positive and equitable outcomes for nature and people.
 
 # SI
 
+:::{=latex}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{figure}{0}
+:::
+
 This document contains supporting figures and descritions for XX
 
 ## Fish Species Templates
@@ -2323,7 +2314,8 @@ The following graphs show the key life history functions resulting from the fixe
 ```{r}
 #| label: fig-reef
 #| fig-cap: Life history ogives for reef fish archetype
-#| 
+
+rm(counter)
 state_experiments$fauna[[1]]$reef_fish$plot()
 ```
 
