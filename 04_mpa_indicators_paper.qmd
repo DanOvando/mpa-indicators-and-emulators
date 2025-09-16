@@ -39,6 +39,8 @@ format:
     include-in-header: preamble.tex
     documentclass: extarticle
     classoption: 12pt
+    keep-tex: true
+
 bibliography: references.bib
 abstract: |
  Something
@@ -427,7 +429,7 @@ Please find enclosed our manuscript entitled “Evaluating the Reliability of Co
 
 Marine Protected Areas (MPAs) are expanding rapidly worldwide, driven by international commitments such as the Montreal–Kunming Global Biodiversity Framework’s target to protect 30% of the oceans and the new High Seas Treaty (BBNJ). This growth reflects expectations that MPAs will deliver outcomes ranging from biodiversity protection to enhanced fishery yields. Yet both the capacity of MPAs to achieve these objectives and the ability of practitioners to detect such changes are less certain than conventional wisdom often suggests. This gap poses a critical challenge for the effective and equitable use of MPAs in ocean management.
 
-In this study, we simulated more than 10,000 MPA case studies to explore the range of conservation and food security outcomes that protected areas can provide. From these simulations, we calculated widely used empirical indicators—such as gradients in biomass densities inside versus outside or near versus far from MPA borders—and assessed how well these indicators reflected the true effects of MPAs. We show that while some indicators perform well, others have little to no correlation with the outcomes they are commonly assumed to represent.
+In this study, we simulated more than 10,000 MPA case studies to explore the range of conservation and food security outcomes that protected areas can provide. From these simulations, we calculated widely used empirical indicators—such as gradients in biomass densities inside versus outside or near versus far from MPA borders—and assessed how well these indicators reflected the true effects of MPAs. We show that while some indicators perform well, others have little correlation with the outcomes they are commonly assumed to represent.
 
 Our work builds on a rich literature on MPA effects and monitoring, including contributions previously published in Ecological Applications. To our knowledge, this is the first study to systematically test a broad suite of indicators against diverse MPA objectives using a large-scale bioeconomic simulation framework. We believe the results will inform both the science and practice of MPAs by helping decision-makers design monitoring programs and interpret empirical indicators more effectively—providing a stronger foundation for tracking the performance of global MPA networks.
 
@@ -450,21 +452,12 @@ Open Research statement
 Key words/phrases: 
 
 ## Abstract (350 words max)
+N = 339
+Marine protected areas (MPAs) are spatial management tools designed to achieve diverse conservation and social objectives, including biodiversity, food security, and climate resilience. Because these objectives are often difficult to measure directly, evaluations typically rely on simplified empirical indicators—such as biomass inside versus outside MPAs, or gradients in biomass across boundaries—as proxies for broader outcomes. Yet in complex social–ecological systems, even well-measured indicators may fail to capture the true causal effects of MPAs.
 
-Marine protected areas (MPAs) are spatial management tools implemented
-to achieve a wide range of conservation and social objectives, from
-biodiversity protection to food security and climate resilience. As
-these objectives are often difficult to measure directly, empirical MPA
-evaluations often rely on simplified indicators – such as response
-ratios or gradients in biomass or catch – as proxies for broader
-performance outcomes. However, in complex social-ecological systems,
-even well-measured indicators may fail to reflect true causal effects.
-Using a simulation framework, we explore variability in MPA outcomes and
-assess whether common empirical indicators reliably track intended
-outcomes across a range of scenarios. We find that… xx \[add detail
-about results…\] xx. Our results show that many commonly used indicators of MPA performance in fact
-have very little correlation with actual outcomes of MPAs.xx \[add detail about
-implications\] xx
+Using a large-scale simulation framework (> 10,000 scenarios), we explored variability in MPA outcomes and assessed whether common indicators reliably tracked intended objectives of protected areas. We show how the same sized MPA can produce vastly different outcomes for conservation and food security depending on factors such as fishing fleet dynamics and habitat heterogeneity within and across species. The degree of correlation between common empirical indicators of MPA performance and these true outcomes also varied widely. Indicators such as biomass density response ratios were positively correlated with the effect of MPAs on biomass inside their borders (Spearman's $\rho$ of 0.56), but slightly negatively correlated with the effect of MPAs on total fishery catches (Spearman's $\rho$ of -0.07). Common indicators of spillover, such as gradients in biomass density near MPAs relative to far from MPAs, had almost no correlation with conservation or catch outcome (absolute value of Spearman's $\rho$ all less than or equal to 0.05). 
+
+The high variability in outcomes generated by our simulations highlights the importance of effective ecological and economic monitoring programs designed to track the effects of MPAs. However, our results also show that many indicators currently measured in and around MPAs may contain little information on macro-level outcomes such as total changes in fish populations or fishery catches. The next generation of MPA research urgently needs interdisciplinary collaboration to develop sufficiently practical and reliable methods for tracking the effects of MPAs. Doing so will help ensure that the planned rapid and global expansion of MPAs has the best chance of delivering positive and equitable outcomes for nature and people.
 
 ## Introduction
 
@@ -583,7 +576,18 @@ paired simulation without an MPA. Lastly, we calculated common empirical
 indicators of MPA performance from the simulation with the MPA, and
 compared these indicators to the true simulated outcomes. We then
 repeated this process multiple times with different randomly generated
-fishery states. The details of this process are explained below.
+fishery states. The details of this process are explained below and illustrated in @fig-flow. 
+
+
+```{r}
+#| label: fig-flow
+#| fig-cap: Conceptual illustration of the MPA simulation experiments generated for this paper. 
+
+knitr::include_graphics(here("imgs", "indicators-fig1-mockup.png"))
+
+
+```
+
 
 ### Simulating Fisheries
 
@@ -780,7 +784,7 @@ values of the variables presented in this table were selected. See
 accompanying code at <https://doi.org/10.5281/zenodo.14503624> XX for
 details of individual distributions form which variables are drawn. {#tbl-variable}
 
-### Simulating MPA Effects
+### Simulating MPA Outcomes
 
 We ran each simulated fishery through an MPA experiment where attributes
 of the simulated fishery were held at identical values, except for the
@@ -1011,519 +1015,8 @@ publicly available at XX.
 
 ## Results
 
-### Case Study
 
-```{r}
-#| label: case-study
-#| eval: true
-
-# set.seed(1234321)
-set.seed(33)
-
-difficulties <- c("complex")
-n_states <- 1
-difficulty_species <- list(
-  complex =    c("reef_fish",
-    "shark",
-    "tuna",
-    "grouper")
-)
-
-difficulty <- "complex"
-
-baseline_state_experiments <-
-  tibble(
-    kiss = sample(c(FALSE), n_states, replace = TRUE),
-    mpa_response = sample(c("stay"), n_states, replace = TRUE),
-    habitat_patchiness = runif(n_states, 1e-3, .01),
-    max_abs_cor = runif(n_states, 1e-3, .9),
-    spatial_q = sample(
-      c(FALSE, FALSE),
-      n_states,
-      replace = TRUE,
-      prob = c(1, 3)
-    ),
-    spatial_allocation = sample(c("ppue", "rpue", "revenue"), n_states, replace = TRUE),
-    fleet_model = sample(c("constant_effort"), n_states, replace = TRUE)
-  ) %>%
-  mutate(state_id = 1:nrow(.))
-
-port_locations <-
-  tibble(x = c(1, resolution[1]), y = c(1, resolution[2])) # coordinates to test impact of highly disparate ports
-
-
-critters <-
-  tibble(scientific_name = difficulty_species[[difficulty]])
-message("creating habitats")
-
-state_experiments <- baseline_state_experiments %>%
-  mutate(
-    habitats = future_pmap(
-      list(kp = habitat_patchiness, max_abs_cor = max_abs_cor),
-      sim_habitat,
-      critters = critters$scientific_name,
-      resolution = resolution,
-      patch_area = patch_area,
-      .progress = TRUE,
-      .options = furrr_options(seed = TRUE)
-    )
-  ) %>%
-  mutate(critter_correlations = map(habitats, ~ process_correlations(.x$critter_correlations))) |>
-  unnest(cols = critter_correlations) |>
-  mutate(habitats = map(
-    habitats,
-    ~ .x$critter_distributions  |> select(-patch) |> group_by(critter) |> nest(.key = "habitat")
-  )) |>
-  unnest(cols = habitats) %>%
-  ungroup() |>
-  mutate(
-    seasonal_movement = sample(c(FALSE), length(state_id), replace = TRUE),
-    spawning_aggregation = sample(c(FALSE), length(state_id), replace = TRUE),
-    spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
-    f_v_m = c(0.1,0.1,0.025,0.05),
-    hyperallometry = sample(c(1, 2), length(state_id), replace = TRUE),
-    sigma_rec = sample(c(0.666), length(state_id), replace = TRUE),
-    density_dependence = sample(
-      c(
-        "global_habitat",
-        "local_habitat",
-        "pre_dispersal",
-        "post_dispersal"
-      ),
-      length(state_id),
-      replace = TRUE
-    )
-  ) %>%
-  mutate(
-    spawning_season = ifelse(spawning_aggregation, NA, NA),
-    ontogenetic_shift = sample(c(TRUE, FALSE), length(state_id), replace = TRUE)
-  ) |>
-  mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
-  mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
-
-
-  b0s <- tibble(critter = c("reef_fish", "shark", "tuna", "grouper"), b0 = c(3e6,1e6,6e6,3e6))
-
- #   b0s <- tibble(critter = c("reef_fish", "shark", "tuna", "grouper"), b0 = c(3e6,3e6,3e6,3e6))
-  
-  state_experiments <- state_experiments |> 
-    left_join(b0s, by = "critter")
-
-message("finished habitats")
-
-
-# state_experiments$b0 <- c(1000,1000,1000,1000)
-message("creating critters")
-
-state_experiments <- state_experiments %>%
-  rename(scientific_name = critter) |>
-  mutate(
-    critter = future_pmap(
-      list(
-        critter_name = scientific_name,
-        habitat = habitat,
-        seasonal_movement = seasonal_movement,
-        spawning_aggregation = spawning_aggregation,
-        spawning_season = spawning_season,
-        f_v_m = f_v_m,
-        density_dependence = density_dependence,
-        hyper = hyperallometry,
-        ontogenetic_shift = ontogenetic_shift,
-        kiss = kiss,
-        sigma_rec = sigma_rec,
-        b0 = b0
-      ),
-      create_experiment_critters,
-      resolution = resolution,
-      patch_area = patch_area,
-      seasons = seasons,
-      .progress = TRUE,
-      .options = furrr_options(seed = TRUE)
-    )
-  )
-
-message("finished critters")
-
-
- # function to randomize selectivity parameters
-  selfoo <- function(x,i){
-    out <-   list(
-      sel_start = runif(i, .25, .5),
-      # proportion of length 50% mature at 50% selectivity
-      sel_delta = runif(i, 1e-3, .25),
-      # offset for 95% selectivity
-      sel05_anchor = runif(i, 0, 0.9),
-      sel_at_linf = runif(i, 0, 1)
-    )
-    
-    out$sel05_anchor <- out$sel05_anchor * out$sel_start # must be smaller than length at 50% selectivity
-    
-    return(out)
-    
-  }
-  state_experiments <- state_experiments %>%
-    group_by(state_id) %>%
-    nest() %>%
-    mutate(
-      fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
-      sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
-      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("logistic","double_normal"), .y, replace = TRUE))),
-      prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
-      use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
-    ) |> 
-    ungroup()
-  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
-  
-  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
-  
-  # state_experiments$fauna[[1]][[4]]$b0
-  # stop()
-  state_experiments <- state_experiments %>%
-    mutate(
-      fleet = pmap(
-        list(
-          fauna = fauna,
-          state = data,
-          sels = sels,
-          sel_form = sel_form,
-          prices = prices,
-          use_ports = use_ports
-        ),
-        create_fleets,
-        difficulty = difficulty,
-        port_locations = port_locations,
-        resolution = resolution,
-        patch_area = patch_area,
-        .progress = "making fleets"
-      )
-    )
-
-      # prepare recruitment deviate generator
-    state_experiments <- state_experiments |>
-      mutate(
-        max_abs_cor_rec = sample(c(0,21, 0.6), n(), replace = TRUE),
-        rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
-      )
-    
-  
-# add in starting conditions
-init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
-  starting_trajectory <-
-    simmar(fauna = fauna,
-           fleets = fleets,
-           years = years,
-           cor_rec = rec_dev_cov_and_cor$cor)
-  
-  # plot_marlin(check)
-  
-  starting_conditions <-
-    starting_trajectory[(length(starting_trajectory) - seasons + 1):length(starting_trajectory)]
-  # starting_trajectory[1:length(starting_trajectory)]
-  
-  proc_starting_conditions <-
-    process_marlin(starting_conditions, keep_age = FALSE)
-  
-  out <- list(starting_conditions = starting_conditions,
-              proc_starting_conditions = proc_starting_conditions)
-  
-}
-
-message(glue::glue("simulating initial {difficulty} conditions"))
-state_experiments <- state_experiments %>%
-  mutate(tmp = future_pmap(
-    list(fauna = fauna,
-         fleet = fleet,
-         rec_dev_cov_and_cor = rec_dev_cov_and_cor),
-    init_condit,
-    .progress = TRUE,
-    .options = furrr_options(seed = TRUE)
-  ))
-message(glue::glue("finished simulating initial {difficulty} conditions"))
-
-state_experiments$starting_conditions <-
-  map(state_experiments$tmp, "starting_conditions")
-
-state_experiments$proc_starting_conditions <-
-  map(state_experiments$tmp, "proc_starting_conditions")
-
-state_experiments <- state_experiments %>%
-  select(-tmp)
-
-cs_state_depletions <-
-  map_df(state_experiments$starting_conditions,
-         ~ map_df(.x, ~ map_df(.x, ~ sum(.x$ssb_p_a) / .x$ssb0)),
-         .id = "state_id") |>
-  pivot_longer(-state_id, names_to = "critter", values_to = "step_depletion") |>
-  group_by(state_id, critter) |>
-  summarise(depletion = mean(step_depletion)) |>
-  mutate(state_id = as.integer(state_id))
-
-state_experiments <- state_experiments |>
-  left_join(cs_state_depletions |> group_by(state_id) |> nest(.key = "depletion"),
-            by = "state_id")
-
-
-state_experiments <- state_experiments |> 
-  mutate(log_rec_devs = map2(fauna, rec_dev_cov_and_cor, generate_rec_devs, years = mpa_years))
-
-# generate placement experiments
-
-placement_experiments <- expand_grid(
-  placement_strategy = c("target_fishing"),
-  prop_mpa = c(0,0.3),
-  mosaic = TRUE,
-  critters_considered = seq(
-    length(state_experiments$fauna[[1]]),
-    length(state_experiments$fauna[[1]]),
-    by = 1
-  ),
-  placement_error = c(0)
-) %>%
-  group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
-  nest() %>%
-  ungroup() %>%
-  mutate(placement_id = 1:n(),
-         sigh = vector(mode = "list", length = n())) %>%
-  unnest(cols = data)
-
-for (p in 1:nrow(placement_experiments)){
-
-placement_experiments$sigh[[p]] <- state_experiments |>
-  ungroup() %>%
-  mutate(
-    results = future_pmap(
-      list(
-        starting_conditions = starting_conditions,
-        proc_starting_conditions = proc_starting_conditions,
-        fauna = fauna,
-        fleets = fleet,
-        log_rec_devs = log_rec_devs
-      ),
-      run_mpa_experiment,
-      placement_strategy = placement_experiments$placement_strategy[p],
-      prop_mpa = placement_experiments$prop_mpa[p],
-      mosaic = placement_experiments$mosaic[p],
-      critters_considered = placement_experiments$critters_considered[p],
-      placement_error = placement_experiments$placement_error[p],
-      resolution = resolution,
-      patch_area = patch_area,
-      drop_patches = FALSE,
-      steps_to_keep = "all",
-      years = mpa_years,
-      mpa_offset = 10,
-      keep_age = TRUE,
-      .options = furrr_options(seed = TRUE)
-    )
-  )
-
-}
-
-# quick and dirty comparision vs. benchmark
-fauna_results <- placement_experiments$sigh[[2]]$results[[1]]$results$fauna |> 
-  mutate(prop_mpa = placement_experiments$prop_mpa[2] ) # |> 
-    #mutate(critter = critter_namer(critter))
-
-
-fleet_results <-placement_experiments$sigh[[2]]$results[[1]]$results$fleet |> 
-    mutate(prop_mpa = placement_experiments$prop_mpa[2] )# |> 
-    #mutate(critter = critter_namer(critter))
-
-
-
-
-benchmark_fauna_results <- placement_experiments$sigh[[1]]$results[[1]]$results$fauna |> 
-    mutate(prop_mpa = placement_experiments$prop_mpa[1] ) #|> 
-    #mutate(critter = critter_namer(critter))
-
-
-
-benchmark_fleet_results <-placement_experiments$sigh[[1]]$results[[1]]$results$fleet |> 
-    mutate(prop_mpa = placement_experiments$prop_mpa[1] ) #|> 
-   # mutate(critter = critter_namer(critter))
-
-
-
-
-mpa_step <- min(fauna_results$year) + 10 - 2
-
-# state_experiments$fleet[[1]]$alpha$metiers[[4]]$sel_at_length |> 
-#   plot()
-# 
-
-
-
-```
-
-@fig-case-study illustrates an example MPA scenarios included in this
-analysis. This example is from the "complex" set, with four different
-species targeted by two different fishing fleets. Each species has a
-different baseline distribution ({@fig-case-study}-A), and each fleet
-has their own relative prioritization of species and port locations. In
-this scenario, MPAs are placed across 30% of the seascape where the
-highest biomass of fish is caught xx "using the *Target Fishing*"
-strategy" ?? xx, redistributing fishing effort ({@fig-case-study}-B).
-The total biomass by species ({@fig-case-study}-C), and catch by species
-and fleet ({@fig-case-study}-D), are calculated over time, and compared
-between the state of the world with the MPA (solid lines) relative to
-the world without the MPA (dashed lines). Values from the simulated
-world with the MPA would be used to calculate relevant indicators such
-as response ratios.
-
-```{r}
-#| label: fig-case-study
-#| fig-cap: "Case study simulation. A) Distribution of biomass per species in space, with more darker colors indicating lower biomass. B) Distribution of fishing effort, with darker colors indicating lower fishing effort C) Evolution of depletion (biomass divided by unfished biomass) per species over time, with vertical line indicating year of 30% MPA implementation. D) Catch by species and fleet over time, with vertical line indicating year of 30% MPA implementation. For panels C and D, solid line indicates world with MPA, dashed line simulated counter-factual where MPAs are not implemented."
-#| eval: true
-#| fig-height: 7
-
-mpa <- fauna_results |> 
-  filter(step == max(step)) |> 
-  group_by(x,y) |> 
-  summarise(mpa = unique(mpa))
-
-  
-# benchmark_fauna_results |> 
-#   filter(age == min(age)) |> 
-#   group_by(critter, step) |> 
-#   summarise(n = sum(n)) |> 
-#   ggplot(aes(step, n)) + 
-#   geom_point() + 
-#   facet_wrap(~critter, scales = "free_y")
-
-alpha <- benchmark_fauna_results |> 
-  filter(step == max(step)) |> 
-  group_by(critter, x,y) |> 
-  summarise(b = sum(b)) |> 
-  group_by(critter) |> 
-  mutate(sb = b / max(b)) |> 
-  ungroup() |> 
-  left_join(mpa, by = c("x","y")) |> 
-  ggplot(aes(x,y,fill =sb)) + 
-  geom_tile(show.legend = FALSE) + 
-  facet_wrap(~critter) + 
-  scale_fill_viridis_c() + 
-  scale_x_continuous(name = "Longitude",expand = c(0,0)) + 
-  scale_y_continuous(name = "Latitude",expand = c(0,0)) +
-  labs(subtitle = "A) Biomass Distribution Without MPA") +
-  theme(axis.text = element_blank())
-
-
-beta <- fleet_results |> 
-  filter(step == max(step)) |> 
-  group_by(fleet, x,y, mpa) |> 
-  summarise(effort = unique(effort)) |> 
-  group_by(fleet) |> 
-  mutate(se = effort / max(effort)) |> 
-  ggplot(aes(x,y,fill =se, color = mpa)) + 
-  geom_tile(show.legend = FALSE) + 
-  facet_wrap(~fleet) + 
-  scale_fill_viridis_c(option = "plasma") + 
-  scale_x_continuous(name = "Longitude",expand = c(0,0)) + 
-  scale_y_continuous(name = "Latitude",expand = c(0,0)) +
-  labs(subtitle = "B) Effort Distribution") +
-  theme(axis.text = element_blank())
-
-fauna_experiment <- fauna_results |> 
-  bind_rows(benchmark_fauna_results)
-
-
-fleet_experiment <- fleet_results |> 
-  bind_rows(benchmark_fleet_results)
-
-b0s <- map_dbl(state_experiments$fauna[[1]], \(x) x$b0)
-
-delta <- fauna_experiment |> 
-  mutate(experiment = if_else(prop_mpa == 0, "Without MPA", "With MPA")) |> 
-  group_by(critter, step, prop_mpa, experiment, patch) |> 
-  summarise(b = sum(b, na.rm = TRUE),
-            b0_p = unique(b0_p)) |> 
-    group_by(critter, step, prop_mpa, experiment) |> 
-  summarise(biomass = sum(b, na.rm = TRUE),
-            b0 = sum(b0_p)) |> 
-  ungroup() |> 
-  mutate(depletion = biomass / b0) |> 
-  ggplot(aes(step, depletion, color = critter, linetype = experiment)) + 
-    geom_vline(xintercept = mpa_step) +
-  geom_line() + 
-  scale_linetype(name = "") + 
- scale_linetype(name = "") + 
-  scale_x_continuous(name = "Time") +
-  scale_y_continuous(name = "B/B0",limits = c(0, 1.1), expand = c(0, NA)) +
-  scale_color_discrete(name = '') +
-  guides(color = guide_legend(nrow = 2)) + 
-  labs(subtitle = "C) B/B0 per species over time") + 
-    theme(axis.text.x = element_blank(),        axis.text.y = element_text(size = 6))
-
-
-# fleet_experiment |> 
-#   group_by(step, fleet) |> 
-#   summarise(effort = sum(effort)) |> 
-#   ggplot(aes(step, effort, color = fleet)) + 
-#   geom_point() + 
-#   facet_wrap(~fleet)
-
-kappa <- fleet_experiment |> 
-  mutate(experiment = if_else(prop_mpa == 0, "Without MPA", "With MPA")) |> 
-  group_by(critter, step, prop_mpa, experiment, fleet) |> 
-  summarise(catch = sum(catch, na.rm = TRUE)) |> 
-  ggplot(aes(step, catch, color = critter, linetype = experiment)) + 
-  geom_vline(xintercept = mpa_step) +
-  geom_line() + 
-  scale_linetype(name = "") + 
-    scale_x_continuous(name = "Time") +
-  scale_y_continuous(name = "Catch",limits = c(0, NA), expand = c(0, NA)) +
-  facet_wrap(~fleet, scales = "free_y") + 
-  guides(color = guide_legend(nrow = 2)) +
-  labs(subtitle = "D) Catch per species per fleet over time") + 
-  scale_color_discrete(name = '') +
-   # scale_color_viridis_d(name = '',option = "turbo") + 
-  theme(axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 6))
-
-
-
-# fleet_experiment |>
-#   group_by(fleet, step) |>
-#   summarise(effort = sum(effort)) |>
-#   ggplot(aes(step, effort, color = fleet)) +
-#   geom_line()
-
-# kappa <- fleet_results |> 
-#   group_by(step, critter, fleet) |> 
-#   summarise(catch = sum(catch, na.rm = TRUE)) |> 
-#   ggplot(aes(step, catch, fill = critter)) +
-#   geom_area() + 
-#   geom_vline(xintercept = mpa_step) +
-#   facet_wrap(~fleet, labeller = label_both) + 
-#   scale_fill_brewer(name = "", palette = "Set1") +
-#   theme(legend.position = "bottom") +
-#   scale_y_continuous(name = "Catch", limits = c(0,NA)) + 
-#   scale_x_continuous(name = "Time Step") +
-#   guides(fill = guide_legend(nrow = 1)) + 
-#   labs(subtitle = "C) Catch by fleet over time")
-# 
-# 
-# delta <- fauna_results |> 
-#   group_by(step, critter) |> 
-#   summarise(biomass = sum(b, na.rm = TRUE)) |> 
-#   ggplot(aes(step, biomass, color = critter)) +
-#   geom_line(show.legend = FALSE) + 
-#   geom_vline(xintercept = mpa_step) +
-#   scale_color_brewer(name = "", palette = "Set1") +
-#   theme(legend.position = "bottom") +
-#   scale_y_continuous(name = "Biomass", limits = c(0, NA)) + 
-#   scale_x_continuous(name = "Time Step") +
-#   guides(color = guide_legend(nrow = 1)) + 
-#   labs(subtitle = "C) Biomass per species over time")
-
-fig <- ((alpha + beta) / (delta + kappa) + plot_layout(guides = "collect") & theme(legend.position = "bottom")) & theme(axis.title.x = element_text(size = 6),axis.title.y = element_text(size = 6))
-
-
-figsaver(fig)
-
-
-```
-
-### Variability of MPA Effects
+### Variability of MPA Outcomes
 
 <!-- Note that for all of these results we cannot really assign a probability to any one state of nature, and so should focus more on the range and trends in outcomes rather than the shapshots of outcome density.  -->
 
@@ -1595,6 +1088,7 @@ but negative catch effects still occurred across all simulated levels of
 fishing pressure (@fig-outcomes).
 
 
+\newpage
 
 ```{r}
 #| label: fig-outcomes
@@ -1650,6 +1144,8 @@ fig <- mpa_outcomes |>
 figsaver(fig)
 
 ```
+
+
 
 ### Performance of Empirical Indicators of MPA Effects
 
@@ -1727,6 +1223,10 @@ points, with an average bias across all indicators of
 indicators were positively biased relative to the true effect size,
 though four out of the six evaluated indicators were negatively biased
 for *Biomass Inside*.
+ 
+ 
+\newpage
+
 
 ```{r}
 #| label: fig-rho-error-bias
@@ -1833,6 +1333,7 @@ $\rho = 0.56$), and negatively correlated with *Biomass Outside* and
 
 Visualizing the raw relationship between  *Biomass Density Response Ratios* and various MPA outcomes helps place the summary statistics presented in @fig-rho-error-bias into context. For example, while *Biomass Density Response Ratios* had a high $\rho$ value with *Biomass Inside*, there was substantial variation in this relationship, with low *Biomass Density Response Ratios* in fact being associated with large changes in  *Biomass Inside*, and *vice versa*. This is amplified for relationships with lower correlations, such as *Biomass Density Response Ratios* and *Catch*, in which *Biomass Density Response Ratios* of 0.5 could be produced by simulations with up to 100% increases in catch or 100% losses in catch, or commonly with no meaningful change in catch at all (@fig-rr-performance). 
 
+\newpage
 
 ```{r}
 #| label: fig-rr-performance
@@ -2298,60 +1799,594 @@ of achieving positive and equitable outcomes for nature and people.
 ::: {#refs}
 :::
 
-# SI
+# SI: Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security: Supporting Information
 
 :::{=latex}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}
 :::
 
-This document contains supporting figures and descritions for XX
+This document contains supporting figures and descriptions for the manuscript "Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security". 
 
-## Fish Species Templates
+## Case Study
 
-The following graphs show the key life history functions resulting from the fixed parameters used for each fish species. 
+```{r}
+#| label: case-study
+#| eval: true
+
+# set.seed(1234321)
+set.seed(33)
+
+difficulties <- c("complex")
+n_states <- 1
+difficulty_species <- list(
+  complex =    c("reef_fish",
+    "shark",
+    "tuna",
+    "grouper")
+)
+
+difficulty <- "complex"
+
+baseline_state_experiments <-
+  tibble(
+    kiss = sample(c(FALSE), n_states, replace = TRUE),
+    mpa_response = sample(c("stay"), n_states, replace = TRUE),
+    habitat_patchiness = runif(n_states, 1e-3, .01),
+    max_abs_cor = runif(n_states, 1e-3, .9),
+    spatial_q = sample(
+      c(FALSE, FALSE),
+      n_states,
+      replace = TRUE,
+      prob = c(1, 3)
+    ),
+    spatial_allocation = sample(c("ppue", "rpue", "revenue"), n_states, replace = TRUE),
+    fleet_model = sample(c("constant_effort"), n_states, replace = TRUE)
+  ) %>%
+  mutate(state_id = 1:nrow(.))
+
+port_locations <-
+  tibble(x = c(1, resolution[1]), y = c(1, resolution[2])) # coordinates to test impact of highly disparate ports
+
+
+critters <-
+  tibble(scientific_name = difficulty_species[[difficulty]])
+message("creating habitats")
+
+state_experiments <- baseline_state_experiments %>%
+  mutate(
+    habitats = future_pmap(
+      list(kp = habitat_patchiness, max_abs_cor = max_abs_cor),
+      sim_habitat,
+      critters = critters$scientific_name,
+      resolution = resolution,
+      patch_area = patch_area,
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
+    )
+  ) %>%
+  mutate(critter_correlations = map(habitats, ~ process_correlations(.x$critter_correlations))) |>
+  unnest(cols = critter_correlations) |>
+  mutate(habitats = map(
+    habitats,
+    ~ .x$critter_distributions  |> select(-patch) |> group_by(critter) |> nest(.key = "habitat")
+  )) |>
+  unnest(cols = habitats) %>%
+  ungroup() |>
+  mutate(
+    seasonal_movement = sample(c(FALSE), length(state_id), replace = TRUE),
+    spawning_aggregation = sample(c(FALSE), length(state_id), replace = TRUE),
+    spawning_season = sample(1:seasons, length(state_id), replace = TRUE),
+    f_v_m = c(0.1,0.1,0.025,0.05),
+    hyperallometry = sample(c(1), length(state_id), replace = TRUE),
+    sigma_rec = sample(c(0.666), length(state_id), replace = TRUE),
+    density_dependence = sample(
+      c(
+        "pre_dispersal"
+      ),
+      length(state_id),
+      replace = TRUE
+    )
+  ) %>%
+  mutate(
+    spawning_season = ifelse(spawning_aggregation, NA, NA),
+    ontogenetic_shift = sample(c(FALSE), length(state_id), replace = TRUE)
+  ) |>
+  mutate(ontogenetic_shift = ifelse(kiss, FALSE, ontogenetic_shift)) |>
+  mutate(density_dependence = ifelse(ontogenetic_shift, "local_habitat", density_dependence))
+
+
+  b0s <- tibble(critter = c("reef_fish", "shark", "tuna", "grouper"), b0 = c(3e6,1e6,6e6,3e6))
+
+ #   b0s <- tibble(critter = c("reef_fish", "shark", "tuna", "grouper"), b0 = c(3e6,3e6,3e6,3e6))
+  
+  state_experiments <- state_experiments |> 
+    left_join(b0s, by = "critter")
+
+message("finished habitats")
+
+
+# state_experiments$b0 <- c(1000,1000,1000,1000)
+message("creating critters")
+
+state_experiments <- state_experiments %>%
+  rename(scientific_name = critter) |>
+  mutate(
+    critter = future_pmap(
+      list(
+        critter_name = scientific_name,
+        habitat = habitat,
+        seasonal_movement = seasonal_movement,
+        spawning_aggregation = spawning_aggregation,
+        spawning_season = spawning_season,
+        f_v_m = f_v_m,
+        density_dependence = density_dependence,
+        hyper = hyperallometry,
+        ontogenetic_shift = ontogenetic_shift,
+        kiss = kiss,
+        sigma_rec = sigma_rec,
+        b0 = b0
+      ),
+      create_experiment_critters,
+      resolution = resolution,
+      patch_area = patch_area,
+      seasons = seasons,
+      .progress = TRUE,
+      .options = furrr_options(seed = TRUE)
+    )
+  )
+
+message("finished critters")
+
+
+ # function to randomize selectivity parameters
+  selfoo <- function(x,i){
+    out <-   list(
+      sel_start = runif(i, .25, .5),
+      # proportion of length 50% mature at 50% selectivity
+      sel_delta = runif(i, 1e-3, .25),
+      # offset for 95% selectivity
+      sel05_anchor = runif(i, 0, 0.9),
+      sel_at_linf = runif(i, 0, 1)
+    )
+    
+    out$sel05_anchor <- out$sel05_anchor * out$sel_start # must be smaller than length at 50% selectivity
+    
+    return(out)
+    
+  }
+  state_experiments <- state_experiments %>%
+    group_by(state_id) %>%
+    nest() %>%
+    mutate(
+      fauna = map(data, ~ .x$critter %>% set_names(.x$scientific_name)),
+      sels = map(fauna, ~ map2(1:2, length(.x), selfoo)),
+      sel_form = map(fauna, ~ map2(1:2,length(.x), ~sample(c("logistic","double_normal"), .y, replace = TRUE))),
+      prices = map(fauna, ~ map2(1:2, length(.x),~runif(.y, 1, 10))),
+      use_ports = map(fauna,~sample(c(TRUE,FALSE), 2, replace = TRUE))
+    ) |> 
+    ungroup()
+  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$diffusion_foundation[[1]] |> image()
+  
+  # state_experiments$fauna[[1]]$`lutjanus malabaricus`$movement_matrix[[1]] |> image()
+  
+  # state_experiments$fauna[[1]][[4]]$b0
+  # stop()
+  state_experiments <- state_experiments %>%
+    mutate(
+      fleet = pmap(
+        list(
+          fauna = fauna,
+          state = data,
+          sels = sels,
+          sel_form = sel_form,
+          prices = prices,
+          use_ports = use_ports
+        ),
+        create_fleets,
+        difficulty = difficulty,
+        port_locations = port_locations,
+        resolution = resolution,
+        patch_area = patch_area,
+        .progress = "making fleets"
+      )
+    )
+
+      # prepare recruitment deviate generator
+    state_experiments <- state_experiments |>
+      mutate(
+        max_abs_cor_rec = sample(c(0,21, 0.6), n(), replace = TRUE),
+        rec_dev_cov_and_cor = map2(fauna, max_abs_cor_rec, create_rec_dev_cov_and_cor)
+      )
+    
+  
+# add in starting conditions
+init_condit <- function(fauna, fleets, rec_dev_cov_and_cor, years = 125) {
+  starting_trajectory <-
+    simmar(fauna = fauna,
+           fleets = fleets,
+           years = years,
+           cor_rec = rec_dev_cov_and_cor$cor)
+  
+  # plot_marlin(check)
+  
+  starting_conditions <-
+    starting_trajectory[(length(starting_trajectory) - seasons + 1):length(starting_trajectory)]
+  # starting_trajectory[1:length(starting_trajectory)]
+  
+  proc_starting_conditions <-
+    process_marlin(starting_conditions, keep_age = FALSE)
+  
+  out <- list(starting_conditions = starting_conditions,
+              proc_starting_conditions = proc_starting_conditions)
+  
+}
+
+message(glue::glue("simulating initial {difficulty} conditions"))
+state_experiments <- state_experiments %>%
+  mutate(tmp = future_pmap(
+    list(fauna = fauna,
+         fleet = fleet,
+         rec_dev_cov_and_cor = rec_dev_cov_and_cor),
+    init_condit,
+    .progress = TRUE,
+    .options = furrr_options(seed = TRUE)
+  ))
+message(glue::glue("finished simulating initial {difficulty} conditions"))
+
+state_experiments$starting_conditions <-
+  map(state_experiments$tmp, "starting_conditions")
+
+state_experiments$proc_starting_conditions <-
+  map(state_experiments$tmp, "proc_starting_conditions")
+
+state_experiments <- state_experiments %>%
+  select(-tmp)
+
+cs_state_depletions <-
+  map_df(state_experiments$starting_conditions,
+         ~ map_df(.x, ~ map_df(.x, ~ sum(.x$ssb_p_a) / .x$ssb0)),
+         .id = "state_id") |>
+  pivot_longer(-state_id, names_to = "critter", values_to = "step_depletion") |>
+  group_by(state_id, critter) |>
+  summarise(depletion = mean(step_depletion)) |>
+  mutate(state_id = as.integer(state_id))
+
+state_experiments <- state_experiments |>
+  left_join(cs_state_depletions |> group_by(state_id) |> nest(.key = "depletion"),
+            by = "state_id")
+
+
+state_experiments <- state_experiments |> 
+  mutate(log_rec_devs = map2(fauna, rec_dev_cov_and_cor, generate_rec_devs, years = mpa_years))
+
+# generate placement experiments
+
+placement_experiments <- expand_grid(
+  placement_strategy = c("target_fishing"),
+  prop_mpa = c(0,0.3),
+  mosaic = TRUE,
+  critters_considered = seq(
+    length(state_experiments$fauna[[1]]),
+    length(state_experiments$fauna[[1]]),
+    by = 1
+  ),
+  placement_error = c(0)
+) %>%
+  group_by_at(colnames(.)[!colnames(.) %in% c("temp", "prop_mpa")]) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(placement_id = 1:n(),
+         sigh = vector(mode = "list", length = n())) %>%
+  unnest(cols = data)
+
+for (p in 1:nrow(placement_experiments)){
+
+placement_experiments$sigh[[p]] <- state_experiments |>
+  ungroup() %>%
+  mutate(
+    results = future_pmap(
+      list(
+        starting_conditions = starting_conditions,
+        proc_starting_conditions = proc_starting_conditions,
+        fauna = fauna,
+        fleets = fleet,
+        log_rec_devs = log_rec_devs
+      ),
+      run_mpa_experiment,
+      placement_strategy = placement_experiments$placement_strategy[p],
+      prop_mpa = placement_experiments$prop_mpa[p],
+      mosaic = placement_experiments$mosaic[p],
+      critters_considered = placement_experiments$critters_considered[p],
+      placement_error = placement_experiments$placement_error[p],
+      resolution = resolution,
+      patch_area = patch_area,
+      drop_patches = FALSE,
+      steps_to_keep = "all",
+      years = mpa_years,
+      mpa_offset = 10,
+      keep_age = TRUE,
+      .options = furrr_options(seed = TRUE)
+    )
+  )
+
+}
+
+# quick and dirty comparision vs. benchmark
+fauna_results <- placement_experiments$sigh[[2]]$results[[1]]$results$fauna |> 
+  mutate(prop_mpa = placement_experiments$prop_mpa[2] ) # |> 
+    #mutate(critter = critter_namer(critter))
+
+
+fleet_results <-placement_experiments$sigh[[2]]$results[[1]]$results$fleet |> 
+    mutate(prop_mpa = placement_experiments$prop_mpa[2] )# |> 
+    #mutate(critter = critter_namer(critter))
+
+
+
+
+benchmark_fauna_results <- placement_experiments$sigh[[1]]$results[[1]]$results$fauna |> 
+    mutate(prop_mpa = placement_experiments$prop_mpa[1] ) #|> 
+    #mutate(critter = critter_namer(critter))
+
+
+
+benchmark_fleet_results <-placement_experiments$sigh[[1]]$results[[1]]$results$fleet |> 
+    mutate(prop_mpa = placement_experiments$prop_mpa[1] ) #|> 
+   # mutate(critter = critter_namer(critter))
+
+
+
+
+mpa_step <- min(fauna_results$year) + 10 - 2
+
+# state_experiments$fleet[[1]]$alpha$metiers[[4]]$sel_at_length |> 
+#   plot()
+# 
+
+
+
+```
+
+@fig-case-study illustrates an example MPA scenarios included in this
+analysis. This example is from the "complex" set, with four different
+species targeted by two different fishing fleets. Each species has a
+different baseline distribution (@fig-case-study<span></span>A), and each fleet
+has their own relative prioritization of species and port locations. In
+this scenario, MPAs are placed across 30% of the seascape where the
+highest biomass of fish is caught "using the *Target Fishing*"
+strategy", redistributing fishing effort (@fig-case-study<span></span>B).
+The total biomass by species (@fig-case-study<span></span>C), and catch by species
+and fleet (@fig-case-study<span></span>D), are calculated over time, and compared
+between the state of the world with the MPA (solid lines) relative to
+the world without the MPA (dashed lines). Values from the simulated
+world with the MPA would be used to calculate relevant indicators such
+as response ratios.
+
+```{r}
+#| label: fig-case-study
+#| fig-cap: "Case study simulation. A) Distribution of biomass per species in space, with more darker colors indicating lower biomass. B) Distribution of fishing effort, with darker colors indicating lower fishing effort C) Evolution of depletion (biomass divided by unfished biomass) per species over time, with vertical line indicating year of 30% MPA implementation. D) Catch by species and fleet over time, with vertical line indicating year of 30% MPA implementation. For panels C and D, solid line indicates world with MPA, dashed line simulated counter-factual where MPAs are not implemented."
+#| eval: true
+#| fig-height: 7
+
+mpa <- fauna_results |> 
+  filter(step == max(step)) |> 
+  group_by(x,y) |> 
+  summarise(mpa = unique(mpa))
+
+  
+# benchmark_fauna_results |> 
+#   filter(age == min(age)) |> 
+#   group_by(critter, step) |> 
+#   summarise(n = sum(n)) |> 
+#   ggplot(aes(step, n)) + 
+#   geom_point() + 
+#   facet_wrap(~critter, scales = "free_y")
+
+alpha <- benchmark_fauna_results |> 
+  filter(step == max(step)) |> 
+  group_by(critter, x,y) |> 
+  summarise(b = sum(b)) |> 
+  group_by(critter) |> 
+  mutate(sb = b / max(b)) |> 
+  ungroup() |> 
+  left_join(mpa, by = c("x","y")) |> 
+  ggplot(aes(x,y,fill =sb)) + 
+  geom_tile(show.legend = FALSE) + 
+  facet_wrap(~critter) + 
+  scale_fill_viridis_c() + 
+  scale_x_continuous(name = "Longitude",expand = c(0,0)) + 
+  scale_y_continuous(name = "Latitude",expand = c(0,0)) +
+  labs(subtitle = "A) Biomass Distribution Without MPA") +
+  theme(axis.text = element_blank())
+
+
+beta <- fleet_results |> 
+  filter(step == max(step)) |> 
+  group_by(fleet, x,y, mpa) |> 
+  summarise(effort = unique(effort)) |> 
+  group_by(fleet) |> 
+  mutate(se = effort / max(effort)) |> 
+  ggplot(aes(x,y,fill =se, color = mpa)) + 
+  geom_tile(show.legend = FALSE) + 
+  facet_wrap(~fleet) + 
+  scale_fill_viridis_c(option = "plasma") + 
+  scale_x_continuous(name = "Longitude",expand = c(0,0)) + 
+  scale_y_continuous(name = "Latitude",expand = c(0,0)) +
+  labs(subtitle = "B) Effort Distribution") +
+  theme(axis.text = element_blank())
+
+fauna_experiment <- fauna_results |> 
+  bind_rows(benchmark_fauna_results)
+
+
+fleet_experiment <- fleet_results |> 
+  bind_rows(benchmark_fleet_results)
+
+b0s <- map_dbl(state_experiments$fauna[[1]], \(x) x$b0)
+
+delta <- fauna_experiment |> 
+  mutate(experiment = if_else(prop_mpa == 0, "Without MPA", "With MPA")) |> 
+  group_by(critter, step, prop_mpa, experiment, patch) |> 
+  summarise(b = sum(b, na.rm = TRUE),
+            b0_p = unique(b0_p)) |> 
+    group_by(critter, step, prop_mpa, experiment) |> 
+  summarise(biomass = sum(b, na.rm = TRUE),
+            b0 = sum(b0_p)) |> 
+  ungroup() |> 
+  mutate(depletion = biomass / b0) |> 
+  ggplot(aes(step, depletion, color = critter, linetype = experiment)) + 
+    geom_vline(xintercept = mpa_step) +
+  geom_line() + 
+  scale_linetype(name = "") + 
+ scale_linetype(name = "") + 
+  scale_x_continuous(name = "Time") +
+  scale_y_continuous(name = "B/B0",limits = c(0, 1.1), expand = c(0, NA)) +
+  scale_color_discrete(name = '') +
+  guides(color = guide_legend(nrow = 2)) + 
+  labs(subtitle = "C) B/B0 per species over time") + 
+    theme(axis.text.x = element_blank(),        axis.text.y = element_text(size = 6))
+
+
+# fleet_experiment |> 
+#   group_by(step, fleet) |> 
+#   summarise(effort = sum(effort)) |> 
+#   ggplot(aes(step, effort, color = fleet)) + 
+#   geom_point() + 
+#   facet_wrap(~fleet)
+
+kappa <- fleet_experiment |> 
+  mutate(experiment = if_else(prop_mpa == 0, "Without MPA", "With MPA")) |> 
+  group_by(critter, step, prop_mpa, experiment, fleet) |> 
+  summarise(catch = sum(catch, na.rm = TRUE)) |> 
+  ggplot(aes(step, catch, color = critter, linetype = experiment)) + 
+  geom_vline(xintercept = mpa_step) +
+  geom_line() + 
+  scale_linetype(name = "") + 
+    scale_x_continuous(name = "Time") +
+  scale_y_continuous(name = "Catch",limits = c(0, NA), expand = c(0, NA)) +
+  facet_wrap(~fleet, scales = "free_y") + 
+  guides(color = guide_legend(nrow = 2)) +
+  labs(subtitle = "D) Catch per species per fleet over time") + 
+  scale_color_discrete(name = '') +
+   # scale_color_viridis_d(name = '',option = "turbo") + 
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 6))
+
+
+
+# fleet_experiment |>
+#   group_by(fleet, step) |>
+#   summarise(effort = sum(effort)) |>
+#   ggplot(aes(step, effort, color = fleet)) +
+#   geom_line()
+
+# kappa <- fleet_results |> 
+#   group_by(step, critter, fleet) |> 
+#   summarise(catch = sum(catch, na.rm = TRUE)) |> 
+#   ggplot(aes(step, catch, fill = critter)) +
+#   geom_area() + 
+#   geom_vline(xintercept = mpa_step) +
+#   facet_wrap(~fleet, labeller = label_both) + 
+#   scale_fill_brewer(name = "", palette = "Set1") +
+#   theme(legend.position = "bottom") +
+#   scale_y_continuous(name = "Catch", limits = c(0,NA)) + 
+#   scale_x_continuous(name = "Time Step") +
+#   guides(fill = guide_legend(nrow = 1)) + 
+#   labs(subtitle = "C) Catch by fleet over time")
+# 
+# 
+# delta <- fauna_results |> 
+#   group_by(step, critter) |> 
+#   summarise(biomass = sum(b, na.rm = TRUE)) |> 
+#   ggplot(aes(step, biomass, color = critter)) +
+#   geom_line(show.legend = FALSE) + 
+#   geom_vline(xintercept = mpa_step) +
+#   scale_color_brewer(name = "", palette = "Set1") +
+#   theme(legend.position = "bottom") +
+#   scale_y_continuous(name = "Biomass", limits = c(0, NA)) + 
+#   scale_x_continuous(name = "Time Step") +
+#   guides(color = guide_legend(nrow = 1)) + 
+#   labs(subtitle = "C) Biomass per species over time")
+
+fig <- ((alpha + beta) / (delta + kappa) + plot_layout(guides = "collect") & theme(legend.position = "bottom")) & theme(axis.title.x = element_text(size = 6),axis.title.y = element_text(size = 6))
+
+
+figsaver(fig)
+
+
+```
+
+The following graphs show the core life history functions resulting from the fixed parameters used for each fish species template across all simulations, including the case study shown in @fig-case-study. 
 
 ```{r}
 #| label: fig-reef
 #| fig-cap: Life history ogives for reef fish archetype
 
-rm(counter)
-state_experiments$fauna[[1]]$reef_fish$plot()
+if (exists("counter")){
+  rm("counter")
+}
+fig <- state_experiments$fauna[[1]]$reef_fish$plot() + 
+  scale_y_continuous(name = "Value At Age")
+
+figsaver(fig, section = "si")
+
 ```
 
 ```{r}
 #| label: fig-reef-rec
-#| fig-cap: Spawner recruit function for reef fish archetype
+#| fig-cap: Spawner-recruit function for reef fish archetype
 #| 
 recs <- state_experiments$fauna[[1]]$reef_fish$rec_at_dep
 
 tmp <- tibble(dep = seq(0, 1, length.out = length(recs)),rec = recs) 
 
-tmp |> 
+fig <- tmp |> 
   ggplot(aes(dep, rec)) + 
   geom_line() + 
   scale_x_continuous("SSB/SSB0") + 
   scale_y_continuous("Recruits")
 
+figsaver(fig, section = "si")
+
+
 ```
+
+
+
 
 ```{r}
 #| label: fig-reef-move
-#| fig-cap: Diffusion rates for reef fish archetype
+#| fig-cap: Diffusion rates for reef fish archetype at recruit and post-recruit life stages. Color shows the density of individuals in the seascape after being allowed to diffuse from one central patch over the course of one year. 
 #| 
 
-state_experiments$fauna[[1]]$reef_fish$plot_movement()
 
-   
+fig <- state_experiments$fauna[[1]]$reef_fish$plot_movement()
+
+figsaver(fig, section = "si")
+
 
 ```
+
 
 ```{r}
 #| label: fig-tuna
 #| fig-cap: Life history ogives for tuna archetype
-#| 
-state_experiments$fauna[[1]]$tuna$plot()
+
+
+
+fig = state_experiments$fauna[[1]]$tuna$plot() + 
+  scale_y_continuous(name = "Value At Age")
+
+
+figsaver(fig, section = "si")
+
+
+
 ```
+
+
+
 
 ```{r}
 #| label: fig-tuna-rec
@@ -2361,30 +2396,46 @@ recs <- state_experiments$fauna[[1]]$tuna$rec_at_dep
 
 tmp <- tibble(dep = seq(0, 1, length.out = length(recs)),rec = recs) 
 
-tmp |> 
+fig <- tmp |> 
   ggplot(aes(dep, rec)) + 
   geom_line() + 
   scale_x_continuous("SSB/SSB0") + 
   scale_y_continuous("Recruits")
 
+figsaver(fig, section = "si")
+
 ```
 
 ```{r}
 #| label: fig-tuna-move
-#| fig-cap: Diffusion rate for tuna archetype
-#| 
-state_experiments$fauna[[1]]$tuna$plot_movement()
+#| fig-cap: Diffusion rates for tuna archetype at recruit and post-recruit life stages. Color shows the density of individuals in the seascape after being allowed to diffuse from one central patch over the course of one year. 
+
+
+
+fig <- state_experiments$fauna[[1]]$tuna$plot_movement()
+
+figsaver(fig, section = "si")
 
    
 
 ```
 
+
+
 ```{r}
 #| label: fig-shark
 #| fig-cap: Life history ogives for shark archetype
-#| 
-state_experiments$fauna[[1]]$shark$plot()
+ 
+fig <- state_experiments$fauna[[1]]$shark$plot()
+
+figsaver(fig, section = "si")
+
+
 ```
+
+
+
+
 
 ```{r}
 #| label: fig-shark-rec
@@ -2394,30 +2445,43 @@ recs <- state_experiments$fauna[[1]]$shark$rec_at_dep
 
 tmp <- tibble(dep = seq(0, 1, length.out = length(recs)),rec = recs) 
 
-tmp |> 
+fig <- tmp |> 
   ggplot(aes(dep, rec)) + 
   geom_line() + 
   scale_x_continuous("SSB/SSB0") + 
   scale_y_continuous("Recruits")
 
+figsaver(fig, section = "si")
+
+
 ```
 
 ```{r}
 #| label: fig-shark-move
-#| fig-cap: Diffusion rate for shark archetype
-#| 
+#| fig-cap: Diffusion rates for shark archetype at recruit and post-recruit life stages. Color shows the density of individuals in the seascape after being allowed to diffuse from one central patch over the course of one year. 
 
-state_experiments$fauna[[1]]$shark$plot_movement()
+
+fig <- state_experiments$fauna[[1]]$shark$plot_movement()
+
+figsaver(fig, section = "si")
 
 
 ```
+
+
+
 
 ```{r}
 #| label: fig-grouper
 #| fig-cap: Life history ogives for grouper archetype
-#| 
-state_experiments$fauna[[1]]$grouper$plot()
+
+
+fig <- state_experiments$fauna[[1]]$grouper$plot()
+
+figsaver(fig, section = "si")
+
 ```
+
 
 ```{r}
 #| label: fig-grouper-rec
@@ -2427,50 +2491,82 @@ recs <- state_experiments$fauna[[1]]$grouper$rec_at_dep
 
 tmp <- tibble(dep = seq(0, 1, length.out = length(recs)),rec = recs) 
 
-tmp |> 
+fig <- tmp |> 
   ggplot(aes(dep, rec)) + 
   geom_line() + 
   scale_x_continuous("SSB/SSB0") + 
   scale_y_continuous("Recruits")
 
+figsaver(fig, section = "si")
+
+
 ```
 
 ```{r}
 #| label: fig-grouper-move
-#| fig-cap: Diffusion rate for grouper archetype
+#| fig-cap: Diffusion rates for grouper archetype at recruit and post-recruit life stages. Color shows the density of individuals in the seascape after being allowed to diffuse from one central patch over the course of one year. 
 
 
-state_experiments$fauna[[1]]$grouper$plot_movement()
+fig <- state_experiments$fauna[[1]]$grouper$plot_movement()
 
+figsaver(fig, section = "si")
 
 
 ```
 
-## Case Study Parameters
 
 
 ```{r}
+#| label: fig-sel1
+#| fig-cap: 'Selectivity ogives for reef fish in case study'
 
-state_experiments$fleet[[1]]$alpha$metiers$reef_fish$plot_selectivity()
+fig <- (state_experiments$fleet[[1]]$alpha$metiers$reef_fish$plot_selectivity() + labs(title = "Fleet Alpha")) +
+(state_experiments$fleet[[1]]$alpha$metiers$reef_fish$plot_selectivity() + labs(title = "Fleet Beta"))
+
+figsaver(fig, section = "si")
 ```
+
+
+
 
 ```{r}
-state_experiments$fleet[[1]]$alpha$metiers$tuna$plot_selectivity()
+#| label: fig-sel2
+#| fig-cap: 'Selectivity ogives for grouper in case study'
+
+fig <- (state_experiments$fleet[[1]]$alpha$metiers$grouper$plot_selectivity() + labs(title = "Fleet Alpha")) +
+(state_experiments$fleet[[1]]$alpha$metiers$grouper$plot_selectivity() + labs(title = "Fleet Beta"))
+
+figsaver(fig, section = "si")
 ```
 
-```{r}
-state_experiments$fleet[[1]]$alpha$metiers$shark$plot_selectivity()
-```
 
 ```{r}
-state_experiments$fleet[[1]]$alpha$metiers$grouper$plot_selectivity()
+#| label: fig-sel3
+#| fig-cap: 'Selectivity ogives sharks in case study'
+
+fig <- (state_experiments$fleet[[1]]$alpha$metiers$shark$plot_selectivity() + labs(title = "Fleet Alpha")) +
+(state_experiments$fleet[[1]]$alpha$metiers$shark$plot_selectivity() + labs(title = "Fleet Beta"))
+
+figsaver(fig, section = "si")
 ```
+
+
+```{r}
+#| label: fig-sel4
+#| fig-cap: 'Selectivity ogives tunas in case study'
+
+fig <- (state_experiments$fleet[[1]]$alpha$metiers$tuna$plot_selectivity() + labs(title = "Fleet Alpha")) +
+(state_experiments$fleet[[1]]$alpha$metiers$tuna$plot_selectivity() + labs(title = "Fleet Beta"))
+
+figsaver(fig, section = "si")
+```
+
 
 
 
 ```{r}
 #| label: fig-eg-b
-#| fig-cap: Total biomass per species (facet) and patch (point) post-MPA as a function of distance from the nearest MPA border, where negative values indicate points inside the MPA and positive values outside the MPA. 
+#| fig-cap: Total case-study biomass per species (facet) and patch (point) post-MPA as a function of distance from the nearest MPA border, where negative values indicate points inside the MPA and positive values outside the MPA. 
 
 
 no_age <- fauna_results |> 
@@ -2499,7 +2595,7 @@ small_fleet <- fleet_results |>
 
 
 
-no_age |> 
+fig <- no_age |> 
   group_by(critter) |> 
   mutate(b0_p = scale(b0_p)) |> 
   ungroup() |> 
@@ -2512,27 +2608,35 @@ no_age |>
   theme(legend.position = "top") + 
   scale_y_continuous(name = "Biomass Density", limits = c(0, NA))
 
+figsaver(fig, section = "si")
+
 
 ```
+
+
 
 ```{r}
 #| label: fig-eg-rr
 #| fig-cap: Distribution of biomass density per patch inside versus outside of MPA post-MPA. These are the simulated data that would be used to calculate a response ratio. 
 
-no_age |> 
+fig <- no_age |> 
   filter(step == max(step)) |> 
   ggplot(aes(mpa, b)) + 
   stat_pointinterval() + 
   facet_wrap(~critter, scales = "free_y") + 
   scale_x_discrete(name = '') + 
-  scale_y_continuous(name = "Biomass Density")
+  scale_y_continuous(name = "Biomass Density", limits = c(0, NA))
+
+figsaver(fig, section = "si")
+
 ```
+
 
 ```{r}
 #| label: fig-eg-baci
-#| fig-cap: Distribution and trends of biomass density per patch inside versus outside of MPA before-and-after MPA. These are the simulated data that would be used to calculate a biomass-density before-after-control-impact study. 
+#| fig-cap: Case study Distribution and trends of biomass density per patch inside versus outside of MPA before-and-after MPA. These are the simulated data that would be used to calculate a biomass-density before-after-control-impact study. 
 
-no_age |> 
+fig <- no_age |> 
   filter(step == min(step) | step == max(step)) |> 
   mutate(fstep = as.factor(case_when(step == min(step) ~ "Before MPA", .default = "After MPA"))) |>
   mutate(fstep = fct_relevel(fstep, "Before MPA")) |> 
@@ -2542,28 +2646,38 @@ no_age |>
   facet_wrap(~critter, scales = "free_y") + 
   scale_fill_discrete(name = '') + 
   scale_color_discrete(name = '') +
-  scale_y_continuous(name = "Biomass Density")
+  scale_y_continuous(name = "Biomass Density", limits = c(0, NA)) + 
+  scale_x_discrete(name = '')
+
+figsaver(fig, section = "si")
+
 ```
+
+
 
 ```{r}
 #| label: fig-eg-gradient
-#| fig-cap: Distribution biomass density per patch near and far from MPA border for areas outside of MPAs. These are the simulated data that would be used to calculate a biomass density gradient, or spillover, study. 
+#| fig-cap: Case-study distribution biomass density per patch near and far from MPA border for areas outside of MPAs. These are the simulated data that would be used to calculate a biomass density gradient, or spillover, study. 
 
-no_age |> 
+fig <- no_age |> 
   filter(step == max(step),mpa_proximity != "nomans") |> 
   ggplot(aes(mpa_proximity, b)) + 
   stat_pointinterval() + 
   facet_wrap(~critter, scales = "free_y") + 
-  scale_y_continuous(name = "Biomass Density") + 
+  scale_y_continuous(name = "Biomass Density", limits = c(0, NA)) + 
   scale_x_discrete(name = '')
 
+figsaver(fig, section = "si")
+
 ```
+
+
 
 ```{r}
 #| label: fig-eg-gradient-baci
 #| fig-cap: Distribution and trends of biomass density per patch near versus far from MPA before-and-after MPA, for patches located outside the MPA. These are the simulated data that would be used to calculate a biomass-density before-after-control-impact gradient study. 
 
-no_age |> 
+fig <- no_age |> 
   filter(step == min(step) | step == max(step), mpa_proximity != "nomans") |> 
   mutate(fstep = as.factor(case_when(step == min(step) ~ "Before MPA", .default = "After MPA"))) |>
   mutate(fstep = fct_relevel(fstep, "Before MPA")) |> 
@@ -2571,9 +2685,11 @@ no_age |>
   stat_pointinterval(position = "dodge") + 
   geom_smooth(aes(as.numeric(fstep), b,fill = mpa_proximity, color = mpa_proximity ),method = "lm", se = FALSE) +
   facet_wrap(~critter, scales = "free_y") + 
-  scale_y_continuous(name = "Biomass Density") +
+  scale_y_continuous(name = "Biomass Density", limits = c(0, NA)) +
   scale_fill_discrete(name = '') + 
   scale_color_discrete(name = '')
+
+figsaver(fig, section = "si")
 ```
 
 ```{r}
@@ -2581,7 +2697,7 @@ no_age |>
 #| fig-cap: Effort per fleet (facet) and patch (point) post-MPA as a function of distance from the nearest MPA border, where negative values indicate points inside the MPA and positive values outside the MPA. 
 
 
-small_fleet |> 
+fig <- small_fleet |> 
   mutate(b0_p = scale(b0_p)) |> 
   ungroup() |> 
   filter(step == max(step)) |> 
@@ -2592,6 +2708,9 @@ small_fleet |>
   scale_color_viridis_c(name = "Centered and Scaled Unfished Biomass") + 
   theme(legend.position = "top") + 
   scale_y_continuous(name = "Fishing Effort")
+
+figsaver(fig, section = "si")
+
 ```
 
 ```{r}
@@ -2599,7 +2718,7 @@ small_fleet |>
 #| fig-cap: Distribution and trends of effort per patch near versus far from MPA before-and-after MPA, for patches located outside the MPA. These are the simulated data that would be used to calculate a effort based before-after-control-impact gradient study.
 
 
-small_fleet |> 
+fig <- small_fleet |> 
   filter(step == min(step) | step == max(step), mpa_proximity != "nomans") |> 
   mutate(fstep = as.factor(case_when(step == min(step) ~ "Before MPA", .default = "After MPA"))) |>
   mutate(fstep = fct_relevel(fstep, "Before MPA")) |> 
@@ -2610,8 +2729,15 @@ small_fleet |>
   scale_fill_discrete(name = '') + 
   scale_color_discrete(name = '') + 
   scale_x_discrete(name = '') + 
-  scale_y_continuous(name = "Fishing Effort")
+  scale_y_continuous(name = "Fishing Effort", limits = c(0, NA))
+
+figsaver(fig, section = "si")
+
 ```
+
+## Effects on Total Biomass and Catch Across All Fleets and Species
+
+The core results of our paper are presented at the resolution of changes at the resolution of species and/or fleet (e.g. reef fish by fleet alpha). Here we present our results aggregated across all species and fleets within a simulation (e.g. change in total biomass across all species, or change in catch across all fleets and species). 
 
 ```{r}
 
@@ -2661,7 +2787,7 @@ fig <- total_mpa_outcomes |>
   guides(color = "none")
 
 
-figsaver(fig)
+figsaver(fig, section = "si")
 ```
 
 ```{r}
@@ -2671,9 +2797,8 @@ state_depletions |>
   facet_grid(difficulty ~ critter)
 ```
 
-```{r}
-#| fig-height: 8
 
+```{r}
 huh <- comparison |> 
     filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
          !str_detect(indicator, "cpue"),
@@ -2706,6 +2831,55 @@ huh |>
   geom_vline(xintercept = 0 ) +
   geom_bin_2d() + 
   facet_grid(indicator ~ name, scales = "free")
+```
+
+
+```{r}
+#| fig-height: 8
+
+huh <- comparison |> 
+    filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
+         !str_detect(indicator, "cpue"),
+         !str_detect(indicator, "catch")) |> 
+   ungroup() |> 
+  filter(name == "biomass",
+         indicator == "ind_biomass_rr") |> 
+  mutate(
+              indicator = str_remove_all(indicator, "ind_"),
+      name = fct_recode(
+      name,
+      "Biomass Outside" = "fished_biomass",
+      "Biomass Inside" = "mpa_biomass",
+      "Total Biomass" = "biomass",
+      "Catch" = "catch"),
+      indicator = fct_recode(
+      indicator,
+      "Biomass Density BACI" = "biomass_baci",
+      "Mean Length Response Ratio" = "length_rr",
+      "Biomass Density Response Ratio" = "biomass_rr",
+      "Effort Gradient" = "effort_gradient",
+      "Biomass Density Gradient BACI" = "biomass_bag",
+      "Biomass Density Gradient" = "biomass_gradient")
+  ) |> 
+    mutate(name = fct_relevel(name, "Biomass Inside","Biomass Outside"  ,"Total Biomass")) |> 
+  ungroup() |> 
+  filter(!is.na(indicator), !is.na(name))
+
+eg = huh |> 
+  slice_sample(prop = 0.25) |> 
+  ggplot(aes(indicator_value, percent_mpa_effect)) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0 ) +
+    geom_abline(slope = 1, intercept = 0, linetype = 2, color = "red") +
+  geom_point(size = 4, alpha = 0.25) + 
+  scale_x_continuous(name = "MPA Indicator",limits = c(NA, 2)) + 
+  scale_y_continuous(name= "MPA Outcome",limits = c(NA,2)) +
+  theme_minimal(base_size = 14) + 
+  theme(axis.title.x = element_text(size = 22)) + 
+    theme(axis.title.y = element_text(size = 22))
+
+
+ggsave("eg.pdf", eg, device = cairo_pdf)
 ```
 
 ```{r}
