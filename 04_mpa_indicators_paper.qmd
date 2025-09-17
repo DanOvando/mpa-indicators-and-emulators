@@ -53,7 +53,7 @@ knitr:
     dev: "cairo_pdf"    # use Cairo for R figures (good Unicode embedding)
 ---
 
-XX add discussion of why bias matters so much more than error XX 
+XX add discussion of why bias matters so much more than error XX
 
 ```{r}
 #|label: setup
@@ -423,20 +423,46 @@ total_mpa_outcomes <- total_inds_and_outs |>
 
 ## Cover Letter
 
-Dear Editors of Ecological Applications, 
+Dear Editors of Ecological Applications,
 
-Please find enclosed our manuscript entitled “Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security” for consideration in Ecological Applications.
+Please find enclosed our manuscript entitled “Evaluating the Reliability
+of Common Indicators for Assessing Marine Protected Areas’ Contributions
+to Conservation and Food Security” for consideration in Ecological
+Applications.
 
-Marine Protected Areas (MPAs) are expanding rapidly worldwide, driven by international commitments such as the Montreal–Kunming Global Biodiversity Framework’s target to protect 30% of the oceans and the new High Seas Treaty (BBNJ). This growth reflects expectations that MPAs will deliver outcomes ranging from biodiversity protection to enhanced fishery yields. Yet both the capacity of MPAs to achieve these objectives and the ability of practitioners to detect such changes are less certain than conventional wisdom often suggests. This gap poses a critical challenge for the effective and equitable use of MPAs in ocean management.
+Marine Protected Areas (MPAs) are expanding rapidly worldwide, driven by
+international commitments such as the Montreal–Kunming Global
+Biodiversity Framework’s target to protect 30% of the oceans and the new
+High Seas Treaty (BBNJ). This growth reflects expectations that MPAs
+will deliver outcomes ranging from biodiversity protection to enhanced
+fishery yields. Yet both the capacity of MPAs to achieve these
+objectives and the ability of practitioners to detect such changes are
+less certain than conventional wisdom often suggests. This gap poses a
+critical challenge for the effective and equitable use of MPAs in ocean
+management.
 
-In this study, we simulated more than 10,000 MPA case studies to explore the range of conservation and food security outcomes that protected areas can provide. From these simulations, we calculated widely used empirical indicators—such as gradients in biomass densities inside versus outside or near versus far from MPA borders—and assessed how well these indicators reflected the true effects of MPAs. We show that while some indicators perform well, others have little correlation with the outcomes they are commonly assumed to represent.
+In this study, we simulated more than 10,000 MPA case studies to explore
+the range of conservation and food security outcomes that protected
+areas can provide. From these simulations, we calculated widely used
+empirical indicators—such as gradients in biomass densities inside
+versus outside or near versus far from MPA borders—and assessed how well
+these indicators reflected the true effects of MPAs. We show that while
+some indicators perform well, others have little correlation with the
+outcomes they are commonly assumed to represent.
 
-Our work builds on a rich literature on MPA effects and monitoring, including contributions previously published in Ecological Applications. To our knowledge, this is the first study to systematically test a broad suite of indicators against diverse MPA objectives using a large-scale bioeconomic simulation framework. We believe the results will inform both the science and practice of MPAs by helping decision-makers design monitoring programs and interpret empirical indicators more effectively—providing a stronger foundation for tracking the performance of global MPA networks.
+Our work builds on a rich literature on MPA effects and monitoring,
+including contributions previously published in Ecological Applications.
+To our knowledge, this is the first study to systematically test a broad
+suite of indicators against diverse MPA objectives using a large-scale
+bioeconomic simulation framework. We believe the results will inform
+both the science and practice of MPAs by helping decision-makers design
+monitoring programs and interpret empirical indicators more
+effectively—providing a stronger foundation for tracking the performance
+of global MPA networks.
 
 Thank you for your consideration.
 
 Dr. Dan Ovando & Dr. Cori Lopazanski
-
 
 ## Title Page
 
@@ -444,20 +470,54 @@ Short Title: Evaluating Common Indicators of MPA Outcomes
 
 Manuscript type: Article
 
-Manuscript title: Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security
+Manuscript title: Evaluating the Reliability of Common Indicators for
+Assessing Marine Protected Areas’ Contributions to Conservation and Food
+Security
 
 Open Research statement
 
-
-Key words/phrases: 
+Key words/phrases:
 
 ## Abstract (350 words max)
-N = 339
-Marine protected areas (MPAs) are spatial management tools designed to achieve diverse conservation and social objectives, including biodiversity, food security, and climate resilience. Because these objectives are often difficult to measure directly, evaluations typically rely on simplified empirical indicators—such as biomass inside versus outside MPAs, or gradients in biomass across boundaries—as proxies for broader outcomes. Yet in complex social–ecological systems, even well-measured indicators may fail to capture the true causal effects of MPAs.
 
-Using a large-scale simulation framework (> 10,000 scenarios), we explored variability in MPA outcomes and assessed whether common indicators reliably tracked intended objectives of protected areas. We show how the same sized MPA can produce vastly different outcomes for conservation and food security depending on factors such as fishing fleet dynamics and habitat heterogeneity within and across species. The degree of correlation between common empirical indicators of MPA performance and these true outcomes also varied widely. Indicators such as biomass density response ratios were positively correlated with the effect of MPAs on biomass inside their borders (Spearman's $\rho$ of 0.56), but slightly negatively correlated with the effect of MPAs on total fishery catches (Spearman's $\rho$ of -0.07). Common indicators of spillover, such as gradients in biomass density near MPAs relative to far from MPAs, had almost no correlation with conservation or catch outcome (absolute value of Spearman's $\rho$ all less than or equal to 0.05). 
+N = 339 Marine protected areas (MPAs) are spatial management tools
+designed to achieve diverse conservation and social objectives,
+including biodiversity, food security, and climate resilience. Because
+these objectives are often difficult to measure directly, evaluations
+typically rely on simplified empirical indicators—such as biomass inside
+versus outside MPAs, or gradients in biomass across boundaries—as
+proxies for broader outcomes. Yet in complex social–ecological systems,
+even well-measured indicators may fail to capture the true causal
+effects of MPAs.
 
-The high variability in outcomes generated by our simulations highlights the importance of effective ecological and economic monitoring programs designed to track the effects of MPAs. However, our results also show that many indicators currently measured in and around MPAs may contain little information on macro-level outcomes such as total changes in fish populations or fishery catches. The next generation of MPA research urgently needs interdisciplinary collaboration to develop sufficiently practical and reliable methods for tracking the effects of MPAs. Doing so will help ensure that the planned rapid and global expansion of MPAs has the best chance of delivering positive and equitable outcomes for nature and people.
+Using a large-scale simulation framework (\> 10,000 scenarios), we
+explored variability in MPA outcomes and assessed whether common
+indicators reliably tracked intended objectives of protected areas. We
+show how the same sized MPA can produce vastly different outcomes for
+conservation and food security depending on factors such as fishing
+fleet dynamics and habitat heterogeneity within and across species. The
+degree of correlation between common empirical indicators of MPA
+performance and these true outcomes also varied widely. Indicators such
+as biomass density response ratios were positively correlated with the
+effect of MPAs on biomass inside their borders (Spearman's $\rho$ of
+0.56), but slightly negatively correlated with the effect of MPAs on
+total fishery catches (Spearman's $\rho$ of -0.07). Common indicators of
+spillover, such as gradients in biomass density near MPAs relative to
+far from MPAs, had almost no correlation with conservation or catch
+outcome (absolute value of Spearman's $\rho$ all less than or equal to
+0.05).
+
+The high variability in outcomes generated by our simulations highlights
+the importance of effective ecological and economic monitoring programs
+designed to track the effects of MPAs. However, our results also show
+that many indicators currently measured in and around MPAs may contain
+little information on macro-level outcomes such as total changes in fish
+populations or fishery catches. The next generation of MPA research
+urgently needs interdisciplinary collaboration to develop sufficiently
+practical and reliable methods for tracking the effects of MPAs. Doing
+so will help ensure that the planned rapid and global expansion of MPAs
+has the best chance of delivering positive and equitable outcomes for
+nature and people.
 
 ## Introduction
 
@@ -576,8 +636,8 @@ paired simulation without an MPA. Lastly, we calculated common empirical
 indicators of MPA performance from the simulation with the MPA, and
 compared these indicators to the true simulated outcomes. We then
 repeated this process multiple times with different randomly generated
-fishery states. The details of this process are explained below and illustrated in @fig-flow. 
-
+fishery states. The details of this process are explained below and
+illustrated in @fig-flow.
 
 ```{r}
 #| label: fig-flow
@@ -587,7 +647,6 @@ knitr::include_graphics(here("imgs", "indicators-fig1-mockup.png"))
 
 
 ```
-
 
 ### Simulating Fisheries
 
@@ -615,7 +674,8 @@ fishing fleets, all operating in a two-dimensional space. This spatial
 domain represents the surface area of the seascape, broken up into a
 series of "patches", each with a defined spatial area. For this paper,
 we modeled a 21 x 21 grid of discrete patches (441 total), where each
-patch measured 25KM^2^ (5 km x 5km), for a total simulated seascape area of `r 25 * 21^2` KM^2^.
+patch measured 25KM^2^ (5 km x 5km), for a total simulated seascape area
+of `r 25 * 21^2` KM^2^.
 
 xx The 'species template' language was confusing to me - It seems
 simpler that for each simulation there are species parameters that are
@@ -666,7 +726,83 @@ in recruitment deviates (Table.XX variable). Variable traits also
 included fishery characteristics such as the magnitude of fishing
 pressure on each species, the economic value of each species, the
 presence of fishing ports affecting spatial fishing choices, and the
-selectivity ogive of each fishing fleet for each fished species (@tbl-variable).
+selectivity ogive of each fishing fleet for each fished species
+(@tbl-variable).
+
+While all traits can have an impact on simulated outcomes, spatial
+variables are particularly important for MPA outcomes. The simplest
+assumption one can make in an MPA model is that all else being equal
+fish biomass and fishing pressure are constant in space and time, baring
+a policy intervention. Under these circumstances, in the absence of an
+MPA fish biomass and fishing effort are constant in each patch.
+Following MPA implementation. Following MPA implementation in such a
+system, any differences in biomass or fish catches in any patch must be
+due to the MPA itself.
+
+In reality, fish populations can be heterogeneously distributed in space
+at any given time step, and their species distributions can exhibit
+positive, negative, or no correlations with other fished species in the
+region. These spatial dynamics of species distributions are so
+pronounced in marine systems that an extensive literature of Species
+Distribution Models (SDMs) has developed to describe and model them
+[@thorson2017a; @karp2025; @brodie2021] [@lopez2024]. This means that
+MPA placed on core habitat can have very different effects from a
+equally sized MPA placed on marginal habitat, and given that not all
+species have the same distributions, and MPA placed on the core habitat
+of one species may be protecting marginal habitat of another. At the
+same time, fishing fleets are not sedentary passive filter feeders, they
+actively adapt their behavior and distribution in space and time to best
+achieve their objectives. The simulated effects of an MPA can be highly
+sensitive to whether we assume fishers adapt to the new regulations, for
+example by concentrating their fishing effort along the borders of the
+new protected area. These bio-economic dynamic can have profound impacts
+on the simulated outcomes of MPAs[@ovando2025], and as such as provide
+additional details on their simulation in this paper.
+
+Following methods described in @ovando2023a and @ovando2025, for each
+species within each simulation we randomly set a parameter $\kappa$ that
+describes the intrinsic heterogeneity of their distribution within the
+simulated seascape; lower values of $\kappa$ result in a smoother
+habitat distribution, higher values of $\kappa$ result in a more patchy
+habitat distribution. At the same time, we randomly generate a
+correlation matrix with between each of the species in that seascape in
+a given simulation. Using the methods described in @ovando2025 based on
+@thorson2017a, these $\kappa$ values for each species, along with the
+correlation matrix among all species, are used to construct a covariance
+matrix which in turn is used to simulate habitat in space as a function
+of a multivariate normal distribution. The end result the model
+generates a species distribution for each species that can vary across
+simulations both in its heterogeneity and in its correlation across
+species, with for example some simulations resulting in *reef fish* and
+*groupers* having highly positively correlated habitats, and in others
+highly negatively correlated habitats.
+
+Our model also allows for a range of spatio-temporal fleet dynamics. For
+any given fleet in a given simulation total fishing effort across all
+patches is based on a random selection of either *Constant Effort* or
+*Open Access*. Under *Constant Effort*, total fishing effort is constant
+over time baring a policy implementation such as an MPA. Under *Open
+Access,* total fishing effort can expand or contract from year-to-year
+based on the profitability of the fishery, which under stable conditions
+will evolve to a bionomic equilibrium wherein total profits are zero
+[@costello2016; @cabral2019]. Given a total amount of fishing effort,
+fishing fleets distribute themselves in space based on profits or
+revenue in space, with the choice of which randomly set for each fleet
+in each simulation. When fleet dynamics are based on profits, fishing
+costs in a given patch can be a function of the distance of that patch
+from the home port of the fleet in question. Implementation of an MPA
+can either cause fishing effort to redistribute or leave the fishery.
+When MPAs cause displacement, all the effort that existed within the
+bounds of the MPA are displaced to patches outside the MPA in the time
+step following the MPA, based on the randomly selected spatial
+distribution strategy. When MPAs result in effort attrition, all the
+effort that existed inside the MPA prior to implementation leaves the
+fishery. Note that under *Open Access* conditions MPA total effort will
+evolve over time after the initial MPA displacement or attrition effects
+on effort. Collectively these dynamics allow the simulated fishing
+fleets to adjust both the total amounts of effort and the spatial
+distribution of that effort as a function of fishing opportunities and
+the effects of MPAs on those opportunities.
 
 Fishing pressure is one of the most important variables in determining
 the potential outcomes of MPAs. All else being equal, a heavily fished
@@ -757,7 +893,6 @@ archetype used a growth cessation model [@maunder2018]. See Supporting
 Information for visualizations of life history functions resulting from
 these parameters. {#tbl-fixed}
 
-
 | Name | Description | Variable Category |
 |----------------------------|--------------------------|------------------|
 | Fishing Mortality Rate | Ratio of instantaneous fishing mortality rate relative to natural mortality. The higher this is, the lower $B_{bau}/B_0$ will be. | Fishing Fleet |
@@ -782,7 +917,8 @@ these parameters. {#tbl-fixed}
 : Variables that define a simulated fishery. For each fishery, random
 values of the variables presented in this table were selected. See
 accompanying code at <https://doi.org/10.5281/zenodo.14503624> XX for
-details of individual distributions form which variables are drawn. {#tbl-variable}
+details of individual distributions form which variables are drawn.
+{#tbl-variable}
 
 ### Simulating MPA Outcomes
 
@@ -922,7 +1058,7 @@ after, (e.g. *Biomass Density BACI*), the number of data points used to
 fit the model were N = 882.
 
 | **Indicator** | **Estimated Effect and Key Assumptions** | **Example Citation** | **Equation** |
-|----------------|----------------|----------------|-----------------------|
+|-----------------|-----------------|-----------------|----------------------|
 | Biomass Density Before-After -Control-Impact (*Inside vs. Outside*) | Ratio of change in *B* after MPA implementation inside MPA relative to outside MPA. Assumes Parallel trends in *B* inside and outside MPA pre- and post-implementation. | @lester2009 | $\begin{array}{l} log(B_{p,t})\sim\beta_0 + \\ \beta_1INSIDE_p + \beta_2AFTER_t \\ +\pmb{\beta_3}INSIDE_p \times AFTER_t \end{array}$ |
 | Biomass Density Response Ratio (*Inside vs. Outside*) | Post-MPA Ratio of *B* inside MPA relative to outside MPA. Assumes no pre-existing differences in *B* between inside and outside sites | @smith2024b | $log(B_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ |
 | Mean Length Response Ratio (*Inside vs. Outside*) | Post-MPA ratio of *ML* inside MPA relative to outside MPA. Assumes no pre-existing differences in *ML* between inside and outside patches. | @halpern2003 | $log(ML_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ |
@@ -939,9 +1075,10 @@ patches outside. *AFTER* refers to time periods *t* after MPA
 implementation, *BEFORE* is before MPA implementation. *NEAR* are
 patches *p* outside but near the border of an MPA (whether before or
 after MPA implementation), FAR is outside and farther from the border of
-an MPA. Note that all regressions also include covariates for unfished total biomass
-across all species in each patch *p*, and weighting by absolute distance from MPA border. However we omit these ancillary terms from the table for clarity. {#tbl-indicators}
-
+an MPA. Note that all regressions also include covariates for unfished
+total biomass across all species in each patch *p*, and weighting by
+absolute distance from MPA border. However we omit these ancillary terms
+from the table for clarity. {#tbl-indicators}
 
 We do not report uncertainty of estimates, as our primary objective is
 to evaluate relative performance across indicators rather than to make
@@ -973,12 +1110,13 @@ empirical response ratios, we sampled 2500 of our MPA experiments with
 replacement using a weighting scheme designed to produce distribution of
 biomass response ratios that matched those reported in @smith2024b (see
 Fig.SXX). We restricted the candidate simulations for this process to
-MPA sizes between XX and XX, and do baseline B/B0 values between XX and
-XX, to more closely reflect plausible scenarios for the California
+MPA sizes between 10% and 40%, and to multi-species levels of complexity, to more closely reflect plausible scenarios for the California
 system. This allowed us to examine what range simulated MPA outcomes
 could be associated with the distribution of response ratios measured in
 the California MPAs studied in @smith2024b. Note that we do not claim
-these as being simulations of the California MPA system itself, but rather a set of simulations constrained to reproduce a distribution of *Biomass Density Response Ratios* seen in a real-world system. 
+these as being simulations of the California MPA system itself, but
+rather a set of simulations constrained to reproduce a distribution of
+*Biomass Density Response Ratios* seen in a real-world system. See @fig-tuned-rrs for the resulting distribution of simulated response ratios used in this section. 
 
 ### Comparing MPA Outcomes and Indicators
 
@@ -1014,7 +1152,6 @@ All code needed to fully reproduce the results and manuscript are
 publicly available at XX.
 
 ## Results
-
 
 ### Variability of MPA Outcomes
 
@@ -1056,6 +1193,10 @@ xx The B/B0 comes out of nowhere here, so needs a bit of context about
 what's shown and where it fits into the methods. Dan: great call,
 fixed!xx
 
+Our simulated fisheries varied in their behavior as a function of
+the fixed (@tbl-fixed) and variable (@tbl-variable) simulation
+parameters. The degree of resulting fishing pressure is one of the most important determinants of MPA outcomes. The median depletion ($B/B_0$) value across all our included simulations was `r round(median(state_depletions$depletion),2)`, mean value `r round(mean(state_depletions$depletion),2)`, ranging from a minimum of `r round(min(state_depletions$depletion),2)`and a maximum of `r round(max(state_depletions$depletion),2)` (noting that values above 1 are possible given recruitment variation). 
+
 Our simulated MPAs had a wide range of effects on species-level biomass
 and catch, with both positive and negative causal effects possible for
 all measured outcomes (@fig-outcomes). Increasing MPA size generally
@@ -1086,7 +1227,6 @@ only slightly less so. The number of simulations with positive catch
 effects increased with the counterfactual degree of fishing pressure,
 but negative catch effects still occurred across all simulated levels of
 fishing pressure (@fig-outcomes).
-
 
 \newpage
 
@@ -1144,8 +1284,6 @@ fig <- mpa_outcomes |>
 figsaver(fig)
 
 ```
-
-
 
 ### Performance of Empirical Indicators of MPA Effects
 
@@ -1223,10 +1361,8 @@ points, with an average bias across all indicators of
 indicators were positively biased relative to the true effect size,
 though four out of the six evaluated indicators were negatively biased
 for *Biomass Inside*.
- 
- 
-\newpage
 
+\newpage
 
 ```{r}
 #| label: fig-rho-error-bias
@@ -1315,7 +1451,8 @@ cc <- mape_meep_rho |>
                                    face = c(rep("italic",3), rep("plain",3))))
 
 
-(a | b) / (cc | dd) 
+fig <- (a | b) / (cc | dd) 
+figsaver(fig)
 rm(list = c("a","b", "dd","cc"))
 
 ```
@@ -1330,8 +1467,18 @@ correlated with *Biomass Inside* and *Total Biomass* ($\rho = 0.71$,
 $\rho = 0.56$), and negatively correlated with *Biomass Outside* and
 *Catch* ($\rho = -0.37$, $\rho = -0.29$) (@fig-rr-performance).
 
-
-Visualizing the raw relationship between  *Biomass Density Response Ratios* and various MPA outcomes helps place the summary statistics presented in @fig-rho-error-bias into context. For example, while *Biomass Density Response Ratios* had a high $\rho$ value with *Biomass Inside*, there was substantial variation in this relationship, with low *Biomass Density Response Ratios* in fact being associated with large changes in  *Biomass Inside*, and *vice versa*. This is amplified for relationships with lower correlations, such as *Biomass Density Response Ratios* and *Catch*, in which *Biomass Density Response Ratios* of 0.5 could be produced by simulations with up to 100% increases in catch or 100% losses in catch, or commonly with no meaningful change in catch at all (@fig-rr-performance). 
+Visualizing the raw relationship between *Biomass Density Response
+Ratios* and various MPA outcomes helps place the summary statistics
+presented in @fig-rho-error-bias into context. For example, while
+*Biomass Density Response Ratios* had a high $\rho$ value with *Biomass
+Inside*, there was substantial variation in this relationship, with low
+*Biomass Density Response Ratios* in fact being associated with large
+changes in *Biomass Inside*, and *vice versa*. This is amplified for
+relationships with lower correlations, such as *Biomass Density Response
+Ratios* and *Catch*, in which *Biomass Density Response Ratios* of 0.5
+could be produced by simulations with up to 100% increases in catch or
+100% losses in catch, or commonly with no meaningful change in catch at
+all (@fig-rr-performance).
 
 \newpage
 
@@ -1450,6 +1597,10 @@ figsaver(ca_rr_ind_plot)
 ```
 
 ## Discussion
+
+XX add why bias matters more XX
+
+XX potentially add hawaiian example of mismatch between gradient indicator and real assessment value, see if already mentioned in @hilborn2025. 
 
 This study explored two questions: How variable can the effects of MPAs
 be, and how well do common empirical indicators measure these effects?
@@ -1582,16 +1733,16 @@ which requires monitoring programs to be in place prior to MPA
 implementation, or data from inside the reserve, which can be costly to
 collect as it usually depends on fishery-independent scientific surveys.
 Instead, they can in theory be calculated using only post-implementation
-fishery-dependent data. 
+fishery-dependent data.
 
-Early empirical use of gradient based methods
-was focused on measuring the presence of "spillover" from the MPA to
-surrounding water [@halpern2009], which was under debate at the time. We
-argue that the question "does spillover exist" is in fact not really an open or particularly
-relevant question anymore; simulation modeling and empirical evidence
-has confirmed that for almost any reasonable case the movement dynamics
-of marine organisms are such some level of spillover will almost always
-occur at one or more life stages.
+Early empirical use of gradient based methods was focused on measuring
+the presence of "spillover" from the MPA to surrounding water
+[@halpern2009], which was under debate at the time. We argue that the
+question "does spillover exist" is in fact not really an open or
+particularly relevant question anymore; simulation modeling and
+empirical evidence has confirmed that for almost any reasonable case the
+movement dynamics of marine organisms are such some level of spillover
+will almost always occur at one or more life stages.
 
 The relevant question then is not "is spillover significantly different
 than 0", but "what is the net effect size of spillover on outcomes of
@@ -1792,7 +1943,23 @@ tracking the effects of MPAs. Doing so will help ensure that future
 expansion of protected areas in the world's oceans stand the best chance
 of achieving positive and equitable outcomes for nature and people.
 
+## Acknowledgments
+
+This paper was greatly aided by discussions with participants
+of the Area-Based Management working group of the "Helping science
+advance policy in ocean conservation" workshop convened by the The
+Center for Sustaining Seafood at the University of Washington, March 2-3
+2024.
+
+## Author Contributions
+
+## Conflict of Interest Statement
+
+## Data Availablity Statement
+
 \newpage
+
+
 
 ## References
 
@@ -1801,14 +1968,17 @@ of achieving positive and equitable outcomes for nature and people.
 
 # SI: Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security: Supporting Information
 
-:::{=latex}
+::: {=latex}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}
 :::
 
-This document contains supporting figures and descriptions for the manuscript "Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security". 
+This document contains supporting figures and descriptions for the
+manuscript "Evaluating the Reliability of Common Indicators for
+Assessing Marine Protected Areas’ Contributions to Conservation and Food
+Security".
 
-## Case Study
+### Case Study
 
 ```{r}
 #| label: case-study
@@ -2135,8 +2305,7 @@ benchmark_fleet_results <-placement_experiments$sigh[[1]]$results[[1]]$results$f
     mutate(prop_mpa = placement_experiments$prop_mpa[1] ) #|> 
    # mutate(critter = critter_namer(critter))
 
-
-
+rm("placement_experiments")
 
 mpa_step <- min(fauna_results$year) + 10 - 2
 
@@ -2151,17 +2320,19 @@ mpa_step <- min(fauna_results$year) + 10 - 2
 @fig-case-study illustrates an example MPA scenarios included in this
 analysis. This example is from the "complex" set, with four different
 species targeted by two different fishing fleets. Each species has a
-different baseline distribution (@fig-case-study<span></span>A), and each fleet
-has their own relative prioritization of species and port locations. In
-this scenario, MPAs are placed across 30% of the seascape where the
-highest biomass of fish is caught "using the *Target Fishing*"
-strategy", redistributing fishing effort (@fig-case-study<span></span>B).
-The total biomass by species (@fig-case-study<span></span>C), and catch by species
-and fleet (@fig-case-study<span></span>D), are calculated over time, and compared
+different baseline distribution (@fig-case-study <span\></span>A), and
+each fleet has their own relative prioritization of species and port
+locations. In this scenario, MPAs are placed across 30% of the seascape
+where the highest biomass of fish is caught "using the *Target Fishing*"
+strategy", redistributing fishing effort
+(@fig-case-study <span\></span>B). The total biomass by species
+(@fig-case-study <span\></span>C), and catch by species and fleet
+(@fig-case-study <span\></span>D), are calculated over time, and compared
 between the state of the world with the MPA (solid lines) relative to
 the world without the MPA (dashed lines). Values from the simulated
 world with the MPA would be used to calculate relevant indicators such
 as response ratios.
+
 
 ```{r}
 #| label: fig-case-study
@@ -2314,10 +2485,13 @@ fig <- ((alpha + beta) / (delta + kappa) + plot_layout(guides = "collect") & the
 
 figsaver(fig)
 
+rm(list = c("fleet_experiment", "fauna_experiment","benchmark_fleet_results"))
 
 ```
 
-The following graphs show the core life history functions resulting from the fixed parameters used for each fish species template across all simulations, including the case study shown in @fig-case-study. 
+The following graphs show the core life history functions resulting from
+the fixed parameters used for each fish species template across all
+simulations, including the case study shown in @fig-case-study.
 
 ```{r}
 #| label: fig-reef
@@ -2352,9 +2526,6 @@ figsaver(fig, section = "si")
 
 ```
 
-
-
-
 ```{r}
 #| label: fig-reef-move
 #| fig-cap: Diffusion rates for reef fish archetype at recruit and post-recruit life stages. Color shows the density of individuals in the seascape after being allowed to diffuse from one central patch over the course of one year. 
@@ -2367,7 +2538,6 @@ figsaver(fig, section = "si")
 
 
 ```
-
 
 ```{r}
 #| label: fig-tuna
@@ -2384,9 +2554,6 @@ figsaver(fig, section = "si")
 
 
 ```
-
-
-
 
 ```{r}
 #| label: fig-tuna-rec
@@ -2420,8 +2587,6 @@ figsaver(fig, section = "si")
 
 ```
 
-
-
 ```{r}
 #| label: fig-shark
 #| fig-cap: Life history ogives for shark archetype
@@ -2432,10 +2597,6 @@ figsaver(fig, section = "si")
 
 
 ```
-
-
-
-
 
 ```{r}
 #| label: fig-shark-rec
@@ -2468,9 +2629,6 @@ figsaver(fig, section = "si")
 
 ```
 
-
-
-
 ```{r}
 #| label: fig-grouper
 #| fig-cap: Life history ogives for grouper archetype
@@ -2481,7 +2639,6 @@ fig <- state_experiments$fauna[[1]]$grouper$plot()
 figsaver(fig, section = "si")
 
 ```
-
 
 ```{r}
 #| label: fig-grouper-rec
@@ -2514,8 +2671,6 @@ figsaver(fig, section = "si")
 
 ```
 
-
-
 ```{r}
 #| label: fig-sel1
 #| fig-cap: 'Selectivity ogives for reef fish in case study'
@@ -2525,9 +2680,6 @@ fig <- (state_experiments$fleet[[1]]$alpha$metiers$reef_fish$plot_selectivity() 
 
 figsaver(fig, section = "si")
 ```
-
-
-
 
 ```{r}
 #| label: fig-sel2
@@ -2539,7 +2691,6 @@ fig <- (state_experiments$fleet[[1]]$alpha$metiers$grouper$plot_selectivity() + 
 figsaver(fig, section = "si")
 ```
 
-
 ```{r}
 #| label: fig-sel3
 #| fig-cap: 'Selectivity ogives sharks in case study'
@@ -2550,7 +2701,6 @@ fig <- (state_experiments$fleet[[1]]$alpha$metiers$shark$plot_selectivity() + la
 figsaver(fig, section = "si")
 ```
 
-
 ```{r}
 #| label: fig-sel4
 #| fig-cap: 'Selectivity ogives tunas in case study'
@@ -2560,9 +2710,6 @@ fig <- (state_experiments$fleet[[1]]$alpha$metiers$tuna$plot_selectivity() + lab
 
 figsaver(fig, section = "si")
 ```
-
-
-
 
 ```{r}
 #| label: fig-eg-b
@@ -2613,8 +2760,6 @@ figsaver(fig, section = "si")
 
 ```
 
-
-
 ```{r}
 #| label: fig-eg-rr
 #| fig-cap: Distribution of biomass density per patch inside versus outside of MPA post-MPA. These are the simulated data that would be used to calculate a response ratio. 
@@ -2630,7 +2775,6 @@ fig <- no_age |>
 figsaver(fig, section = "si")
 
 ```
-
 
 ```{r}
 #| label: fig-eg-baci
@@ -2652,8 +2796,6 @@ fig <- no_age |>
 figsaver(fig, section = "si")
 
 ```
-
-
 
 ```{r}
 #| label: fig-eg-gradient
@@ -2735,70 +2877,36 @@ figsaver(fig, section = "si")
 
 ```
 
-## Effects on Total Biomass and Catch Across All Fleets and Species
 
-The core results of our paper are presented at the resolution of changes at the resolution of species and/or fleet (e.g. reef fish by fleet alpha). Here we present our results aggregated across all species and fleets within a simulation (e.g. change in total biomass across all species, or change in catch across all fleets and species). 
+
+### Range of Simulated Outcomes
+
+The following graphs show results across the full range of simulations included in this study. 
+
 
 ```{r}
+#| label: fig-deps
+#| fig-cap: 'Distribution of baseline simulated depletion values (B/B0)'
 
-outcome_labeller <- c(
-  fished_biomass = "Biomass Outside",
-  mpa_biomass = "Biomass Inside",
-  biomass = "Total Biomass",
-  catch = "Catch"
-)
-
-sighbreaks <- seq(-1,2, by = .5)
-sighlabs <- paste0(sighbreaks * 100, "%")
-sighlabs[length(sighlabs)] <- "≥200%"
-
-fig <- total_mpa_outcomes |>
-  filter(observation_error == default_observation_error) |>
-  select(depletion,
-         numeric_prop_mpa,
-         difficulty,
-         fished_biomass,
-         mpa_biomass,
-         biomass,
-         catch) |>
-  pivot_longer(-(depletion:difficulty)) |>
-  mutate(
-    depletion_bin = cut(pmin(1.19,depletion), breaks = c(0 ,.25, 0.5,1.2)),
-  mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6)),
-         name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass"),
-         difficulty = fct_relevel(difficulty,"simple", "medium")) |>
-  mutate(mpa_bin = as_factor(case_when(mpa_bin == "(0,0.15]" ~ "0-15%", mpa_bin =="(0.15,0.3]" ~ "15-30%", .default = "30-60%"))) |>
-   mutate(depletion_bin = as_factor(case_when(depletion_bin == "(0,0.25]" ~ "0-25%", depletion_bin =="(0.25,0.5]" ~ "25-50%", .default = ">50%"))) |>
-  mutate(depletion_bin = fct_relevel(depletion_bin, "0-25%","25-50%" )) |> 
-  # filter(numeric_prop_mpa < 0.66, numeric_prop_mpa > 0.1) |> 
-  ggplot(aes(x = depletion_bin, y = value)) +
-  geom_hline(yintercept = 0, linetype = 2) +
-  stat_interval(aes(color_ramp = after_stat(level),color = depletion_bin), .width = c(0.5,0.8,1)) +
-  # stat_interval(aes(difficulty, value)) +
-  # geom_density(aes(value, after_stat(scaled),fill = difficulty, color = difficulty),alpha = 0.25) +
-  facet_grid(mpa_bin ~ name, scales = "free_y", labeller = labeller(name = outcome_labeller)) + 
-  scale_x_discrete(name = 'Depletion (B/B0)') +
-  scale_y_continuous(name= "MPA Effect",limits = c(NA,2), oob = squish, breaks = sighbreaks, labels = sighlabs) +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
-        axis.text.y = element_text(size = 8),
-        panel.spacing.x = unit(2, "lines")) + 
-  ggdist::scale_colour_ramp_discrete(name = "Quantile Range", labels = c("100%","80%", "50%")) + 
-  guides(color = "none")
-
-
-figsaver(fig, section = "si")
-```
-
-```{r}
-state_depletions |> 
+fig = state_depletions |> 
   ggplot(aes(depletion, fill = critter)) + 
-  geom_histogram() + 
-  facet_grid(difficulty ~ critter)
+  geom_histogram(alpha = 0.75) + 
+  facet_wrap( ~ critter) + 
+  scale_fill_viridis_d(option = "C")
+  
+  figsaver(fig,section = "si")
 ```
 
 
+
+\newpage
+
 ```{r}
+#| label: fig-raw-fan
+#| fig-cap: 'Full distribution of every evaluated indicator (x-axis) and outcome (y-axis). Color shows the number of simulations in each bin.'
+#| fig-height: 10
+#| fig-width: 6
+
 huh <- comparison |> 
     filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
          !str_detect(indicator, "cpue"),
@@ -2825,17 +2933,29 @@ huh <- comparison |>
   ungroup() |> 
   filter(!is.na(indicator), !is.na(name))
 
-huh |> 
+fig <- huh |> 
   ggplot(aes(indicator_value, pmin(2,percent_mpa_effect))) + 
   geom_hline(yintercept = 0) + 
   geom_vline(xintercept = 0 ) +
-  geom_bin_2d() + 
+  geom_bin_2d(bins = 42) + 
+scale_x_continuous(name = "MPA Indicator",limits = c(NA, 2), oob = squish) + 
+  scale_y_continuous(name= "MPA Outcome",limits = c(NA,2),oob = squish) +
+  scale_fill_viridis_c(name = "# of Simulations") + 
+  theme_minimal(base_size = 14) + 
+  theme(  strip.text.y.right = element_text(size = 6)) + 
   facet_grid(indicator ~ name, scales = "free")
+
+rm("huh")
+
+figsaver(fig)
 ```
+
+
 
 
 ```{r}
 #| fig-height: 8
+#| eval: false
 
 huh <- comparison |> 
     filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
@@ -2874,16 +2994,21 @@ eg = huh |>
   geom_point(size = 4, alpha = 0.25) + 
   scale_x_continuous(name = "MPA Indicator",limits = c(NA, 2)) + 
   scale_y_continuous(name= "MPA Outcome",limits = c(NA,2)) +
+  scale_fill_viridis_c(name = "# of Simulations") + 
   theme_minimal(base_size = 14) + 
   theme(axis.title.x = element_text(size = 22)) + 
-    theme(axis.title.y = element_text(size = 22))
+    theme(axis.title.y = element_text(size = 22),
+          legend.position = "top")
 
 
 ggsave("eg.pdf", eg, device = cairo_pdf)
 ```
 
-```{r}
 
+
+```{r}
+#| label: fig-tuned-rrs
+#| fig-cap: 'Distribution of observed biomass density response ratios from @smith2024b and distribution of simulated response ratios sampled to match observed biomass density response ratios.'
 
 compare <- ca_rrs |>
   mutate(source = "Observed California Response Ratios") |> 
@@ -2891,16 +3016,122 @@ compare <- ca_rrs |>
   bind_rows(ca_indicator_performance |> filter(name == "biomass") |>  select(approx_rr) |> mutate(source = "Simulated Response Ratios"))
 
 
-compare |> 
+fig <- compare |> 
   ggplot(aes(approx_rr, y = source)) + 
   geom_density_ridges(alpha = 0.75) + 
   scale_x_continuous("Biomass Density Response Ratio") + 
   scale_y_discrete(name = '')
 
+figsaver(fig, section = "si")
+
 ```
 
+
 ```{r}
-#| eval: true
+#| label: fig-indicator-ranges
+#| fig-cap: "Distribution of simulated empirical indicators "
+
+  sighbreaks <- seq(-1,3.5, by = .5)
+  sighlabs <- paste0(sighbreaks)
+  sighlabs[length(sighlabs)] <- "≥3.5%"
+
+indicator_ranges <- comparison |> 
+  filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
+         !str_detect(indicator, "cpue"),
+         !str_detect(indicator, "catch"),
+         name == "mpa_biomass") |> 
+  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
+    mutate(
+      indicator = fct_recode(
+      indicator,
+      "Biomass Density BACI" = "biomass_baci",
+      "Mean Length Response Ratio" = "length_rr",
+      "Biomass Density Response Ratio" = "biomass_rr",
+      "Effort Gradient" = "effort_gradient",
+      "Biomass Density Gradient BACI" = "biomass_bag",
+      "Biomass Density Gradient" = "biomass_gradient")
+  )
+
+indicator_ranges |> 
+  ggplot(aes(prop_mpa, indicator_value)) + 
+  stat_interval() + 
+  geom_hline(yintercept = 0, linetype = 2, color = "red") +
+  facet_wrap(~indicator, scales = "free_y") + 
+  scale_color_brewer(name= "Quantile") + 
+  scale_x_continuous(labels = scales::percent, name = "Seascape in MPA") + 
+  scale_y_continuous(labels = sighlabs, breaks = sighbreaks, "MPA Indicators Value")
+
+
+```
+
+### Effects on Total Biomass and Catch Across All Fleets and Species
+
+The core results of our paper are presented at the resolution of changes
+at the resolution of species and/or fleet (e.g. reef fish by fleet
+alpha). Here we present our results aggregated across all species and
+fleets within a simulation (e.g. change in total biomass across all
+species, or change in catch across all fleets and species).
+
+
+```{r}
+#| label: fig-total-outcomes
+#| fig-cap: Distribution of simulation results across outcomes (panels), proportion of seascape in MPA (columns), and level of baseline depletion (colors, biomass *B* divided by unfished biomasss *B0*). Y-axis shows the "MPA effect", the percent change in the outcome in question caused by the MPA. Biomass Inside refers to total individual species biomass inside MPA borders. Biomass Outside refers to total species biomass across all species outside MPA borders. Total Biomass refers to total species biomass both inside and outside MPA borders. Catch refers to total catch outside the MPA. 
+
+outcome_labeller <- c(
+  fished_biomass = "Biomass Outside",
+  mpa_biomass = "Biomass Inside",
+  biomass = "Total Biomass",
+  catch = "Catch"
+)
+
+sighbreaks <- seq(-1,2, by = 1)
+sighlabs <- paste0(sighbreaks * 100, "%")
+sighlabs[length(sighlabs)] <- "<span style='font-weight:600'>&ge;</span> 200%"
+
+fig <- total_mpa_outcomes |>
+  filter(observation_error == default_observation_error) |>
+  select(depletion,
+         numeric_prop_mpa,
+         difficulty,
+         fished_biomass,
+         mpa_biomass,
+         biomass,
+         catch) |>
+  pivot_longer(-(depletion:difficulty)) |>
+  mutate(
+    depletion_bin = cut(pmin(1.19,depletion), breaks = c(0 ,.25, 0.5,1.2)),
+  mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6)),
+         name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass"),
+         difficulty = fct_relevel(difficulty,"simple", "medium")) |>
+  mutate(mpa_bin = as_factor(case_when(mpa_bin == "(0,0.15]" ~ "0-15%", mpa_bin =="(0.15,0.3]" ~ "15-30%", .default = "30-60%"))) |>
+   mutate(depletion_bin = as_factor(case_when(depletion_bin == "(0,0.25]" ~ "0-25%", depletion_bin =="(0.25,0.5]" ~ "25-50%", .default = ">50%"))) |>
+  mutate(depletion_bin = fct_relevel(depletion_bin, "0-25%","25-50%" )) |> 
+  # filter(numeric_prop_mpa < 0.66, numeric_prop_mpa > 0.1) |> 
+  ggplot(aes(x = mpa_bin, y = value)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  stat_interval(aes(color_ramp = after_stat(level),color = depletion_bin), .width = c(0.5,0.8,1), position = "dodge") +
+  # stat_interval(aes(difficulty, value)) +
+  # geom_density(aes(value, after_stat(scaled),fill = difficulty, color = difficulty),alpha = 0.25) +
+  facet_wrap( ~ name, scales = "free_y", labeller = labeller(name = outcome_labeller)) + 
+  scale_color_manual(name = "B/B0", values = c("tomato", "purple", "steelblue")) +
+  scale_x_discrete(name = 'Seascape in MPA') +
+  scale_y_continuous(name= "MPA Effect",limits = c(NA,2), oob = squish, breaks = sighbreaks, labels = sighlabs) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 8, angle = 45, hjust = 1, vjust = 1),
+        axis.text.y = element_markdown(size = 8),
+        panel.spacing.x = unit(2, "lines")) + 
+  ggdist::scale_colour_ramp_discrete(name = "Quantile Range", labels = c("100%","80%", "50%")) 
+
+
+figsaver(fig)
+
+```
+
+\newpage
+
+```{r}
+#| label: fig-rho-error-bias-total
+#| fig-cap: 'Spearman correlations $\rho$ (A) and $\rho^2$ (B) between indicators (y-axis) and outcomes (x-axis) at the level of total change across all specices or fleets across all simulations. Root mean squared error (RMSE, C) and  mean error (Bias, D) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Blue plain text indicates *Inside vs. Outside* indicators, red italic axis labels indicates a *Near vs. Far* indicator. Text shows the value of the metric in question, also reflected in the background color of each cell according to the associated colorbar legend.'
 #| fig-height: 8
 
 total_mape_meep_rho <- total_comparison |> 
@@ -2934,100 +3165,101 @@ total_mape_meep_rho <- total_comparison |>
   ) |> 
     mutate(name = fct_relevel(name, "Biomass Inside","Biomass Outside"  ,"Total Biomass"))
 
- 
- 
-a <- total_mape_meep_rho |> 
+ a <- total_mape_meep_rho |> 
   ggplot() + 
   geom_tile(aes(name, reorder(indicator, abs(rho)), fill = rho), color = "black") + 
-  geom_text(aes(name, reorder(indicator, abs(rho)), label = round(rho^2,2))) +
-  scale_fill_gradient2(name = "Correlation between Indicator and Outcome",limits = c(-1,1),
-                       low = "tomato", high = "steelblue", mid = "white",
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(8, "lines"),
-  legend.key.height = unit(1, "lines")),
-  direction = "horizontal",
-  title.position = "left",
-  title.vjust = 0.75)) + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(rho,2)),alpha = 0.75, size = 2) +
+  scale_fill_gradient2(name = "A) Spearman's ρ",limits = c(-1,1),
+                       low = "tomato", high = "steelblue", mid = "white") + 
   scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
   scale_y_discrete(expand = c(0,0), name = '') + 
+  guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) + 
   theme(legend.position = "top",
-        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1)) + 
-    labs(caption = "Text shows psuedo-R<sup>2</sup>", title = "A") +
-  theme(plot.caption = element_textbox())
-
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
+                                   face = c(rep("italic",3), rep("plain",3))))
 
 
 b <- total_mape_meep_rho |> 
   ggplot() + 
-  geom_tile(aes(name, reorder(indicator, (rho)), fill = error), color = "black") + 
-  ggtext::geom_richtext(aes(name, reorder(indicator, (rho)), label = round(100 * bias,0)), size = 3, alpha = 0.75,color = "black") +
-  scale_fill_viridis_c(name = "RMSE",option = "plasma",limits = c(0, NA),
-                       guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.width  = unit(8, "lines"),
-  legend.key.height = unit(1, "lines")),
-  direction = "horizontal",
-  title.position = "left",
-  title.vjust = 0.75), labels = scales::percent) + 
+  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = rho^2), color = "black") + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(rho^2,2)),alpha = 0.75,size = 2) +
+  scale_fill_viridis_c(name = "B) Spearman's ρ²",limits = c(0,1)) + 
   scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
   scale_y_discrete(expand = c(0,0), name = '') + 
+  guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) + 
   theme(legend.position = "top",
-        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1)) + 
-  labs(caption = "Text shows mean percentage-point bias (Indicator - Effect)", title = "B")
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank())
 
-a / b + plot_layout(guides = "collect") & theme(legend.position = "top")
 
-rm(list = c("a", "b"))
+
+
+
+dd <- total_mape_meep_rho |> 
+  ggplot() + 
+  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = bias * 100), color = "black") + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(100 * bias,0)), alpha = 0.75,size = 2) +
+  scale_fill_gradient2(name = "D) Bias",
+                       low = "blue", high = "gold", mid = "white") + 
+  scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
+  scale_y_discrete(expand = c(0,0), name = '') + 
+      guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) +
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
+        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
+        axis.text.y = element_blank())
+
+
+
+
+cc <- total_mape_meep_rho |> 
+  ggplot() + 
+  geom_tile(aes(name, reorder(indicator, abs(rho)), fill = error * 100), color = "black") + 
+  geom_richtext(aes(name, reorder(indicator, abs(rho)), label = round(100 * error,0)),alpha = 0.75,size = 2) +
+  # ggtext::geom_richtext(aes(name, reorder(indicator, (rho)), label = round(100 * error,0)), size = 3, alpha = 0.75,color = "black") +
+  scale_fill_viridis_c(option = "magma",name = "C) RMSE", limits = c(0, NA)) + 
+  scale_x_discrete(expand = c(0,0), position ="bottom", name = '') + 
+  scale_y_discrete(expand = c(0,0), name = '') + 
+      guides(fill = guide_colorbar(frame.colour = "black",ticks.colour = "black", 
+                               direction = "horizontal")) +
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.justification = "left",
+        legend.title = ggtext::element_markdown(size = 12),
+        legend.direction = "horizontal",
+        axis.text.x = element_text(angle = 35, vjust = 1, hjust = 1),
+        axis.text.y = element_text(color = c(rep("red",3), rep("blue",3)),
+                                   face = c(rep("italic",3), rep("plain",3))))
+
+
+fig <- (a | b) / (cc | dd) 
+figsaver(fig, section = "si")
+rm(list = c("a","b", "dd","cc"))
 
 
 ```
 
-```{r}
 
 
-outcome_labeller <- c(
-  fished_biomass = "Biomass Outside",
-  mpa_biomass = "Biomass Inside",
-  biomass = "Total Biomass",
-  catch = "Catch"
-)
-
-  sighbreaks <- seq(-1,2, by = .5)
-  sighlabs <- paste0(sighbreaks * 100, "%")
-  sighlabs[length(sighlabs)] <- "≥200%"
-
-fig <- total_mpa_outcomes |>
-  filter(observation_error == default_observation_error) |>
-  select(depletion,
-         numeric_prop_mpa,
-         fished_biomass,
-         mpa_biomass,
-         biomass,
-         catch) |>
-  pivot_longer(-(depletion:numeric_prop_mpa)) |>
-  mutate(mpa_bin = cut(numeric_prop_mpa, breaks = c(0, 0.15, 0.3, 6)),
-         name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass")) |>
-          mutate(mpa_bin = as_factor(case_when(mpa_bin == "(0,0.15]" ~ "0-15%", mpa_bin =="(0.15,0.3]" ~ "15-30%", .default = "30-60%"))) |>
-    # filter(numeric_prop_mpa < 0.66, numeric_prop_mpa > 0.1) |> 
-  ggplot(aes(x = mpa_bin, y = pmin(2,value))) +
-  geom_hline(yintercept = 0, linetype = 2) +
-  stat_interval(aes(color_ramp = after_stat(level),color = name), .width = c(0.5,0.8,1)) +
-  # stat_interval(aes(difficulty, value)) +
-  # geom_density(aes(value, after_stat(scaled),fill = difficulty, color = difficulty),alpha = 0.25) +
-  facet_wrap( ~ name, scales = "free_y", labeller = labeller(name = outcome_labeller)) +
-  scale_x_discrete(name = 'Seascape in MPA') +
-  scale_y_continuous(name= "MPA Effect",limits = c(NA,2), oob = squish, breaks = sighbreaks, labels = sighlabs) +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
-        axis.text.y = element_text(size = 8),
-        panel.spacing.x = unit(2, "lines")) + 
-  ggdist::scale_colour_ramp_discrete(name = "Quantile Range", labels = c("100%","80%", "50%")) + 
-  guides(color = "none")
-
- 
-figsaver(fig)
-```
 
 ```{r}
 #| label: fig-total-rr-performance
-#| fig-cap: "Simulated response ratios (x-axis) plotted against simulated MPA effects (y-axis), for subset of scenarios more reflective of the California MPA network. Simulations selected such that distribution of simulated response ratios roughly matches distribution of empirical response ratios for targeted finfish in California MPAs, reported in @smith2024b."
+#| fig-cap: "Simulated response ratios (x-axis) plotted against total simulated MPA effects (y-axis), for subset of scenarios more reflective of the California MPA network. Simulations selected such that distribution of simulated response ratios roughly matches distribution of empirical response ratios for targeted finfish in California MPAs, reported in @smith2024b."
 
 total_rr_performance <- total_comparison |>
     filter(observation_error == default_observation_error) |> 
@@ -3060,18 +3292,21 @@ sigh <- ca_rrs |>
   slice_sample(n = 200) |> 
   ungroup()
 
-ca_indicator_performance <- sigh |>
+total_ca_indicator_performance <- sigh |>
   ungroup() |> 
   filter(is.finite(percent_mpa_effect), is.finite(indicator_value)) |>
   mutate(name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass", "catch"))
 
 
-rr_cores <- ca_indicator_performance |> 
+rr_cores <- total_ca_indicator_performance |> 
   group_by(name) |> 
   nest() |> 
   mutate(tmp = map(data, \(x) correlate(x$indicator_value, x$percent_mpa_effect, method = "spearman", quiet = TRUE))) |> 
   unnest(cols = tmp) |> 
-  ungroup() 
+  ungroup() |> 
+  mutate(max_y = map_dbl(data, \(x) 1.1 * pmin(1,max(x$percent_mpa_effect))))
+ 
+
  
 
 
@@ -3082,162 +3317,40 @@ rr_cores <- ca_indicator_performance |>
 #   scale_x_continuous(breaks = seq(-2,5,by = 0.25) ) + 
 #   facet_wrap(~name)
 
-ca_rr_ind_plot <- sigh |>
+total_ca_rr_ind_plot <- total_ca_indicator_performance  |>
   mutate(name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass", "catch")) |> 
-  ggplot(aes(indicator_value, percent_mpa_effect)) +
-  # geom_density_2d(alpha = 0.5, show.legend = FALSE) +
-  # geom_bin_2d(color = "transparent", show.legend = FALSE, alpha = 0.5, bins = 10) +
-    geom_point(aes(color = depletion), alpha = 0.75, size = 2) +
-    geom_rug(sides = "br") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             color = "black") +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             color = "black") +
-      geom_richtext(data = rr_cores, aes(
-    x = .25,
-    y = 0.75,
-    label = glue("&rho; = {round(x,2)}<br>psuedo-R² = {round(x^2,2)}")
-  ),
-  fill = NA, label.color = NA) +
-
-  facet_wrap( ~ name, scales = "free_y", ncol = 2, labeller = labeller(name = outcome_labeller)) +
-  scale_y_continuous(limits = c(NA, NA), oob = squish, name = "Simulated effect of MPA on..", labels = scales::percent) +
-  scale_color_viridis_c(
-    "BAU B/B0",
-    limits = c(0, 1),
-    option = "plasma",
-    guide = guide_colorbar(
-      frame.colour = "black",
-      ticks.colour = "black",
-      barwidth =  unit(11, "lines")
-    )
-  )  +  
-  scale_x_continuous(limits = c(NA,NA), name = "Simulated Response Ratios (Biomass Inside / Biomass Outside - 1)") +
-  theme(legend.position = "top")
-
-
-figsaver(ca_rr_ind_plot)
-```
-
-```{r}
-
-  sighbreaks <- seq(-1,3.5, by = .5)
-  sighlabs <- paste0(sighbreaks * 100, "%")
-  sighlabs[length(sighlabs)] <- "≥350%"
-
-indicator_ranges <- comparison |> 
-  filter(!is.na(percent_mpa_effect) & !is.na(indicator_value),
-         !str_detect(indicator, "cpue"),
-         !str_detect(indicator, "catch"),
-         name == "mpa_biomass") |> 
-  mutate(indicator = str_remove_all(indicator, "ind_")) |> 
-    mutate(
-      indicator = fct_recode(
-      indicator,
-      "Biomass Density BACI" = "biomass_baci",
-      "Mean Length Response Ratio" = "length_rr",
-      "Biomass Density Response Ratio" = "biomass_rr",
-      "Effort Gradient" = "effort_gradient",
-      "Biomass Density Gradient BACI" = "biomass_bag",
-      "Biomass Density Gradient" = "biomass_gradient")
-  )
-
-indicator_ranges |> 
-  ggplot(aes(prop_mpa, indicator_value)) + 
-  stat_interval() + 
-  geom_hline(yintercept = 0, linetype = 2, color = "red") +
-  facet_wrap(~indicator) + 
-  scale_color_brewer(name= "Quantile") + 
-  scale_x_continuous(labels = scales::percent, name = "Seascape in MPA") + 
-  scale_y_continuous(labels = sighlabs, breaks = sighbreaks)
-
-
-```
-
-```{r}
-ind_performance <- comparison |>
-    filter(observation_error == default_observation_error) |> 
-  filter(str_detect(indicator, ("ind_effort_gradient"))) |>
-  mutate(combo = paste(name, indicator, sep = " ~ ")) |>
-  mutate(combo = str_remove_all(combo, "ind_"))
-
-inds <- ind_performance |>
-  filter(name %in% c("mpa_biomass","biomass", "catch", "fished_biomass"),
-         between(prop_mpa,0.1,0.4)) |> 
-    mutate(approx_rr = round(indicator_value / 0.1) * 0.1)
-
-
-sigh <- inds |> select(approx_rr, name, percent_mpa_effect, indicator_value, state_id) |>  
-  left_join(state_depletions,relationship = "many-to-many",by = "state_id") |> 
-  filter(!is.na(indicator_value)) |> 
   ungroup() |> 
-  filter(between(depletion,0.2,0.8)) |> 
-  group_by(name) |> 
-  slice_sample(n = 500) |> 
-  ungroup()
-
-tmp_performance <- sigh |>
-  ungroup() |> 
-  filter(is.finite(percent_mpa_effect), is.finite(indicator_value)) |>
-  mutate(name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass", "catch"))
-
-
-ind_cores <- tmp_performance |> 
-  group_by(name) |> 
-  nest() |> 
-  mutate(tmp = map(data, \(x) correlate(x$indicator_value, x$percent_mpa_effect, method = "spearman", quiet = TRUE))) |> 
-  unnest(cols = tmp) |> 
-  ungroup() |> 
-  mutate(max_y = map_dbl(data, \(x) 1.1 * pmin(2,max(x$percent_mpa_effect))))
- 
-
-
-# sigh |>
-#   ggplot(aes(estimate)) +
-#   geom_histogram(aes(estimate, fill = "observed"), bins = 20, alpha = 0.25) +
-#   geom_histogram(aes(indicator_value, fill = "simulated"),bins = 20, alpha = 0.25) +
-#   scale_x_continuous(breaks = seq(-2,5,by = 0.25) ) + 
-#   facet_wrap(~name)
-
-ca_rr_ind_plot <- sigh |>
-  mutate(name = fct_relevel(name, "mpa_biomass","fished_biomass", "biomass", "catch")) |> 
   ggplot(aes(indicator_value, pmin(2,percent_mpa_effect))) +
-  # geom_density_2d(alpha = 0.5, show.legend = FALSE) +
-  # geom_bin_2d(color = "transparent", show.legend = FALSE, alpha = 0.5, bins = 10) +
-    geom_point(aes(color = depletion), alpha = 0.5, size = 2) +
-    geom_rug(sides = "br") +
+  # geom_density_2d(alpha = 1, show.legend = TRUE) +
+  # geom_bin_2d() +
+  geom_hex(show.legend = TRUE,bins = 15) +
+    # geom_point(alpha = 0.5, size = 2) +
+    # geom_rug(sides = "br") +
   geom_hline(yintercept = 0,
              linetype = 2,
-             color = "black") +
+             color = "tomato") +
   geom_vline(xintercept = 0,
              linetype = 2,
-             color = "black") +
-      geom_richtext(data = ind_cores, aes(
+             color = "tomato") +
+      geom_richtext(data = rr_cores, aes(
     x = .75,
     y = max_y,
-    label = glue("&rho; = {round(x,2)}<br>&rho;² = {round(x^2,2)}")
+    label = glue("ρ = {round(x,2)}<br> ρ² = {round(x^2,2)}")
   ),
   fill = "white", label.color = NA, alpha = 0.75) +
 
   facet_wrap( ~ name, scales = "free_y", ncol = 2, labeller = labeller(name = outcome_labeller)) +
   scale_y_continuous(limits = c(NA, NA), oob = squish, name = "Simulated effect of MPA on..", labels = scales::percent, expand = expansion(mult = c(0,.5))) +
-  scale_color_viridis_c(
-    "BAU B/B0",
-    limits = c(0, 1),
-    option = "plasma",
-    guide = guide_colorbar(
-      frame.colour = "black",
-      ticks.colour = "black",
-      barwidth =  unit(11, "lines")
-    )
-  )  +  
-  scale_x_continuous(limits = c(-.25,1.25), name = "Indicator") +
+  scale_x_continuous(limits = c(-.25,1), name = "Simulated Biomass Density Response Ratio") + 
+  scale_fill_viridis_c(option = "mako",name = "# of Simulations",guide = guide_colorbar(frame.colour = "black",ticks.colour = "black", theme = theme(legend.key.height  = unit(1, "lines"),
+                                                                                                           legend.key.width = unit(8, "lines")),
+                                              direction = "horizontal",
+                                              title.position = "top",
+                                              title.vjust = 0.75)) +
   theme(legend.position = "top")
 
 
-figsaver(ca_rr_ind_plot)
+figsaver(total_ca_rr_ind_plot)
 ```
 
 # Scraps
@@ -3657,8 +3770,8 @@ fishery outcomes.
 What does the future suggest? Better integration with spatial stock
 assessment literature, linking process-based models to indicators rather
 than pure statistical outcomes (e.g. leveraging basic life history in
-terms of time to effects etc) @nickols2019. Also, lots of
-advances in spatial-temporal modeling @thorson2024a. At the same time,
+terms of time to effects etc) @nickols2019. Also, lots of advances in
+spatial-temporal modeling @thorson2024a. At the same time,
 collaborations with field biologists and the like critical to getting
 the conceptual model right. Need better integration with social science
 to figure out how do we effectively monitor socio-economic impacts.
@@ -4587,4 +4700,5 @@ b <- mape_meep_rho |>
 a / b + plot_layout(guides = "collect") & theme(legend.position = "top")
 
 rm("b")
+
 ```

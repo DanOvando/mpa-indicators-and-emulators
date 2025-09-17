@@ -1,0 +1,118 @@
+---
+title: "Evaluating the Reliability of Common Indicators for Assessing Marine Protected Areas’ Contributions to Conservation and Food Security"
+author:
+  - name: Daniel Ovando
+    affiliation:
+      - name: Inter-American Tropical Tuna Commission
+        department: Ecosystem & Bycatch Group
+        id: 1
+        address: 8901 La Jolla Shores Drive
+        city: La Jolla
+        state: CA
+        postal-code: 92037
+    email: dovando@iattc.org
+    attributes:
+      equal-contributor: true
+      corresponding: true
+  - name: Cori Lopazanski
+    affiliation:
+      - name: UC Santa Barbara
+        department: Bren School of Environmental Science & Management
+        id: 2
+        address: 2400 Bren Hall
+        city: Santa Barbara
+        state: CA
+        postal-code: 93106
+    email: lopazanski@bren.ucsb.edu
+    attributes:
+      equal-contributor: false
+      corresponding: false
+format:
+  docx: default
+  html: 
+    toc: true
+    self-contained-math: true
+    embed-resources: true
+  pdf:
+    geometry: margin=1in
+    toc: true
+    pdf-engine: lualatex
+    include-in-header: preamble.tex
+    documentclass: extarticle
+    classoption: 12pt
+bibliography: references.bib
+abstract: |
+ Something
+keywords: [MPA, Simulation Modeling, Model Selection, Conservation Planning, Food Security]
+execute: 
+  echo: false
+  warning: false
+---
+
+
+```{r}
+library(ggplot2)
+```
+
+Hello world 
+
+We do not report uncertainty of estimates, as our primary objective is
+to evaluate relative performance across indicators rather than to make
+statistical inferences. Given that this is a simulation-based analysis
+with arbitrarily defined sample sizes, conventional statistical
+significance testing is not meaningful [@white2014], so we do not
+evaluate indicators against statistical significance thresholds (e.g., p
+\< 0.05). Similarly, we do not account for statistical complexities such
+as spatio-temporal clustering [@thorson2024a] or zero-inflation
+[@zuur2009]. Applied use of empirical indicators would need to be
+tailored to the local context, following best practices in modeling and
+causal inference based on observational data from social-ecological
+systems.
+
+
+
+
+
+```{r}
+#| label: fig-rho-error-bias-2
+#| fig-cap: 'Spearman correlations $\rho$ (A) and $\rho^2$ (B) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Root mean squared error (RMSE, C) and  mean error (Bias, D) between indicators (y-axis) and outcomes (x-axis) at the level of individual species and fleets across all simulations. Blue plain text indicates *Inside vs. Outside* indicators, red italic axis labels indicates a *Near vs. Far* indicator.'
+#| fig-height: 7
+mtcars |> 
+ggplot() + 
+geom_histogram(aes(mpg))
+
+
+```
+
+
+| **Indicator** | **Group** | **Estimated Effect & Key Assumptions** | **Example Citations** | **Equation** |   |
+|------------|------------|------------|------------|------------|------------|
+| Biomass Density Before-After -Control-Impact | Inside vs. Outside | Ratio of change in B after MPA implementation inside MPA relative to outside MPA. Assumes parallel trends in biomass density inside and outside MPA pre- and post-implementation | @lester2009 | $\begin{array}{l} log(B_{p,t})\sim\beta_0 + \\ - \beta_1INSIDE_p + \beta_2AFTER_t \\ +\pmb{\beta_3}INSIDE_p \times AFTER_t \end{array}$ |  |
+
+: General structure of tested indicators of MPA effects. Bolded $\beta$
+parameter in Equation column indicates parameter interpreted as the
+effect of the MPA. {#tbl-test}
+
+Testz
+
+This is text
+
+| **Indicator** | **Estimated Effect and Key Assumptions** | **Example Citation** | **Equation** |
+|----------------|----------------|----------------|-----------------------|
+| Biomass Density Before-After -Control-Impact (*Inside vs. Outside*) | Ratio of change in *B* after MPA implementation inside MPA relative to outside MPA. Assumes Parallel trends in *B* inside and outside MPA pre- and post-implementation. | @lester2009 | $\begin{array}{l} log(B_{p,t})\sim\beta_0 + \\ \beta_1INSIDE_p + \beta_2AFTER_t \\ +\pmb{\beta_3}INSIDE_p \times AFTER_t \end{array}$ |
+| Biomass Density Response Ratio (*Inside vs. Outside*) | Post-MPA Ratio of *B* inside MPA relative to outside MPA. Assumes no pre-existing differences in *B* between inside and outside sites | @smith2024b | $log(B_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ |
+| Mean Length Response Ratio (*Inside vs. Outside*) | Post-MPA ratio of *ML* inside MPA relative to outside MPA. Assumes no pre-existing differences in *ML* between inside and outside patches. | @halpern2003 | $log(ML_p) \sim \beta_0 + \pmb{\beta_1}INSIDE_p$ |
+| Effort Gradient (*Near vs. Far*) | Post-MPA ratio of *E* near MPA relative to far. Assumes no pre-existing differences in *E* between near and far patches. | @goni2008 | $log(E_p) \sim \beta_0 + \pmb{\beta_1}NEAR_p$ |
+| Biomass Density Gradient (*Near vs. Far*) | Post-MPA ratio of *B* near MPA relative to far from MPA. Assumes no pre-existing differences in *B* between near and far patches. | @halpern2009 | $log(B_p) \sim \beta_0 + \pmb{\beta_1}NEAR_p$ |
+| Biomass Density Before-After Gradient (*Near vs. Far*) | Ratio of change in *B* after MPA implementation near to MPA relative to far from MPA. Assumes Parallel trends in *B* density near and far from MPA pre- and post-implementation. | @lynham2024 | $\begin{array}{l} log(B_{p,t})\sim \beta_0 + \\ \beta_1NEAR_p + \beta_2AFTER_t + \\ \pmb{\beta_3}NEAR_p \times AFTER_t \end{array}$ |
+
+: General structure of tested indicators of MPA effects. Bolded $\beta$
+parameter in **Equation** column indicates parameter interpreted as the
+effect of the MPA. *B* refers to biomass, *E* refers to effort, *ML*
+refers to mean length. *INSIDE* refers to patches *p* located inside MPA
+borders (whether before or after MPA implementation), *OUTSIDE* to
+patches outside. *AFTER* refers to time periods *t* after MPA
+implementation, *BEFORE* is before MPA implementation. *NEAR* are
+patches *p* outside but near the border of an MPA (whether before or
+after MPA implementation), FAR is outside and farther from the border of
+an MPA. {#tbl-indicators}
